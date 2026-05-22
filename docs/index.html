@@ -1340,7 +1340,7 @@
         background: #ecfdf5;
         border: 1px solid #a7f3d0;
       }
-      .cluster-card .status.degraded {
+      .cluster-card .status.partial {
         color: var(--warn);
         background: #fffbeb;
         border: 1px solid #fde68a;
@@ -2458,7 +2458,7 @@
             <div class="cluster-card">
               <div class="ch">
                 <h3>MSK Serverless</h3>
-                <span class="status degraded">Degraded</span>
+                <span class="status partial">Partial</span>
               </div>
               <p>
                 <code>DescribeLogDirs</code> is restricted. Tonnage skipped, weight redistributed
@@ -2473,7 +2473,7 @@
             <div class="cluster-card">
               <div class="ch">
                 <h3>Confluent Cloud</h3>
-                <span class="status degraded">Degraded</span>
+                <span class="status partial">Partial</span>
               </div>
               <p>
                 Log-dir restricted. <code>REMOTE_STORAGE</code> flag emitted on tiered storage or
