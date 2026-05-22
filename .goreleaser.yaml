@@ -100,6 +100,7 @@ dockers:
       - "ghcr.io/sderosiaux/kafka-attic:{{ .Version }}-amd64"
       - "ghcr.io/sderosiaux/kafka-attic:latest-amd64"
     use: buildx
+    dockerfile: Dockerfile
     goos: linux
     goarch: amd64
     build_flag_templates:
@@ -115,6 +116,7 @@ dockers:
       - "ghcr.io/sderosiaux/kafka-attic:{{ .Version }}-arm64"
       - "ghcr.io/sderosiaux/kafka-attic:latest-arm64"
     use: buildx
+    dockerfile: Dockerfile
     goos: linux
     goarch: arm64
     build_flag_templates:
