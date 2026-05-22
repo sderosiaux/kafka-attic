@@ -1,0 +1,15 @@
+{
+    "version": "0.1.0",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/sderosiaux/kafka-attic/releases/download/v0.1.0/kafka-attic_0.1.0_windows_amd64.zip",
+            "bin": [
+                "kattic.exe"
+            ],
+            "hash": "f0d77ae794458c0abee4f30d32da9f8b10d082f2723d2c40d86219b2c69412ac"
+        }
+    },
+    "homepage": "https://github.com/sderosiaux/kafka-attic",
+    "license": "Apache-2.0",
+    "description": "Read-only scanner that quantifies unused Kafka topics with the ATTIC Score"
+}
