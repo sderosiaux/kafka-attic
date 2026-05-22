@@ -1,0 +1,2243 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>kafka-attic — find your Kafka topic graveyard</title>
+    <meta
+      name="description"
+      content="Read-only Go CLI that scores stale, empty, oversized, abandoned Kafka topics in one scan. ATTIC Score methodology, vendor-neutral, single binary."
+    />
+    <meta
+      name="keywords"
+      content="kafka topic cleanup, stale kafka topics, kafka topic graveyard, unused kafka topics, kafka storage reclaim, kafka audit, ATTIC Score, kafka governance, kafka CLI, kafka admin, MSK cleanup, Confluent Cloud cleanup, Aiven Kafka, Redpanda, kafka topic lifecycle, kafka disk cost, kafka topic owner, kafka inventory, kafka health, kafka attic"
+    />
+    <meta name="author" content="Conduktor" />
+    <meta
+      name="robots"
+      content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+    />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="color-scheme" content="light" />
+    <link rel="canonical" href="https://sderosiaux.github.io/kafka-attic/" />
+    <link rel="manifest" href="manifest.webmanifest" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="kafka-attic — find your Kafka topic graveyard" />
+    <meta
+      property="og:description"
+      content="Read-only Go CLI that scores stale, empty, oversized, abandoned Kafka topics in one scan. ATTIC Score methodology, vendor-neutral, single binary."
+    />
+    <meta property="og:url" content="https://sderosiaux.github.io/kafka-attic/" />
+    <meta property="og:site_name" content="kafka-attic" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://sderosiaux.github.io/kafka-attic/images/og-card.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta
+      property="og:image:alt"
+      content="kafka-attic — find your Kafka topic graveyard. Read-only CLI."
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@conduktor" />
+    <meta name="twitter:creator" content="@conduktor" />
+    <meta name="twitter:title" content="kafka-attic — find your Kafka topic graveyard" />
+    <meta
+      name="twitter:description"
+      content="Read-only Go CLI that scores stale, empty, oversized, abandoned Kafka topics in one scan. ATTIC Score methodology, vendor-neutral, single binary."
+    />
+    <meta
+      name="twitter:image"
+      content="https://sderosiaux.github.io/kafka-attic/images/og-card.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="kafka-attic — find your Kafka topic graveyard."
+    />
+
+    <!-- Performance -->
+    <link rel="preconnect" href="https://api.github.com" crossorigin />
+    <link rel="dns-prefetch" href="https://github.com" />
+
+    <!-- Structured data: SoftwareApplication -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "kafka-attic",
+        "alternateName": "kattic",
+        "applicationCategory": "DeveloperApplication",
+        "applicationSubCategory": "Kafka topic governance scanner",
+        "operatingSystem": "Linux, macOS, Windows",
+        "softwareVersion": "1.0.0",
+        "dateModified": "2026-05-22",
+        "url": "https://sderosiaux.github.io/kafka-attic/",
+        "description": "Read-only Go CLI that scores every Kafka topic against a published methodology — Activity, Tenancy, Tonnage, Intent, Consumption. Single static binary, vendor-neutral, no producer client compiled.",
+        "image": "https://sderosiaux.github.io/kafka-attic/images/og-card.png",
+        "downloadUrl": "https://github.com/sderosiaux/kafka-attic/releases/latest",
+        "softwareHelp": "https://github.com/sderosiaux/kafka-attic",
+        "license": "https://www.apache.org/licenses/LICENSE-2.0",
+        "featureList": [
+          "ATTIC Score 0-100 per topic over five sub-signals",
+          "Evidence levels: KNOWN, ESTIMATED, UNKNOWN per sub-signal",
+          "Structural flags: OVERSIZED, SKEWED, ORPHAN_SCHEMA, COMPACTED, REMOTE_STORAGE",
+          "Cleanup script generator with strict inclusion rules",
+          "Snapshot diff for week-over-week reclaim tracking",
+          "Four output formats: terminal, JSON, CSV, single-file HTML",
+          "Auth: SASL_PLAIN, SCRAM-SHA-256/512, mTLS, AWS IAM, OAuth",
+          "Works on self-managed Kafka, MSK, Confluent Cloud, Aiven, Redpanda"
+        ],
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "Conduktor",
+          "url": "https://www.conduktor.io"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Conduktor",
+          "url": "https://www.conduktor.io"
+        }
+      }
+    </script>
+
+    <!-- Structured data: FAQPage -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Is it safe to run on production?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. kafka-attic is read-only by construction. The binary uses franz-go configured as an admin/consumer client only; the producer client is statically excluded at compile time and a CI test asserts that no producer-capable code path is reachable. Scans use bounded concurrency and back off on throttling. For multi-thousand-topic clusters, a --sample mode lets you size impact first."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Will kafka-attic delete topics for me?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The cleanup script is a generated shell artifact you review and run by hand. kafka-attic never executes a destructive command itself. The verdict is LIKELY_UNUSED, never SAFE_DELETE. Topics with MISSING_SIGNAL, COMPACTED, REMOTE_STORAGE, or UNKNOWN evidence are excluded from the cleanup script. The script ships with per-topic preflight --describe commands and a warning banner — Kafka has no native dry-run for topic deletion."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it work on Confluent Cloud / MSK Serverless?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, with degraded Tonnage. DescribeLogDirs is restricted on both, so kafka-attic skips the Tonnage sub-signal and redistributes its weight. Confluent Cloud topics on tiered storage or infinite retention also receive REMOTE_STORAGE, capped at INSPECT. The four other sub-signals collect normally."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What Kafka permissions does it need?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Read-only ACLs: Describe on Cluster, Topic, and Group; DescribeConfigs on Topic; DescribeLogDirs on Cluster (optional — enables Tonnage). For Schema Registry, a read-only API key with Subject:Read. For MSK IAM: kafka:DescribeCluster, kafka-cluster:DescribeTopic, kafka-cluster:DescribeGroup, kafka-cluster:DescribeTopicDynamicConfiguration, kafka-cluster:Connect. The scan reports observed permissions so you can audit access after the fact."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How is the score calibrated?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Defaults (Activity 0.30, Tenancy 0.20, Tonnage 0.10, Intent 0.15, Consumption 0.25) come from an anonymized calibration dataset gathered during the design phase, weighted toward signals reliably available on every conformant cluster. All weights, thresholds, and the activity curve are overridable in kattic.yaml. Every JSON snapshot pins the attic_spec_version it was computed under, so historical snapshots remain reproducible and comparable via kattic diff."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What about seasonal topics that fire monthly?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Seasonality detection is out of scope for v1.0. Two mitigations exist: (1) the verdict is conservative — Consumption goes to 0 the moment records exist, so topics with current data are capped well below LIKELY_UNUSED, and (2) the optional history database accumulates past scans so the v1.1 seasonality detector can pick them up. Until then, add monthly/quarterly producers to exclude_patterns with effect: mark_protected."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why is the methodology spec under a different license than the code?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The code is Apache 2.0; the methodology spec (docs/attic-score-spec-*.md) is CC BY 4.0. The spec is a piece of documentation meant to be cited, forked, and re-implemented by other Kafka tooling — CC BY 4.0 is the standard license for that kind of artifact. The dual licensing is intentional and reflects how DORA / SPACE / similar measurement frameworks are published."
+            }
+          }
+        ]
+      }
+    </script>
+
+    <!-- Structured data: WebSite -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "kafka-attic",
+        "url": "https://sderosiaux.github.io/kafka-attic/",
+        "publisher": {
+          "@type": "Organization",
+          "name": "Conduktor",
+          "url": "https://www.conduktor.io"
+        }
+      }
+    </script>
+
+    <style>
+      :root {
+        --bg: #ffffff;
+        --bg-soft: #fafafa;
+        --bg-code: #0b1020;
+        --text: #0f172a;
+        --muted: #64748b;
+        --border: #e5e7eb;
+        --border-strong: #d1d5db;
+        --accent: #2563eb;
+        --accent-hover: #1d4ed8;
+        --accent-soft: #eff6ff;
+        --success: #059669;
+        --warn: #d97706;
+        --crit: #dc2626;
+        --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 1px rgba(15, 23, 42, 0.03);
+        --shadow-md: 0 8px 24px -8px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.04);
+        --shadow-lg:
+          0 24px 60px -20px rgba(15, 23, 42, 0.25), 0 8px 20px -10px rgba(15, 23, 42, 0.12);
+        --radius: 10px;
+        --radius-lg: 16px;
+        --maxw: 1120px;
+        --font:
+          -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+          sans-serif;
+        --mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: var(--font);
+        color: var(--text);
+        background: var(--bg);
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { color: var(--accent-hover); }
+      h1, h2, h3 { letter-spacing: -0.02em; line-height: 1.15; margin: 0; }
+      h1 { font-size: clamp(40px, 6vw, 64px); font-weight: 700; }
+      h2 { font-size: clamp(28px, 3.6vw, 40px); font-weight: 650; }
+      h3 { font-size: 18px; font-weight: 600; }
+      p { margin: 0; }
+      .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+      /* Nav */
+      header.nav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(255, 255, 255, 0.78);
+        backdrop-filter: saturate(160%) blur(10px);
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.2s, background 0.2s;
+      }
+      header.nav.scrolled { border-color: var(--border); }
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 64px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text);
+      }
+      .brand-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        flex-shrink: 0;
+        box-shadow: var(--shadow-sm);
+        background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: -0.04em;
+      }
+      .brand-text { display: flex; flex-direction: column; line-height: 1.05; }
+      .brand-text .name {
+        font-weight: 650;
+        font-size: 15px;
+        letter-spacing: -0.01em;
+      }
+      .brand-text .by {
+        font-size: 10.5px;
+        color: var(--muted);
+        font-weight: 500;
+        margin-top: 2px;
+        letter-spacing: 0.01em;
+      }
+      .brand-text .by a { color: var(--muted); }
+      .brand-text .by a:hover { color: var(--text); }
+
+      /* Star button */
+      .nav-star {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 10px 6px 12px;
+        background: #fff;
+        border: 1px solid var(--border-strong);
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text) !important;
+        transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+      }
+      .nav-star:hover {
+        border-color: var(--text);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+      }
+      .nav-star svg {
+        width: 14px;
+        height: 14px;
+        color: #eab308;
+        transition: transform 0.2s;
+      }
+      .nav-star:hover svg { transform: rotate(15deg) scale(1.1); }
+      .nav-star .count {
+        padding: 1px 7px;
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 11.5px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+        min-width: 18px;
+        text-align: center;
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+      .nav-links a {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .nav-links a:hover { color: var(--text); }
+      @media (max-width: 760px) {
+        .nav-links a:not(.btn):not(.nav-star) { display: none; }
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 40px;
+        padding: 0 16px;
+        border-radius: var(--radius);
+        font-size: 14px;
+        font-weight: 550;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+      }
+      .btn-primary, .nav-links a.btn-primary {
+        background: var(--text);
+        color: #fff;
+      }
+      .btn-primary:hover, .nav-links a.btn-primary:hover {
+        background: #000;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+      }
+      .btn-ghost {
+        background: #fff;
+        color: var(--text);
+        border-color: var(--border-strong);
+      }
+      .btn-ghost:hover {
+        background: var(--bg-soft);
+        color: var(--text);
+      }
+      .btn-lg {
+        height: 48px;
+        padding: 0 22px;
+        font-size: 15px;
+        border-radius: 12px;
+      }
+
+      /* Hero */
+      .hero {
+        padding: 64px 0 48px;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: -200px 0 auto 0;
+        height: 600px;
+        z-index: -1;
+        background:
+          radial-gradient(60% 60% at 50% 0%, rgba(37, 99, 235, 0.08), transparent 70%),
+          radial-gradient(40% 40% at 80% 10%, rgba(6, 182, 212, 0.07), transparent 70%);
+      }
+      .badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--muted);
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+      }
+      .badge .dot {
+        width: 6px; height: 6px; border-radius: 50%; background: var(--success);
+      }
+      .hero h1 { max-width: 880px; }
+      .hero h1 .hero-name {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--muted);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 14px;
+        font-family: var(--mono);
+      }
+      .hero h1 .accent {
+        background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .hero .lede {
+        margin-top: 20px;
+        font-size: 19px;
+        color: var(--muted);
+        max-width: 720px;
+      }
+      .hero .ctas {
+        margin-top: 32px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .hero .meta {
+        margin-top: 14px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      /* Terminal frame — used for hero + mosaic */
+      .term {
+        background: var(--bg-code);
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        font-family: var(--mono);
+        color: #cbd5e1;
+      }
+      .term-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .term-bar .led {
+        width: 11px; height: 11px; border-radius: 50%;
+        background: #475569;
+      }
+      .term-bar .led.r { background: #f87171; }
+      .term-bar .led.y { background: #fbbf24; }
+      .term-bar .led.g { background: #34d399; }
+      .term-bar .title {
+        margin-left: auto;
+        font-size: 11.5px;
+        color: #64748b;
+        font-family: var(--mono);
+      }
+      .term-body {
+        padding: 18px 22px 22px;
+        font-size: 12.5px;
+        line-height: 1.7;
+        overflow-x: auto;
+      }
+      .term-body .prompt { color: #60a5fa; font-weight: 700; }
+      .term-body .cmd { color: #f1f5f9; }
+      .term-body .head { color: #94a3b8; }
+      .term-body .rule { color: #334155; }
+      .term-body .topic { color: #e2e8f0; font-weight: 600; }
+      .term-body .num { color: #fbbf24; }
+      .term-body .crit { color: #f87171; font-weight: 600; }
+      .term-body .warn { color: #fbbf24; font-weight: 600; }
+      .term-body .ok { color: #34d399; font-weight: 600; }
+      .term-body .info { color: #60a5fa; font-weight: 600; }
+      .term-body .dim { color: #475569; }
+      .term-body .note { color: #94a3b8; }
+      .term-body pre {
+        margin: 0;
+        font: inherit;
+        white-space: pre;
+      }
+      .term-summary {
+        color: #f1f5f9;
+        font-weight: 600;
+        margin-bottom: 14px;
+      }
+      .term-summary .reclaim { color: #34d399; }
+      .term-summary .unused { color: #fbbf24; }
+
+      /* Hero screenshot — terminal */
+      .screenshot {
+        margin: 56px auto 0;
+        width: 100%;
+        max-width: 1080px;
+        padding: 0 24px;
+        box-sizing: border-box;
+      }
+      .screenshot .term {
+        filter: drop-shadow(0 30px 60px rgba(15, 23, 42, 0.22))
+          drop-shadow(0 10px 20px rgba(15, 23, 42, 0.08));
+      }
+
+      /* Sections */
+      section { padding: 96px 0; }
+      section .eyebrow {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 14px;
+      }
+      section .lede {
+        font-size: 18px;
+        color: var(--muted);
+        max-width: 720px;
+        margin-top: 16px;
+      }
+
+      /* Why — mosaic */
+      .why {
+        background: var(--bg-soft);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+      .why-head {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 32px;
+        align-items: end;
+      }
+      @media (max-width: 760px) {
+        .why-head { grid-template-columns: 1fr; }
+      }
+      .why-stats {
+        display: grid;
+        grid-template-columns: auto auto;
+        gap: 4px 16px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted);
+        justify-content: end;
+      }
+      .why-stats .num {
+        font-weight: 700;
+        text-align: right;
+        color: var(--text);
+      }
+      .why-stats .num.crit, .why-stats .lab.crit { color: var(--crit); }
+      .why-stats .num.warn, .why-stats .lab.warn { color: var(--warn); }
+      .why-stats .num.info, .why-stats .lab.info { color: var(--accent); }
+
+      .why-mosaic {
+        margin-top: 56px;
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 20px;
+      }
+      @media (max-width: 880px) {
+        .why-mosaic { grid-template-columns: 1fr; }
+      }
+
+      .anti {
+        position: relative;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 24px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      }
+      .anti.span-3 { grid-column: span 3; }
+      .anti.span-2 { grid-column: span 2; }
+      @media (max-width: 880px) {
+        .anti.span-3, .anti.span-2 { grid-column: span 1; }
+      }
+      .anti:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.15),
+          0 24px 40px -22px rgba(15, 23, 42, 0.22);
+        border-color: transparent;
+      }
+      .anti-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+      .anti-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .anti-tag .pulse {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      }
+      .anti.warn .anti-tag { color: var(--warn); }
+      .anti.warn .anti-tag .pulse {
+        background: var(--warn);
+        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+      }
+      .anti.crit .anti-tag { color: var(--crit); }
+      .anti.crit .anti-tag .pulse {
+        background: var(--crit);
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+      }
+      .anti.info .anti-tag { color: var(--accent); }
+      .anti-code {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: #94a3b8;
+        letter-spacing: 0.04em;
+      }
+      .anti h3 {
+        font-size: 20px;
+        line-height: 1.25;
+        letter-spacing: -0.01em;
+      }
+      .anti.span-2 h3 { font-size: 18px; }
+      .anti h3 code {
+        background: var(--bg-soft);
+        color: var(--text);
+        border: 1px solid var(--border);
+        padding: 1px 7px;
+        border-radius: 5px;
+        font-size: 0.85em;
+        font-family: var(--mono);
+        font-weight: 500;
+      }
+
+      /* Embedded mini-term in a mosaic card */
+      .anti-term {
+        margin: 16px 0 14px;
+        background: var(--bg-code);
+        border: 1px solid #1e293b;
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        line-height: 1.7;
+        color: #cbd5e1;
+        overflow: hidden;
+      }
+      .anti-term .topic { color: #e2e8f0; font-weight: 600; }
+      .anti-term .crit { color: #f87171; font-weight: 600; }
+      .anti-term .warn { color: #fbbf24; font-weight: 600; }
+      .anti-term .ok { color: #34d399; }
+      .anti-term .info { color: #60a5fa; }
+      .anti-term .dim { color: #475569; }
+      .anti-term .label { color: #94a3b8; }
+      .anti-term .num { color: #fbbf24; }
+      .anti-term .head { color: #94a3b8; font-size: 10.5px; letter-spacing: 0.06em; }
+
+      .anti p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.55;
+        margin-top: auto;
+      }
+      .anti p code {
+        background: var(--bg-soft);
+        color: var(--text);
+        border: 1px solid var(--border);
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-size: 12.5px;
+        font-family: var(--mono);
+      }
+
+      /* How it works */
+      .how-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 56px;
+        margin-top: 48px;
+        align-items: center;
+      }
+      @media (max-width: 880px) {
+        .how-grid { grid-template-columns: 1fr; }
+      }
+      .diagram {
+        background: var(--bg-code);
+        color: #cbd5e1;
+        border-radius: 12px;
+        padding: 28px;
+        font-family: var(--mono);
+        font-size: 13.5px;
+        line-height: 1.7;
+        box-shadow: var(--shadow-md);
+        overflow-x: auto;
+      }
+      .diagram .arrow { color: #06b6d4; }
+      .diagram .label { color: #94a3b8; }
+      .diagram .hi { color: #f8fafc; font-weight: 600; }
+      .diagram .box { color: #60a5fa; }
+      .diagram .out { color: #34d399; }
+      .how-points { list-style: none; padding: 0; margin: 0; }
+      .how-points li {
+        list-style: none;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+      }
+      .how-points li:last-child { border-bottom: none; }
+      .how-points .check {
+        flex: 0 0 auto;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #ecfdf5;
+        color: var(--success);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        margin-top: 2px;
+      }
+      .how-points strong { display: block; margin-bottom: 2px; }
+      .how-points span { color: var(--muted); font-size: 14px; }
+
+      /* Features */
+      .features {
+        background: var(--bg-soft);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+      .features-grid {
+        margin-top: 48px;
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(3, 1fr);
+      }
+      @media (max-width: 980px) {
+        .features-grid { grid-template-columns: repeat(2, 1fr); }
+      }
+      @media (max-width: 640px) {
+        .features-grid { grid-template-columns: 1fr; }
+      }
+      .feat {
+        position: relative;
+        padding: 26px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: #fff;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      }
+      .feat::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .feat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.18),
+          0 26px 50px -25px rgba(15, 23, 42, 0.25);
+        border-color: transparent;
+      }
+      .feat:hover::before { opacity: 1; }
+      .feat-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+      .feat-tag {
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--accent);
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        border: 1px solid rgba(37, 99, 235, 0.12);
+      }
+      .feat-id {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: #94a3b8;
+        letter-spacing: 0.04em;
+      }
+      .feat h3 {
+        font-size: 19px;
+        line-height: 1.25;
+        letter-spacing: -0.01em;
+      }
+      .feat p {
+        color: var(--muted);
+        font-size: 14px;
+        margin-top: auto;
+        padding-top: 14px;
+        line-height: 1.55;
+      }
+      .feat code {
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 12.5px;
+        font-family: var(--mono);
+      }
+      .feat-preview {
+        margin: 14px 0 4px;
+        background: linear-gradient(180deg, #fcfcfd, var(--bg-soft));
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.8;
+        min-height: 128px;
+        overflow: hidden;
+        position: relative;
+      }
+      .feat-preview .row {
+        display: flex; gap: 8px; align-items: baseline; white-space: nowrap;
+      }
+      .feat-preview .k { color: #94a3b8; }
+      .feat-preview .v { color: var(--text); }
+      .feat-preview .vn { color: var(--warn); }
+      .feat-preview .vok { color: var(--success); }
+      .feat-preview .vcrit { color: var(--crit); }
+      .feat-preview .vacc { color: var(--accent); }
+      .feat-preview .bar {
+        display: inline-block;
+        height: 8px;
+        border-radius: 2px;
+        vertical-align: middle;
+      }
+
+      /* Cluster support */
+      .cluster-grid {
+        margin-top: 48px;
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(3, 1fr);
+      }
+      @media (max-width: 880px) {
+        .cluster-grid { grid-template-columns: repeat(2, 1fr); }
+      }
+      @media (max-width: 540px) {
+        .cluster-grid { grid-template-columns: 1fr; }
+      }
+      .cluster-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      }
+      .cluster-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--border-strong);
+        box-shadow: var(--shadow-md);
+      }
+      .cluster-card .ch {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .cluster-card h3 { font-size: 17px; }
+      .cluster-card .status {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 3px 9px;
+        border-radius: 999px;
+      }
+      .cluster-card .status.full {
+        color: var(--success);
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+      }
+      .cluster-card .status.degraded {
+        color: var(--warn);
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+      }
+      .cluster-card p {
+        color: var(--muted);
+        font-size: 13.5px;
+        margin-top: 8px;
+        line-height: 1.55;
+      }
+      .cluster-card .meta {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: var(--muted);
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px dashed var(--border);
+      }
+      .cluster-card .meta .label { color: #94a3b8; }
+      .cluster-card .meta .v { color: var(--text); }
+      .cluster-card .meta .v.warn { color: var(--warn); }
+
+      /* Methodology section */
+      .method-grid {
+        margin-top: 48px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px;
+        align-items: start;
+      }
+      @media (max-width: 880px) {
+        .method-grid { grid-template-columns: 1fr; }
+      }
+      .method-brief ul {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+        display: grid;
+        gap: 12px;
+      }
+      .method-brief li {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 14px;
+        align-items: center;
+      }
+      .method-brief .letter {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--accent);
+        background: var(--accent-soft);
+        border: 1px solid rgba(37, 99, 235, 0.18);
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .method-brief .name {
+        font-weight: 600; font-size: 14.5px;
+      }
+      .method-brief .desc {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 2px;
+      }
+      .method-brief .w {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted);
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        padding: 2px 8px;
+        border-radius: 6px;
+      }
+      .method-note {
+        margin-top: 22px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .method-note a { font-weight: 500; }
+      .code-block {
+        background: var(--bg-code);
+        color: #cbd5e1;
+        border-radius: 12px;
+        padding: 22px 26px;
+        font-family: var(--mono);
+        font-size: 12.5px;
+        line-height: 1.7;
+        box-shadow: var(--shadow-md);
+        overflow-x: auto;
+      }
+      .code-block .k { color: #60a5fa; }
+      .code-block .v { color: #f1f5f9; }
+      .code-block .s { color: #34d399; }
+      .code-block .n { color: #fbbf24; }
+      .code-block .c { color: #475569; font-style: italic; }
+      .code-block .h { color: #94a3b8; font-weight: 700; }
+
+      /* FAQ */
+      .faq-list {
+        margin-top: 48px;
+        max-width: 820px;
+        display: grid;
+        gap: 12px;
+      }
+      .faq-item {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0 24px;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .faq-item[open] {
+        border-color: var(--border-strong);
+        box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.04);
+      }
+      .faq-item summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 22px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .faq-item summary::-webkit-details-marker { display: none; }
+      .faq-item summary::after {
+        content: "+";
+        flex-shrink: 0;
+        font-family: var(--mono);
+        font-size: 22px;
+        font-weight: 400;
+        color: var(--muted);
+        line-height: 1;
+        transition: transform 0.2s;
+      }
+      .faq-item[open] summary::after {
+        content: "−";
+        color: var(--accent);
+      }
+      .faq-item summary h3 {
+        font-size: 17px;
+        font-weight: 600;
+        line-height: 1.4;
+        margin: 0;
+        letter-spacing: -0.005em;
+      }
+      .faq-item summary:hover h3 { color: var(--accent); }
+      .faq-item p {
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.65;
+        margin: 0 0 22px 0;
+        max-width: 720px;
+      }
+      .faq-item p code {
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-family: var(--mono);
+        color: var(--text);
+      }
+
+      /* Install */
+      .install {
+        background: var(--bg-soft);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+      .install-grid {
+        margin-top: 48px;
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(2, 1fr);
+      }
+      @media (max-width: 760px) {
+        .install-grid { grid-template-columns: 1fr; }
+      }
+      .install-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 22px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .install-card h3 {
+        font-size: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .install-card h3 .tag {
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--accent);
+        background: var(--accent-soft);
+        border: 1px solid rgba(37, 99, 235, 0.12);
+        padding: 2px 7px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .install-card pre {
+        background: var(--bg-code);
+        color: #e2e8f0;
+        border-radius: 8px;
+        padding: 14px 16px;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 12.5px;
+        line-height: 1.6;
+        overflow-x: auto;
+      }
+      .install-card pre .c { color: #64748b; }
+      .install-card pre .k { color: #60a5fa; }
+      .install-card pre .s { color: #86efac; }
+      .install-card pre .n { color: #fbbf24; }
+      .install-card p {
+        color: var(--muted);
+        font-size: 13.5px;
+        margin: 0;
+      }
+      .install-next {
+        margin-top: 36px;
+        padding: 28px 32px;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+      }
+      .install-next h3 {
+        font-size: 18px;
+        margin-bottom: 14px;
+      }
+      .install-next pre {
+        background: var(--bg-code);
+        color: #e2e8f0;
+        border-radius: 8px;
+        padding: 18px 22px;
+        margin: 12px 0 0;
+        font-family: var(--mono);
+        font-size: 12.5px;
+        line-height: 1.65;
+        overflow-x: auto;
+      }
+      .install-next pre .k { color: #60a5fa; }
+      .install-next pre .s { color: #86efac; }
+      .install-next pre .c { color: #64748b; }
+      .install-next pre .h { color: #cbd5e1; }
+      .install-next p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      /* Conduktor section */
+      .conduktor-band {
+        background: linear-gradient(135deg, #0b1220 0%, #1e293b 100%);
+        color: #f1f5f9;
+        position: relative;
+        overflow: hidden;
+      }
+      .conduktor-band::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(50% 60% at 100% 0%, rgba(96, 165, 250, 0.14), transparent 60%),
+          radial-gradient(40% 60% at 0% 100%, rgba(6, 182, 212, 0.10), transparent 60%);
+        pointer-events: none;
+      }
+      .conduktor-band > .wrap { position: relative; z-index: 1; }
+      .conduktor-band .eyebrow { color: #60a5fa; }
+      .conduktor-band h2 { color: #fff; max-width: 800px; }
+      .conduktor-band p {
+        color: #94a3b8;
+        font-size: 16px;
+        max-width: 720px;
+        margin-top: 20px;
+        line-height: 1.7;
+      }
+      .conduktor-band .btn-primary {
+        background: #fff;
+        color: var(--text);
+        margin-top: 28px;
+      }
+      .conduktor-band .btn-primary:hover {
+        background: #f1f5f9;
+        color: var(--text);
+      }
+      .conduktor-band .note {
+        margin-top: 14px;
+        color: #64748b;
+        font-size: 12.5px;
+      }
+
+      /* Footer */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 56px 0 40px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .foot-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        gap: 32px;
+      }
+      @media (max-width: 720px) {
+        .foot-grid { grid-template-columns: 1fr 1fr; }
+      }
+      .foot-brand .brand { margin-bottom: 12px; }
+      .foot-brand p {
+        color: var(--muted);
+        font-size: 13.5px;
+        line-height: 1.6;
+        max-width: 320px;
+      }
+      .foot-col h4 {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text);
+        margin: 0 0 14px 0;
+        font-weight: 600;
+      }
+      .foot-col ul { list-style: none; padding: 0; margin: 0; }
+      .foot-col li { margin-bottom: 8px; }
+      .foot-col a {
+        color: var(--muted);
+        font-size: 13.5px;
+      }
+      .foot-col a:hover { color: var(--text); }
+      .foot-bottom {
+        margin-top: 40px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .foot-bottom .tagline {
+        font-style: italic;
+      }
+
+      /* Reveal */
+      .reveal {
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+      }
+      .reveal.reveal-visible {
+        opacity: 1;
+        transform: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .reveal { opacity: 1; transform: none; transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="nav" id="nav">
+      <div class="wrap nav-inner">
+        <a class="brand" href="#top">
+          <span class="brand-icon" aria-hidden="true">k</span>
+          <span class="brand-text">
+            <span class="name">kafka-attic</span>
+            <span class="by">by <a href="https://conduktor.io?utm_source=kafka-attic&amp;utm_medium=oss&amp;utm_campaign=landing&amp;utm_content=brand" rel="noopener">Conduktor</a></span>
+          </span>
+        </a>
+        <nav class="nav-links">
+          <a href="#why">Why</a>
+          <a href="#how">How it works</a>
+          <a href="#features">Features</a>
+          <a href="#faq">FAQ</a>
+          <a href="#install">Install</a>
+          <a
+            class="nav-star"
+            href="https://github.com/sderosiaux/kafka-attic"
+            target="_blank"
+            rel="noopener"
+            aria-label="Star kafka-attic on GitHub"
+          >
+            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/>
+            </svg>
+            <span>Star</span>
+            <span class="count" id="gh-stars">—</span>
+          </a>
+          <a
+            class="btn btn-primary"
+            href="https://github.com/sderosiaux/kafka-attic/releases/latest"
+            target="_blank"
+            rel="noopener"
+            >Get it</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="wrap">
+          <div class="badges">
+            <span class="badge"><span class="dot"></span>v1.0 — Apache 2.0</span>
+            <span class="badge">Single static binary</span>
+            <span class="badge">Read-only by construction</span>
+          </div>
+          <h1>
+            <span class="hero-name">kafka-attic</span>
+            Find your Kafka <span class="accent">topic graveyard.</span>
+          </h1>
+          <p class="lede">
+            Read-only CLI that scores every topic against a published methodology. Stale, empty,
+            oversized, abandoned — flagged, ranked, reclaim-quantified. One binary. Read-only by
+            construction.
+          </p>
+          <div class="ctas">
+            <a
+              class="btn btn-primary btn-lg"
+              href="https://github.com/sderosiaux/kafka-attic/releases/latest"
+              target="_blank"
+              rel="noopener"
+            >
+              Get it
+            </a>
+            <a
+              class="btn btn-ghost btn-lg"
+              href="https://github.com/sderosiaux/kafka-attic"
+              target="_blank"
+              rel="noopener"
+            >
+              View on GitHub
+            </a>
+          </div>
+          <p class="meta">No agents. No SDK swap. No broker plugin.</p>
+        </div>
+
+        <div class="screenshot reveal">
+          <div class="term" aria-label="kattic terminal output">
+            <div class="term-bar">
+              <span class="led r"></span><span class="led y"></span><span class="led g"></span>
+              <span class="title">~ kattic scan --cluster prod.yaml</span>
+            </div>
+            <div class="term-body"><pre><span class="prompt">$</span> <span class="cmd">kattic scan --cluster prod.yaml</span>
+
+<span class="term-summary"><span class="num">4,821</span> topics · <span class="unused">1,207</span> likely unused · <span class="reclaim">38.2 TB</span> reclaimable</span>
+
+<span class="head">TOPIC               LAST PRODUCED   STORAGE       SCORE  VERDICT        NOTES</span>
+<span class="rule">──────────────────  ──────────────  ──────────    ─────  ─────────────  ──────────────────────────────</span>
+<span class="topic">legacy-events</span>       287d ago        <span class="num">12.3 GB</span>       <span class="warn">72</span>     <span class="warn">Candidate</span>      no schema reference found
+<span class="topic">orders-v1</span>           45d ago         <span class="num">2.1 GB</span>        <span class="warn">61</span>     <span class="warn">Inspect</span>        partition load uneven
+<span class="topic">audit-trail</span>         3d ago          <span class="num">890 MB</span>        <span class="ok">12</span>     <span class="ok">Active</span>
+<span class="topic">empty-topic</span>         never seen      <span class="num">0 B</span>           <span class="crit">88</span>     <span class="crit">Candidate</span>      appears never used (low evidence)
+<span class="topic">old-events</span>          180d ago        <span class="num">0 B</span>           <span class="crit">85</span>     <span class="crit">Candidate</span>      records purged by retention
+<span class="topic">oversized-events</span>    2h ago          <span class="num">412 GB</span>        <span class="warn">55</span>     <span class="warn">Inspect</span>        over-provisioned partitions
+<span class="topic">compacted-state</span>     1d ago          <span class="num">5.2 GB</span> <span class="dim">est</span>    <span class="warn">42</span>     <span class="warn">Inspect</span>        compacted topic; manual review
+<span class="topic">remote-archive</span>      90d ago         <span class="dim">? GB</span>          <span class="dim">—</span>      <span class="dim">—</span>              tiered storage; storage unknown
+
+<span class="note">→ HTML report:  kattic audit --cluster prod.yaml --output report.html</span></pre></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="why" id="why">
+        <div class="wrap">
+          <div class="why-head">
+            <div>
+              <span class="eyebrow">The problem</span>
+              <h2>Every Kafka cluster has a topic graveyard. Nobody dares delete.</h2>
+              <p class="lede" style="margin-top: 16px">
+                Topics outlive the services that produced them. Storage cost grows linearly with
+                topic count, but the value per topic decays. Without shared evidence, nobody pulls
+                the trigger.
+              </p>
+            </div>
+            <div class="why-stats" aria-label="example scan summary">
+              <span class="num">4,821</span><span class="lab">topics scanned</span>
+              <span class="num warn">1,207</span><span class="lab warn">likely unused</span>
+              <span class="num crit">38.2 TB</span><span class="lab crit">reclaimable</span>
+            </div>
+          </div>
+
+          <div class="why-mosaic">
+            <!-- 1. Stale producer — CRIT span-3 -->
+            <div class="anti crit span-3">
+              <div class="anti-head">
+                <span class="anti-tag"><span class="pulse"></span>Activity 0d → 287d</span>
+                <span class="anti-code">ATTIC-A1</span>
+              </div>
+              <h3>The stale producer</h3>
+              <div class="anti-term" aria-hidden="true"><pre><span class="head">TOPIC          LAST PRODUCED   SCORE  VERDICT</span>
+<span class="topic">legacy-events</span>  287d ago        <span class="crit">72</span>     <span class="crit">Candidate</span>
+  <span class="label">activity</span>    <span class="warn">287d</span> <span class="dim">since last record</span>
+  <span class="label">tenancy</span>     <span class="dim">no active group</span>
+  <span class="label">tonnage</span>     <span class="warn">12.3 GB</span> <span class="dim">on disk</span>
+  <span class="label">intent</span>      <span class="dim">no schema subject</span>
+  <span class="label">consumption</span> <span class="warn">records present</span>      </pre></div>
+              <p>
+                Producer service was decommissioned nine months ago. Topic still rents
+                <code>12.3 GB</code>. Activity score peaks, but records are still on disk — verdict
+                stays at Candidate because Consumption isn't zero. Owner gets a defensible report.
+              </p>
+            </div>
+
+            <!-- 2. Empty topic — CRIT span-3 -->
+            <div class="anti crit span-3">
+              <div class="anti-head">
+                <span class="anti-tag"><span class="pulse"></span>Appears never used</span>
+                <span class="anti-code">ATTIC-C2</span>
+              </div>
+              <h3>The empty topic</h3>
+              <div class="anti-term" aria-hidden="true"><pre><span class="head">TOPIC         LAST PRODUCED  SCORE  VERDICT</span>
+<span class="topic">empty-topic</span>   never seen     <span class="crit">88</span>     <span class="crit">Candidate</span>
+  <span class="label">activity</span>    <span class="info">N/A</span> <span class="dim">(missing signal)</span>
+  <span class="label">flag</span>        <span class="crit">APPEARS_NEVER_USED</span>
+  <span class="label">verdict cap</span> <span class="warn">→ Candidate</span> <span class="dim">(no PURGED)</span></pre></div>
+              <p>
+                Created in a migration draft, never produced to. <code>earliest == latest == 0</code>,
+                no retention purge evidence. The cap kicks in: without proof of past use, the
+                verdict stays at Candidate, not Likely unused.
+              </p>
+            </div>
+
+            <!-- 3. Purged by retention — WARN span-2 -->
+            <div class="anti warn span-2">
+              <div class="anti-head">
+                <span class="anti-tag"><span class="pulse"></span>Purged</span>
+                <span class="anti-code">ATTIC-C1</span>
+              </div>
+              <h3>Records purged by retention</h3>
+              <div class="anti-term" aria-hidden="true"><pre><span class="head">TOPIC       SCORE  VERDICT</span>
+<span class="topic">old-events</span>  <span class="crit">85</span>     <span class="crit">Candidate</span>
+  <span class="label">last_prod</span>  <span class="warn">180d ago</span>
+  <span class="label">flag</span>       <span class="crit">PURGED</span>
+  <span class="label">storage</span>    <span class="warn">0 B</span></pre></div>
+              <p>
+                Retention swept the records, but the topic config lingers. High Activity + zero
+                Consumption — clean Candidate.
+              </p>
+            </div>
+
+            <!-- 4. Oversized — WARN span-2 -->
+            <div class="anti warn span-2">
+              <div class="anti-head">
+                <span class="anti-tag"><span class="pulse"></span>Oversized</span>
+                <span class="anti-code">ATTIC-T1</span>
+              </div>
+              <h3>Over-provisioned partitions</h3>
+              <div class="anti-term" aria-hidden="true"><pre><span class="head">TOPIC              SCORE  VERDICT</span>
+<span class="topic">oversized-events</span>   <span class="warn">55</span>     <span class="warn">Inspect</span>
+  <span class="label">storage</span>    <span class="warn">412 GB</span>
+  <span class="label">flag</span>       <span class="warn">OVERSIZED, SKEWED</span>
+  <span class="label">partitions</span> <span class="dim">128 (p99 / p50 = 9.4)</span></pre></div>
+              <p>
+                Tonnage in the top percentile, partition load uneven by 9x. Active, but a candidate
+                for repartitioning.
+              </p>
+            </div>
+
+            <!-- 5. Compacted — WARN span-3 -->
+            <div class="anti warn span-3">
+              <div class="anti-head">
+                <span class="anti-tag"><span class="pulse"></span>Compacted</span>
+                <span class="anti-code">ATTIC-C3</span>
+              </div>
+              <h3>Compacted state store</h3>
+              <div class="anti-term" aria-hidden="true"><pre><span class="head">TOPIC            LAST PRODUCED  SCORE  VERDICT</span>
+<span class="topic">compacted-state</span>  1d ago         <span class="warn">42</span>     <span class="warn">Inspect</span>
+  <span class="label">cleanup.policy</span>  <span class="warn">compact</span>
+  <span class="label">flag</span>            <span class="warn">COMPACTED</span>
+  <span class="label">verdict cap</span>     <span class="warn">→ Inspect</span> <span class="dim">(manual review)</span>
+  <span class="label">storage</span>         <span class="warn">5.2 GB est</span> <span class="dim">(estimate)</span></pre></div>
+              <p>
+                A Kafka Streams changelog. Activity is fine, but the verdict is capped at Inspect —
+                compacted topics encode application state, never auto-deleted, never included in
+                the cleanup script.
+              </p>
+            </div>
+
+            <!-- 6. Schema orphan — INFO span-3 -->
+            <div class="anti info span-3">
+              <div class="anti-head">
+                <span class="anti-tag"><span class="pulse"></span>Intent missing</span>
+                <span class="anti-code">ATTIC-I1</span>
+              </div>
+              <h3>Schema orphan</h3>
+              <div class="anti-term" aria-hidden="true"><pre><span class="head">TOPIC          SCORE  VERDICT</span>
+<span class="topic">legacy-events</span>  <span class="warn">72</span>     <span class="warn">Candidate</span>
+  <span class="label">schema</span>     <span class="info">ORPHAN_SCHEMA</span>
+  <span class="label">subjects</span>   <span class="dim">(none registered)</span>
+  <span class="label">intent</span>     <span class="warn">low</span> <span class="dim">— no contract</span></pre></div>
+              <p>
+                No schema subject targets this topic. Either the schema was deleted, or no producer
+                ever registered one. Strong intent signal that the topic was abandoned.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="how">
+        <div class="wrap">
+          <span class="eyebrow">How it works</span>
+          <h2>A read-only scan. That's it.</h2>
+          <p class="lede">
+            Single static binary connects with admin-only ACLs, calls broker introspection APIs,
+            computes the ATTIC Score, renders the verdict. No producer client is compiled into the
+            binary. No record contents ever leave the broker.
+          </p>
+
+          <div class="how-grid">
+            <pre class="diagram" aria-label="kafka-attic architecture diagram">
+   <span class="hi">your cluster</span>            <span class="label">read-only ACLs</span>
+   ┌────────────────┐
+   │ <span class="box">Kafka brokers</span>  │ ─── <span class="label">Describe*</span> ───┐
+   │ <span class="box">Schema Registry</span>│ ─── <span class="label">Subject:Read</span> ┤
+   └────────────────┘                  │
+                                       <span class="arrow">▼</span>
+                              ┌────────────────┐
+                              │ <span class="hi">kattic CLI</span>     │
+                              │ <span class="label">(static binary)</span> │
+                              └───────┬────────┘
+                                      │
+                                      <span class="arrow">▼</span>
+                              ┌────────────────┐
+                              │ <span class="hi">ATTIC Score</span>    │
+                              │ <span class="label">A · T · T · I · C</span> │
+                              └───────┬────────┘
+                                      │
+                  ┌───────────┬───────┴────────┬───────────┐
+                  <span class="arrow">▼</span>           <span class="arrow">▼</span>                <span class="arrow">▼</span>           <span class="arrow">▼</span>
+              <span class="out">terminal</span>     <span class="out">JSON</span>             <span class="out">CSV</span>         <span class="out">HTML</span>
+            </pre>
+            <ul class="how-points">
+              <li>
+                <span class="check">✓</span>
+                <div>
+                  <strong>No producer client compiled</strong>
+                  <span>The binary statically excludes the producer code path. A CI test asserts no producer-capable code is reachable.</span>
+                </div>
+              </li>
+              <li>
+                <span class="check">✓</span>
+                <div>
+                  <strong>No record contents fetched</strong>
+                  <span>Last-activity timestamps come from <code>ListOffsets</code> with <code>timestamp = -1</code>. Keys, values, headers are never read.</span>
+                </div>
+              </li>
+              <li>
+                <span class="check">✓</span>
+                <div>
+                  <strong>Works on every conformant Kafka</strong>
+                  <span>Self-managed, MSK, Confluent Cloud, Aiven, Redpanda. Tonnage degrades gracefully when <code>DescribeLogDirs</code> is restricted.</span>
+                </div>
+              </li>
+              <li>
+                <span class="check">✓</span>
+                <div>
+                  <strong>Single static binary</strong>
+                  <span>No JVM, no librdkafka, no broker-side install. Runs from a laptop, a CI job, or a cron container with TCP access.</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="features" id="features">
+        <div class="wrap">
+          <span class="eyebrow">What you get</span>
+          <h2>Five sub-signals. One score. A verdict you can defend.</h2>
+          <p class="lede">
+            The ATTIC Score is a weighted heuristic, not a probability. Each sub-signal carries an
+            evidence level. Weak evidence caps the verdict — you never delete on hearsay.
+          </p>
+
+          <div class="features-grid">
+            <div class="feat">
+              <div class="feat-head">
+                <span class="feat-tag">Activity</span>
+                <span class="feat-id">A · 0.30</span>
+              </div>
+              <h3>Days since last record</h3>
+              <div class="feat-preview" aria-hidden="true">
+                <div class="row"><span class="k">last_record</span><span class="vn">287d ago</span></div>
+                <div class="row"><span class="k">curve</span><span class="v">piecewise(0/30/90/180/365)</span></div>
+                <div class="row"><span class="k">score</span><span class="vcrit">94 / 100</span></div>
+                <div class="row"><span class="k">evidence</span><span class="vok">KNOWN</span></div>
+                <div class="row">
+                  <span class="k">bar</span>
+                  <span class="bar" style="width:90%;background:linear-gradient(90deg,#34d399,#fbbf24 60%,#ef4444);"></span>
+                </div>
+              </div>
+              <p>
+                The most recent timestamp observed across partitions via <code>ListOffsets</code>.
+                Piecewise-linear curve over 0/30/90/180/365 days, overridable in
+                <code>kattic.yaml</code>.
+              </p>
+            </div>
+
+            <div class="feat">
+              <div class="feat-head">
+                <span class="feat-tag">Tenancy</span>
+                <span class="feat-id">T · 0.20</span>
+              </div>
+              <h3>Consumer groups targeting it</h3>
+              <div class="feat-preview" aria-hidden="true">
+                <div class="row"><span class="k">groups</span><span class="v">[orders-svc, audit-fwd]</span></div>
+                <div class="row"><span class="k">orders-svc</span><span class="vcrit">Dead</span></div>
+                <div class="row"><span class="k">audit-fwd</span><span class="vn">Empty</span></div>
+                <div class="row"><span class="k">rule</span><span class="v">Stable/Empty/Dead cascade</span></div>
+                <div class="row"><span class="k">evidence</span><span class="vok">KNOWN</span></div>
+              </div>
+              <p>
+                State of every group with a committed offset on this topic. Cascading rules over
+                <code>Stable</code> / <code>Empty</code> / <code>Dead</code> — a dead group is the
+                strongest signal of abandonment.
+              </p>
+            </div>
+
+            <div class="feat">
+              <div class="feat-head">
+                <span class="feat-tag">Tonnage</span>
+                <span class="feat-id">T · 0.10</span>
+              </div>
+              <h3>Storage footprint percentile</h3>
+              <div class="feat-preview" aria-hidden="true">
+                <div class="row"><span class="k">bytes</span><span class="vn">12.3 GB</span></div>
+                <div class="row"><span class="k">percentile</span><span class="v">p43 cluster-wide</span></div>
+                <div class="row"><span class="k">flag</span><span class="vn">—</span></div>
+                <div class="row"><span class="k">evidence</span><span class="vok">KNOWN</span></div>
+                <div class="row"><span class="k">degrades_to</span><span class="vacc">UNKNOWN on MSK Serverless</span></div>
+              </div>
+              <p>
+                <code>DescribeLogDirs</code> when available. Smaller topics score higher (cheaper to
+                let live). When restricted, the sub-signal is skipped and its weight is
+                redistributed across the other four.
+              </p>
+            </div>
+
+            <div class="feat">
+              <div class="feat-head">
+                <span class="feat-tag">Intent</span>
+                <span class="feat-id">I · 0.15</span>
+              </div>
+              <h3>Schema subject presence</h3>
+              <div class="feat-preview" aria-hidden="true">
+                <div class="row"><span class="k">strategy</span><span class="v">topic_name + topic_record</span></div>
+                <div class="row"><span class="k">subjects</span><span class="vcrit">(none)</span></div>
+                <div class="row"><span class="k">flag</span><span class="vacc">ORPHAN_SCHEMA</span></div>
+                <div class="row"><span class="k">registry</span><span class="v">Confluent SR (v1.0)</span></div>
+                <div class="row"><span class="k">evidence</span><span class="vok">KNOWN</span></div>
+              </div>
+              <p>
+                Whether a Schema Registry subject targets the topic. A topic with no contract was
+                either never seriously intended for use, or was orphaned. Confluent SR in v1.0;
+                Glue + Apicurio in v1.1.
+              </p>
+            </div>
+
+            <div class="feat">
+              <div class="feat-head">
+                <span class="feat-tag">Consumption</span>
+                <span class="feat-id">C · 0.25</span>
+              </div>
+              <h3>Records present right now</h3>
+              <div class="feat-preview" aria-hidden="true">
+                <div class="row"><span class="k">earliest</span><span class="v">0</span></div>
+                <div class="row"><span class="k">latest</span><span class="v">0</span></div>
+                <div class="row"><span class="k">case</span><span class="vcrit">APPEARS_NEVER_USED</span></div>
+                <div class="row"><span class="k">or</span><span class="vn">PURGED (records swept)</span></div>
+                <div class="row"><span class="k">evidence</span><span class="vok">KNOWN</span></div>
+              </div>
+              <p>
+                Three cases: never used (<code>earliest == latest == 0</code>), purged by retention,
+                or records present. Going to zero when records exist is the safety floor — current
+                data never grades Likely unused.
+              </p>
+            </div>
+
+            <div class="feat">
+              <div class="feat-head">
+                <span class="feat-tag">Cleanup</span>
+                <span class="feat-id">script</span>
+              </div>
+              <h3>Cleanup script (safety rails on)</h3>
+              <div class="feat-preview" aria-hidden="true">
+                <div class="row"><span class="k">include</span><span class="vok">verdict == LIKELY_UNUSED</span></div>
+                <div class="row"><span class="k">exclude</span><span class="vcrit">COMPACTED</span></div>
+                <div class="row"><span class="k">exclude</span><span class="vcrit">REMOTE_STORAGE</span></div>
+                <div class="row"><span class="k">exclude</span><span class="vcrit">MISSING_SIGNAL</span></div>
+                <div class="row"><span class="k">preflight</span><span class="vacc">--describe per topic</span></div>
+              </div>
+              <p>
+                Hand-reviewable shell. Strict inclusion: only <code>LIKELY_UNUSED</code> with full
+                evidence. Per-topic <code>--describe</code> preflight, no Kafka native dry-run, no
+                automation — you keep the trigger.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="managed-kafka">
+        <div class="wrap">
+          <span class="eyebrow">Cluster support</span>
+          <h2>Works on every Kafka you might be running.</h2>
+          <p class="lede">
+            Same scoring math everywhere. When a vendor restricts a broker API, the affected
+            sub-signal is marked <code>UNKNOWN</code> and its weight is redistributed across the
+            others. The score still computes — the JSON snapshot records the degraded evidence for
+            downstream tooling.
+          </p>
+
+          <div class="cluster-grid">
+            <div class="cluster-card">
+              <div class="ch">
+                <h3>Self-managed Kafka</h3>
+                <span class="status full">Full</span>
+              </div>
+              <p>
+                Every broker API available. ATTIC Score computes from full evidence on all five
+                sub-signals.
+              </p>
+              <div class="meta">
+                <span class="label">Tonnage:</span> <span class="v">KNOWN</span><br />
+                <span class="label">Auth:</span> <span class="v">SASL/SCRAM, mTLS, PLAIN</span>
+              </div>
+            </div>
+
+            <div class="cluster-card">
+              <div class="ch">
+                <h3>MSK Provisioned</h3>
+                <span class="status full">Full</span>
+              </div>
+              <p>
+                Full <code>DescribeLogDirs</code> via IAM <code>DescribeClusterV2</code>. Tonnage
+                participates normally.
+              </p>
+              <div class="meta">
+                <span class="label">Tonnage:</span> <span class="v">KNOWN</span><br />
+                <span class="label">Auth:</span> <span class="v">AWS IAM, mTLS</span>
+              </div>
+            </div>
+
+            <div class="cluster-card">
+              <div class="ch">
+                <h3>MSK Serverless</h3>
+                <span class="status degraded">Degraded</span>
+              </div>
+              <p>
+                <code>DescribeLogDirs</code> is restricted. Tonnage skipped, weight redistributed
+                across Activity, Tenancy, Intent, Consumption.
+              </p>
+              <div class="meta">
+                <span class="label">Tonnage:</span> <span class="v warn">UNKNOWN</span><br />
+                <span class="label">Auth:</span> <span class="v">AWS IAM</span>
+              </div>
+            </div>
+
+            <div class="cluster-card">
+              <div class="ch">
+                <h3>Confluent Cloud</h3>
+                <span class="status degraded">Degraded</span>
+              </div>
+              <p>
+                Log-dir restricted. <code>REMOTE_STORAGE</code> flag emitted on tiered storage or
+                <code>retention.ms = -1</code> — verdict capped at <code>Inspect</code>.
+              </p>
+              <div class="meta">
+                <span class="label">Tonnage:</span> <span class="v warn">UNKNOWN</span><br />
+                <span class="label">Auth:</span> <span class="v">OAuth, SASL/PLAIN</span>
+              </div>
+            </div>
+
+            <div class="cluster-card">
+              <div class="ch">
+                <h3>Aiven</h3>
+                <span class="status full">Full</span>
+              </div>
+              <p>
+                Plan-dependent. Tonnage is <code>KNOWN</code> or <code>ESTIMATED</code> depending
+                on the service tier — JSON records which.
+              </p>
+              <div class="meta">
+                <span class="label">Tonnage:</span> <span class="v">KNOWN / ESTIMATED</span><br />
+                <span class="label">Auth:</span> <span class="v">SASL/SCRAM, mTLS</span>
+              </div>
+            </div>
+
+            <div class="cluster-card">
+              <div class="ch">
+                <h3>Redpanda</h3>
+                <span class="status full">Full</span>
+              </div>
+              <p>
+                Faithful Kafka admin API surface. All five sub-signals collect normally.
+              </p>
+              <div class="meta">
+                <span class="label">Tonnage:</span> <span class="v">KNOWN</span><br />
+                <span class="label">Auth:</span> <span class="v">SASL/SCRAM, mTLS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="methodology" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <div class="wrap">
+          <span class="eyebrow">Open methodology</span>
+          <h2>The ATTIC Score is a public spec, not a black box.</h2>
+          <p class="lede">
+            Every sub-signal, every weight, every evidence transition, every verdict cap is
+            documented in a versioned spec. Snapshots pin the spec version they were computed
+            under, so historical diffs stay comparable.
+          </p>
+
+          <div class="method-grid">
+            <div class="method-brief">
+              <ul>
+                <li>
+                  <span class="letter">A</span>
+                  <div>
+                    <div class="name">Activity</div>
+                    <div class="desc">Days since the most recent record.</div>
+                  </div>
+                  <span class="w">w 0.30</span>
+                </li>
+                <li>
+                  <span class="letter">T</span>
+                  <div>
+                    <div class="name">Tenancy</div>
+                    <div class="desc">State of consumer groups on the topic.</div>
+                  </div>
+                  <span class="w">w 0.20</span>
+                </li>
+                <li>
+                  <span class="letter">T</span>
+                  <div>
+                    <div class="name">Tonnage</div>
+                    <div class="desc">Storage footprint percentile.</div>
+                  </div>
+                  <span class="w">w 0.10</span>
+                </li>
+                <li>
+                  <span class="letter">I</span>
+                  <div>
+                    <div class="name">Intent</div>
+                    <div class="desc">Schema subject targeting the topic.</div>
+                  </div>
+                  <span class="w">w 0.15</span>
+                </li>
+                <li>
+                  <span class="letter">C</span>
+                  <div>
+                    <div class="name">Consumption</div>
+                    <div class="desc">Record presence right now.</div>
+                  </div>
+                  <span class="w">w 0.25</span>
+                </li>
+              </ul>
+              <p class="method-note">
+                Evidence levels: <code>KNOWN</code>, <code>ESTIMATED</code>, <code>UNKNOWN</code>.
+                Verdict caps — any <code>ESTIMATED</code> → max Candidate; <code>COMPACTED</code>
+                or <code>REMOTE_STORAGE</code> → max Inspect; <code>APPEARS_NEVER_USED</code>
+                without <code>PURGED</code> → max Candidate.
+              </p>
+              <p class="method-note">
+                Read the full spec →
+                <a href="https://github.com/sderosiaux/kafka-attic/blob/main/docs/attic-score-spec-v1.0.md" target="_blank" rel="noopener"
+                  ><code>docs/attic-score-spec-v1.0.md</code></a
+                >. Methodology is published under
+                <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>
+                so other Kafka tooling can adopt it independently of this implementation — the way
+                DORA, SPACE, and similar measurement frameworks are shared.
+              </p>
+            </div>
+
+            <pre class="code-block" aria-label="ATTIC Score spec excerpt">
+<span class="c"># attic-score-spec-v1.0.md (excerpt)</span>
+
+<span class="h">verdict_bands:</span>
+  <span class="k">likely_unused:</span> <span class="n">>= 90</span>
+  <span class="k">candidate:</span>     <span class="n">70 .. 89</span>
+  <span class="k">inspect:</span>       <span class="n">40 .. 69</span>
+  <span class="k">active:</span>        <span class="n">< 40</span>
+
+<span class="h">activity_curve:</span> <span class="c"># days → sub-score (0..100)</span>
+  <span class="k">0d:</span>   <span class="n">0</span>
+  <span class="k">30d:</span>  <span class="n">25</span>
+  <span class="k">90d:</span>  <span class="n">55</span>
+  <span class="k">180d:</span> <span class="n">80</span>
+  <span class="k">365d:</span> <span class="n">100</span>
+
+<span class="h">verdict_caps:</span>
+  - <span class="k">when:</span> <span class="s">"any sub-signal evidence == ESTIMATED"</span>
+    <span class="k">max:</span> <span class="s">CANDIDATE</span>
+  - <span class="k">when:</span> <span class="s">"flag includes COMPACTED"</span>
+    <span class="k">max:</span> <span class="s">INSPECT</span>
+  - <span class="k">when:</span> <span class="s">"flag includes REMOTE_STORAGE"</span>
+    <span class="k">max:</span> <span class="s">INSPECT</span>
+  - <span class="k">when:</span> <span class="s">"APPEARS_NEVER_USED && !PURGED"</span>
+    <span class="k">max:</span> <span class="s">CANDIDATE</span>
+
+<span class="h">weight_redistribution:</span> <span class="c"># when a signal is UNKNOWN</span>
+  <span class="k">policy:</span> <span class="s">proportional</span>
+  <span class="k">note:</span>   <span class="s">"score still computes from one fewer signal"</span></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq">
+        <div class="wrap">
+          <span class="eyebrow">FAQ</span>
+          <h2>Honest answers.</h2>
+
+          <div class="faq-list">
+            <details class="faq-item">
+              <summary><h3>Is it safe to run on production?</h3></summary>
+              <p>
+                Yes. kafka-attic is read-only by construction. The binary uses
+                <code>franz-go</code> configured as an admin/consumer client only; the producer
+                client is statically excluded at compile time and a CI test asserts that no
+                producer-capable code path is reachable. Scans use bounded concurrency
+                (configurable) and back off on throttling. For multi-thousand-topic clusters, a
+                <code>--sample</code> mode lets you size impact first.
+              </p>
+            </details>
+
+            <details class="faq-item">
+              <summary><h3>Will kafka-attic delete topics for me?</h3></summary>
+              <p>
+                No. The cleanup script is a generated shell artifact you review and run by hand.
+                kafka-attic never executes a destructive command itself. The verdict is
+                <code>LIKELY_UNUSED</code>, never <code>SAFE_DELETE</code>. Topics with
+                <code>MISSING_SIGNAL</code>, <code>COMPACTED</code>, <code>REMOTE_STORAGE</code>,
+                or <code>UNKNOWN</code> evidence are excluded from the cleanup script. The script
+                ships with per-topic preflight <code>--describe</code> commands and a warning
+                banner — Kafka has no native dry-run for topic deletion.
+              </p>
+            </details>
+
+            <details class="faq-item">
+              <summary><h3>Does it work on Confluent Cloud / MSK Serverless?</h3></summary>
+              <p>
+                Yes, with degraded Tonnage. <code>DescribeLogDirs</code> is restricted on both, so
+                kafka-attic skips the Tonnage sub-signal and redistributes its weight. Confluent
+                Cloud topics on tiered storage or infinite retention also receive
+                <code>REMOTE_STORAGE</code>, capped at <code>INSPECT</code>. The four other
+                sub-signals collect normally.
+              </p>
+            </details>
+
+            <details class="faq-item">
+              <summary><h3>What Kafka permissions does it need?</h3></summary>
+              <p>
+                Read-only ACLs: <code>Describe</code> on <code>Cluster</code>,
+                <code>Topic</code>, and <code>Group</code>; <code>DescribeConfigs</code> on
+                <code>Topic</code>; <code>DescribeLogDirs</code> on <code>Cluster</code> (optional
+                — enables Tonnage). For Schema Registry, a read-only API key with
+                <code>Subject:Read</code>. For MSK IAM: <code>kafka:DescribeCluster</code>,
+                <code>kafka-cluster:DescribeTopic</code>, <code>kafka-cluster:DescribeGroup</code>,
+                <code>kafka-cluster:DescribeTopicDynamicConfiguration</code>,
+                <code>kafka-cluster:Connect</code>. The scan reports observed permissions so you
+                can audit access after the fact.
+              </p>
+            </details>
+
+            <details class="faq-item">
+              <summary><h3>How is the score calibrated?</h3></summary>
+              <p>
+                Defaults (Activity 0.30, Tenancy 0.20, Tonnage 0.10, Intent 0.15, Consumption 0.25)
+                come from an anonymized calibration dataset gathered during the design phase,
+                weighted toward signals reliably available on every conformant cluster. All
+                weights, thresholds, and the activity curve are overridable in
+                <code>kattic.yaml</code>. Every JSON snapshot pins the
+                <code>attic_spec_version</code> it was computed under, so historical snapshots
+                remain reproducible and comparable via <code>kattic diff</code>.
+              </p>
+            </details>
+
+            <details class="faq-item">
+              <summary><h3>What about seasonal topics that fire monthly?</h3></summary>
+              <p>
+                Seasonality detection is out of scope for v1.0. Two mitigations exist: (1) the
+                verdict is conservative — Consumption goes to 0 the moment records exist, so
+                topics with current data are capped well below <code>LIKELY_UNUSED</code>; and (2)
+                the optional history database (<code>history.enabled: true</code>) accumulates
+                past scans so the v1.1 seasonality detector can pick them up. Until then, add
+                monthly/quarterly producers to <code>exclude_patterns</code> with
+                <code>effect: mark_protected</code>.
+              </p>
+            </details>
+
+            <details class="faq-item">
+              <summary><h3>Why is the methodology spec under a different license than the code?</h3></summary>
+              <p>
+                The code is Apache 2.0; the methodology spec
+                (<code>docs/attic-score-spec-*.md</code>) is CC BY 4.0. The spec is a piece of
+                documentation meant to be cited, forked, and re-implemented by other Kafka tooling
+                — CC BY 4.0 is the standard license for that kind of artifact. The dual licensing
+                is intentional and reflects how DORA, SPACE, and similar measurement frameworks
+                are published.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="install" id="install">
+        <div class="wrap">
+          <span class="eyebrow">Install</span>
+          <h2>One command. Any platform.</h2>
+          <p class="lede">
+            Single static binary. No JVM, no librdkafka, no broker-side install. Pick your package
+            manager.
+          </p>
+
+          <div class="install-grid">
+            <div class="install-card">
+              <h3>Homebrew <span class="tag">macOS · Linux</span></h3>
+              <pre><span class="k">brew</span> tap sderosiaux/kafka-attic <span class="s">https://github.com/sderosiaux/kafka-attic</span>
+<span class="k">brew</span> install kafka-attic</pre>
+              <p>Refreshed on every tagged release. Includes shell completion for bash, zsh, fish.</p>
+            </div>
+
+            <div class="install-card">
+              <h3>Scoop <span class="tag">Windows</span></h3>
+              <pre><span class="k">scoop</span> bucket add kafka-attic <span class="s">https://github.com/sderosiaux/kafka-attic</span>
+<span class="k">scoop</span> install kafka-attic</pre>
+              <p>amd64 and arm64. PowerShell completion ships in the manifest.</p>
+            </div>
+
+            <div class="install-card">
+              <h3>Docker <span class="tag">any</span></h3>
+              <pre><span class="k">docker</span> run --rm -v <span class="s">"$PWD:/work"</span> \
+  ghcr.io/sderosiaux/kafka-attic:latest \
+  scan --cluster /work/kattic.yaml</pre>
+              <p>Multi-arch (amd64, arm64). Non-root, distroless base.</p>
+            </div>
+
+            <div class="install-card">
+              <h3>curl one-liner <span class="tag">macOS · Linux</span></h3>
+              <pre><span class="k">curl</span> -fsSL <span class="s">https://github.com/sderosiaux/kafka-attic/releases/latest/download/install.sh</span> \
+  | sh</pre>
+              <p>SHA-256 checksum + SLSA provenance verified against the release artifact.</p>
+            </div>
+
+            <div class="install-card">
+              <h3>go install <span class="tag">Go 1.22+</span></h3>
+              <pre><span class="k">go</span> install <span class="s">github.com/sderosiaux/kafka-attic/cmd/kattic@latest</span></pre>
+              <p>Build from source. Pure Go, no CGO, no broker-side plugin.</p>
+            </div>
+
+            <div class="install-card">
+              <h3>Pre-built binaries <span class="tag">all platforms</span></h3>
+              <pre><span class="c"># Linux / macOS / Windows · amd64 / arm64</span>
+<span class="k">curl</span> -LO <span class="s">https://github.com/sderosiaux/kafka-attic/releases</span></pre>
+              <p>Every archive ships a SHA-256 checksum and SLSA-style provenance.</p>
+            </div>
+          </div>
+
+          <div class="install-next">
+            <h3>What's next: scan your first cluster</h3>
+            <p>
+              A minimal <code>kattic.yaml</code> needs a bootstrap and an auth block. Secrets come
+              from environment variables — the file is safe to commit.
+            </p>
+            <pre><span class="h">cluster:</span>
+  <span class="k">name:</span> prod
+  <span class="k">bootstrap:</span> broker-1.kafka.acme.com:<span class="s">9092</span>
+  <span class="k">auth:</span>
+    <span class="k">type:</span> scram
+    <span class="k">mechanism:</span> SCRAM-SHA-512
+    <span class="k">username_env:</span> KAFKA_USER
+    <span class="k">password_env:</span> KAFKA_PASS</pre>
+            <pre style="margin-top: 14px;"><span class="c"># run the scan</span>
+<span class="k">kattic</span> scan --cluster ./kattic.yaml</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="conduktor-band" id="conduktor">
+        <div class="wrap">
+          <span class="eyebrow">From one-shot to continuous</span>
+          <h2>When the question changes, the runtime changes.</h2>
+          <p>
+            kafka-attic is one-shot by design. It produces a snapshot you can run from a laptop, a
+            CI job, or a cron container. It does not watch a cluster, it does not page an owner, it
+            does not coordinate cleanups across teams, and it does not keep an audit trail of who
+            deleted what. Those are continuous-monitoring concerns and they require a different
+            runtime — one with a persistent process, RBAC integration, and durable state.
+          </p>
+          <p>
+            When a team's question moves from <em>"what does our attic look like?"</em> to
+            <em>"alert me when a topic becomes stale, ping the owner, and require an approval
+            before deletion"</em>, that is the work Conduktor Console Insights does. Same evidence
+            model, continuous evaluation, RBAC-aware owner routing, approval workflows,
+            multi-cluster aggregation, cost attribution. kafka-attic stays OSS and stays one-shot.
+            Console picks up where the one-shot ends.
+          </p>
+          <a
+            class="btn btn-primary btn-lg"
+            href="https://conduktor.io/products/console?utm_source=kafka-attic&utm_medium=oss&utm_campaign=landing&utm_content=evolution"
+            target="_blank"
+            rel="noopener"
+          >
+            See Conduktor Console
+          </a>
+          <p class="note">Continuous monitoring. Approval workflows. Multi-cluster.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <div class="foot-grid">
+          <div class="foot-brand">
+            <a class="brand" href="#top">
+              <span class="brand-icon" aria-hidden="true">k</span>
+              <span class="brand-text">
+                <span class="name">kafka-attic</span>
+                <span class="by">by Conduktor</span>
+              </span>
+            </a>
+            <p>
+              Read-only Kafka topic governance CLI. Score, rank, and reclaim — with a published
+              methodology you can defend in a review meeting.
+            </p>
+          </div>
+          <div class="foot-col">
+            <h4>Project</h4>
+            <ul>
+              <li><a href="https://github.com/sderosiaux/kafka-attic" target="_blank" rel="noopener">GitHub</a></li>
+              <li><a href="https://github.com/sderosiaux/kafka-attic/releases" target="_blank" rel="noopener">Releases</a></li>
+              <li><a href="https://github.com/sderosiaux/kafka-attic/blob/main/SPEC.md" target="_blank" rel="noopener">SPEC.md</a></li>
+              <li><a href="https://github.com/sderosiaux/kafka-attic/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a></li>
+            </ul>
+          </div>
+          <div class="foot-col">
+            <h4>Methodology</h4>
+            <ul>
+              <li><a href="https://github.com/sderosiaux/kafka-attic/blob/main/docs/attic-score-spec-v1.0.md" target="_blank" rel="noopener">ATTIC Score spec</a></li>
+              <li><a href="https://github.com/sderosiaux/kafka-attic/tree/main/docs/vs" target="_blank" rel="noopener">vs other tools</a></li>
+              <li><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></li>
+            </ul>
+          </div>
+          <div class="foot-col">
+            <h4>Community</h4>
+            <ul>
+              <li><a href="https://github.com/sderosiaux/kafka-attic/issues" target="_blank" rel="noopener">Issues</a></li>
+              <li><a href="https://github.com/sderosiaux/kafka-attic/discussions" target="_blank" rel="noopener">Discussions</a></li>
+              <li><a href="https://conduktor.io?utm_source=kafka-attic&utm_medium=oss&utm_campaign=landing&utm_content=footer" target="_blank" rel="noopener">conduktor.io</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="foot-bottom">
+          <div>© 2026 Conduktor SAS. Apache License 2.0.</div>
+          <div class="tagline">Built by Conduktor. The Kafka authority.</div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Sticky nav border on scroll
+      const nav = document.getElementById("nav");
+      const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 4);
+      document.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+
+      // GitHub star count
+      fetch("https://api.github.com/repos/sderosiaux/kafka-attic")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!d || d.stargazers_count == null) return;
+          const n = d.stargazers_count;
+          const fmt = n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(n);
+          const el = document.getElementById("gh-stars");
+          if (el) el.textContent = fmt;
+        })
+        .catch(() => {});
+
+      // Reveal-on-scroll
+      const sections = document.querySelectorAll("section, .reveal");
+      sections.forEach((s) => s.classList.add("reveal"));
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add("reveal-visible");
+              io.unobserve(e.target);
+            }
+          });
+        },
+        { threshold: 0.08 },
+      );
+      document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+    </script>
+  </body>
+</html>

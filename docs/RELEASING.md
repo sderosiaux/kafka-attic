@@ -28,12 +28,13 @@ The release workflow needs the following secrets configured at
 | Secret | Source | Scope | Required for |
 |---|---|---|---|
 | `GITHUB_TOKEN` | Auto-provided by GitHub Actions | n/a | Creating the release, pushing to GHCR |
-| `HOMEBREW_TAP_GITHUB_TOKEN` | Personal Access Token (classic) | `repo` | Pushing formula/manifest back to this repo's `main` branch (GitHub Actions default `GITHUB_TOKEN` cannot push directly to the branch under most branch-protection setups) |
 
-`HOMEBREW_TAP_GITHUB_TOKEN` cannot be set from the `gh` CLI for security
-reasons — add it via the GitHub web UI. Use a long-lived classic PAT (fine
-grained PATs do not currently support cross-repo writes the way GoReleaser
-needs them). Scope it to **only** this repo.
+No additional secrets are required: because the Homebrew formula and Scoop
+manifest are committed back into this same repository (`Formula/` and `Scoop/`
+directories), the workflow's auto-provided `GITHUB_TOKEN` (granted
+`contents: write`) is sufficient. If branch protection is later added to
+`main`, you may need a classic PAT scoped to this repo and exposed as
+`HOMEBREW_TAP_GITHUB_TOKEN` to bypass it.
 
 ### Permissions
 

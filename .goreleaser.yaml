@@ -65,7 +65,7 @@ brews:
       owner: sderosiaux
       name: kafka-attic
       branch: main
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      token: "{{ .Env.GITHUB_TOKEN }}"
     directory: Formula
     homepage: https://github.com/sderosiaux/kafka-attic
     description: "Read-only scanner that quantifies unused Kafka topics with the ATTIC Score"
@@ -85,7 +85,7 @@ scoops:
       owner: sderosiaux
       name: kafka-attic
       branch: main
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      token: "{{ .Env.GITHUB_TOKEN }}"
     directory: Scoop
     homepage: https://github.com/sderosiaux/kafka-attic
     description: "Read-only scanner that quantifies unused Kafka topics with the ATTIC Score"

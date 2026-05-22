@@ -1,0 +1,12 @@
+{
+  "name": "kafka-attic",
+  "short_name": "kafka-attic",
+  "description": "Read-only Go CLI that scores stale, empty, oversized, abandoned Kafka topics in one scan.",
+  "start_url": "/kafka-attic/",
+  "scope": "/kafka-attic/",
+  "display": "minimal-ui",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "lang": "en",
+  "icons": []
+}
