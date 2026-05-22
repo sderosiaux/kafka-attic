@@ -1,0 +1,11 @@
+7 topics · 1 likely unused · 13.2 GB reclaimable
+
+TOPIC             LAST PRODUCED  STORAGE     SCORE  VERDICT        NOTES
+────────────────  ─────────────  ──────────  ─────  ─────────────  ──────────────────────────────────────────────────
+legacy-events     287d ago       13.2 GB     72     Candidate      No schema reference found
+audit-trail       3d ago         890 MB      12     Active         
+empty-topic       never seen     0 B         88     Candidate      Appears never used (low evidence)
+old-events        180d ago       0 B         95     Likely unused  Records purged by retention
+oversized-events  2h ago         412 GB      55     Inspect        Over-provisioned partitions, Partition load uneven
+compacted-state   1d ago         5.2 GB est  42     Inspect        Compacted topic; manual review required
+remote-archive    90d ago        ? GB        —      —              Tiered storage; storage unknown

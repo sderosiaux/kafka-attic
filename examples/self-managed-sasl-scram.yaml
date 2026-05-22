@@ -1,0 +1,115 @@
+# kattic.yaml — self-managed Kafka cluster with SASL/SCRAM-SHA-512.
+#
+# Use this profile when you run your own brokers (bare metal, EC2, on-prem)
+# and authenticate clients through SASL/SCRAM credentials provisioned in the
+# broker's JAAS file or ZooKeeper-managed user store.
+#
+# Read-only scan only — kafka-attic never writes to your cluster.
+
+cluster:
+  name: prod-self-managed
+  # Comma-separated bootstrap list is fine; franz-go handles it.
+  bootstrap: kafka-1.acme.internal:9094,kafka-2.acme.internal:9094,kafka-3.acme.internal:9094
+  auth:
+    type: scram                  # sasl_plain | scram | mtls | iam | oauth
+    mechanism: SCRAM-SHA-512     # SCRAM-SHA-256 | SCRAM-SHA-512
+    username_env: KAFKA_USERNAME # env var holding the SCRAM principal
+    password_env: KAFKA_PASSWORD # env var holding the SCRAM password
+    # TLS is mandatory for SASL_SSL — point at the CA your brokers present.
+    tls:
+      enabled: true
+      ca_file: /etc/ssl/certs/acme-internal-ca.pem
+      # insecure_skip_verify: true   # only for local dev — never in prod
+      # server_name: kafka.acme.internal  # override SNI if needed
+
+# Optional — Confluent-compatible Schema Registry (open-source or Confluent OSS).
+# v1 supports Confluent only; Glue / Apicurio land in v1.1.
+schema_registry:
+  provider: confluent
+  url: https://schema-registry.acme.internal:8081
+  auth:
+    type: basic                  # basic | bearer | none
+    username_env: SR_USER
+    password_env: SR_PASS
+  subject_strategy: topic_name   # topic_name | topic_record | record_name (record_name → Intent skipped)
+  on_failure: warn               # warn → skip Intent sub-signal | fail → abort the scan
+
+# Owner resolution. Precedence is first-non-null wins.
+# Here we use a simple regex file; see examples/owners.yaml.
+owners:
+  precedence: [file]
+  file:
+    path: ./owners.yaml
+
+# ATTIC Score™ — every value below matches the v1.0.0 defaults.
+# Override only if you understand the §4 methodology in SPEC.md.
+attic_score:
+  spec_version: 1.0.0
+  weights:
+    activity:    0.30
+    tenancy:     0.20
+    tonnage:     0.10
+    intent:      0.15
+    consumption: 0.25
+  thresholds:
+    likely_unused: 90            # ≥ 90 → LIKELY_UNUSED
+    candidate:     70            # 70–89 → CANDIDATE
+    inspect:       40            # 40–69 → INSPECT; below → ACTIVE
+  activity_curve:                # piecewise linear (days → sub-score)
+    - { days: 0,   score: 0   }
+    - { days: 30,  score: 25  }
+    - { days: 90,  score: 60  }
+    - { days: 180, score: 80  }
+    - { days: 365, score: 100 }
+
+# OVERSIZED flag — requires a metrics source to compare actual throughput
+# against partition count. Without metrics this flag is never emitted.
+oversized:
+  max_partitions_for_throughput: 12
+  low_traffic_msgs_per_sec: 1
+  requires_metrics: true
+
+# SKEWED flag — largest partition vs. cluster average.
+skew:
+  max_ratio_to_average: 4
+
+# Local history DB (SQLite). Used only for trend charts and `kattic diff`.
+# The current scan never depends on history for scoring.
+history:
+  enabled: true
+  path: ~/.kattic/history.db
+  retention_days: 730
+
+# Exclusion patterns. Defaults below are always applied when defaults: true.
+#   ^__.*                 internal topics (offsets, txn state, ...)
+#   ^_schemas$            schema registry storage
+#   .*\.dlq$              DLQs
+#   .*-changelog$         Kafka Streams changelogs
+#   .*-repartition$       Kafka Streams repartition topics
+#   ^mm2-.*               MirrorMaker 2 internals
+#   .*\.replica$          replication targets
+exclude_patterns:
+  defaults: true
+  effect: omit_from_score        # omit_from_score | mark_protected
+  additional:
+    - '^internal-.*'
+
+protected_cleanup_policies:
+  - compact                      # never include compacted topics in cleanup script
+
+# Telemetry is opt-in. First-run prompt may flip enabled: true.
+# To opt in non-interactively, set enabled: true here.
+telemetry:
+  enabled: false
+  endpoint: https://telemetry.conduktor.io/attic
+  include_anonymous_run_uuid: true
+
+report:
+  format: html
+  output: ./attic-report.html
+  include_cleanup_script: true
+  redact_topic_names: none       # none | hash (SHA-256 in JSON/CSV/shared artifacts)
+  utm:
+    source: kafka-attic
+    medium: oss
+    campaign: report

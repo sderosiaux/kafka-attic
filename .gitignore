@@ -1,0 +1,40 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries and coverage
+*.test
+*.out
+coverage.html
+coverage.txt
+
+# Output of `go build` / `go install`
+/bin
+/dist
+
+# Generated reports
+attic-report.html
+
+# Local kattic state
+/.kattic
+~/.kattic
+
+# Dependency directories (when vendored)
+vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# IDEs and editors
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS junk
+.DS_Store
+Thumbs.db

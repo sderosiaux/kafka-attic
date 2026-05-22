@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0.0",
+  "attic_spec_version": "1.0.0",
+  "generated_at": "2026-05-21T10:14:00Z",
+  "kafka_attic_version": "1.0.0",
+  "cluster": {
+    "name": "prod-cc-eu-west-1",
+    "bootstrap": "pkc-abc12.eu-west-1.aws.confluent.cloud:9092",
+    "detected_type": "confluent_cloud",
+    "kafka_version_reported": "ccloud"
+  },
+  "scan": {
+    "topic_count_scanned": 5,
+    "topic_count_excluded_by_pattern": 24,
+    "duration_ms": 9120,
+    "permissions_observed": {
+      "describe_cluster": true,
+      "describe_topics": true,
+      "describe_configs": true,
+      "describe_groups": true,
+      "describe_log_dirs": false,
+      "schema_registry_read": true
+    },
+    "missing_signals_global": ["tonnage"],
+    "config_snapshot": {
+      "attic_weights": {
+        "activity": 0.30,
+        "tenancy": 0.20,
+        "tonnage": 0.10,
+        "intent": 0.15,
+        "consumption": 0.25
+      },
+      "thresholds": {
+        "likely_unused": 90,
+        "candidate": 70,
+        "inspect": 40
+      },
+      "activity_curve": [
+        { "days": 0,   "score": 0   },
+        { "days": 30,  "score": 25  },
+        { "days": 90,  "score": 60  },
+        { "days": 180, "score": 80  },
+        { "days": 365, "score": 100 }
+      ]
+    }
+  },
+  "topics": [
+    {
+      "name": "cc-orders-active",
+      "name_redacted": null,
+      "partitions": 6,
+      "replication_factor": 3,
+      "cleanup_policy": "delete",
+      "retention_ms": 604800000,
+      "remote_storage_enabled": false,
+      "message_timestamp_type": "CreateTime",
+      "last_produce_ts": "2026-05-21T10:13:55Z",
+      "earliest_offset_sum": 1842910,
+      "latest_offset_sum": 421842910,
+      "storage": {
+        "bytes": null,
+        "source": "unknown",
+        "evidence": "UNKNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0, "earliest_offset": 307152, "latest_offset": 70307152, "size_bytes": null, "leader": 1 },
+        { "partition": 1, "earliest_offset": 307152, "latest_offset": 70307152, "size_bytes": null, "leader": 2 }
+      ],
+      "consumer_groups": [
+        { "group_id": "cc-orders-billing", "state": "Stable", "member_count": 4, "committed_offset_sum": 421842500, "lag_sum": 410 }
+      ],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": ["cc-orders-active-key", "cc-orders-active-value"],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score":   0, "evidence": "ESTIMATED", "input": { "days_since_last_produce": 0, "timestamp_type": "CreateTime" } },
+          "tenancy":     { "score":   0, "evidence": "KNOWN",     "input": { "stable_group_with_members": true } },
+          "tonnage":     { "score":   0, "evidence": "UNKNOWN",   "input": { "reason": "describe_log_dirs_restricted" }, "skipped": true },
+          "intent":      { "score":   0, "evidence": "KNOWN",     "input": { "orphan": false } },
+          "consumption": { "score":   0, "evidence": "KNOWN",     "input": { "earliest_eq_latest": false } }
+        },
+        "raw_score": 0.0,
+        "verdict": "ACTIVE",
+        "verdict_capped_by": null
+      },
+      "flags": [],
+      "owner": {
+        "value": "orders-team@acme.com",
+        "source": "json"
+      },
+      "signals_missing": []
+    },
+    {
+      "name": "cc-legacy-events",
+      "name_redacted": null,
+      "partitions": 6,
+      "replication_factor": 3,
+      "cleanup_policy": "delete",
+      "retention_ms": 604800000,
+      "remote_storage_enabled": false,
+      "message_timestamp_type": "CreateTime",
+      "last_produce_ts": "2025-08-15T11:00:00Z",
+      "earliest_offset_sum": 145203,
+      "latest_offset_sum": 12847291,
+      "storage": {
+        "bytes": null,
+        "source": "unknown",
+        "evidence": "UNKNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0, "earliest_offset": 24200, "latest_offset": 2141215, "size_bytes": null, "leader": 1 },
+        { "partition": 1, "earliest_offset": 24216, "latest_offset": 2141050, "size_bytes": null, "leader": 2 }
+      ],
+      "consumer_groups": [
+        { "group_id": "cc-legacy-consumer", "state": "Dead", "member_count": 0, "committed_offset_sum": 12847291, "lag_sum": 0 }
+      ],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": [],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score":  92, "evidence": "ESTIMATED", "input": { "days_since_last_produce": 280, "timestamp_type": "CreateTime" } },
+          "tenancy":     { "score": 100, "evidence": "KNOWN",     "input": { "all_groups_dead": true } },
+          "tonnage":     { "score":   0, "evidence": "UNKNOWN",   "input": { "reason": "describe_log_dirs_restricted" }, "skipped": true },
+          "intent":      { "score": 100, "evidence": "KNOWN",     "input": { "orphan": true } },
+          "consumption": { "score":   0, "evidence": "KNOWN",     "input": { "earliest_eq_latest": false } }
+        },
+        "raw_score": 65.1,
+        "verdict": "CANDIDATE",
+        "verdict_capped_by": "ESTIMATED_EVIDENCE"
+      },
+      "flags": ["ORPHAN_SCHEMA"],
+      "owner": {
+        "value": "archive-team@acme.com",
+        "source": "json"
+      },
+      "signals_missing": []
+    },
+    {
+      "name": "cc-empty-topic",
+      "name_redacted": null,
+      "partitions": 3,
+      "replication_factor": 3,
+      "cleanup_policy": "delete",
+      "retention_ms": 604800000,
+      "remote_storage_enabled": false,
+      "message_timestamp_type": "CreateTime",
+      "last_produce_ts": null,
+      "earliest_offset_sum": 0,
+      "latest_offset_sum": 0,
+      "storage": {
+        "bytes": null,
+        "source": "unknown",
+        "evidence": "UNKNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0, "earliest_offset": 0, "latest_offset": 0, "size_bytes": null, "leader": 1 },
+        { "partition": 1, "earliest_offset": 0, "latest_offset": 0, "size_bytes": null, "leader": 2 },
+        { "partition": 2, "earliest_offset": 0, "latest_offset": 0, "size_bytes": null, "leader": 3 }
+      ],
+      "consumer_groups": [],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": [],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score": 100, "evidence": "ESTIMATED", "input": { "days_since_last_produce": null, "never_produced": true, "timestamp_type": "CreateTime" } },
+          "tenancy":     { "score": 100, "evidence": "KNOWN",     "input": { "no_group_consumes_topic": true } },
+          "tonnage":     { "score":   0, "evidence": "UNKNOWN",   "input": { "reason": "describe_log_dirs_restricted" }, "skipped": true },
+          "intent":      { "score": 100, "evidence": "KNOWN",     "input": { "orphan": true } },
+          "consumption": { "score": 100, "evidence": "KNOWN",     "input": { "earliest_eq_latest": true, "earliest": 0 } }
+        },
+        "raw_score": 100.0,
+        "verdict": "CANDIDATE",
+        "verdict_capped_by": "ESTIMATED_EVIDENCE"
+      },
+      "flags": ["APPEARS_NEVER_USED", "ORPHAN_SCHEMA"],
+      "owner": null,
+      "signals_missing": []
+    },
+    {
+      "name": "cc-payments-flow",
+      "name_redacted": null,
+      "partitions": 12,
+      "replication_factor": 3,
+      "cleanup_policy": "delete",
+      "retention_ms": 1209600000,
+      "remote_storage_enabled": false,
+      "message_timestamp_type": "CreateTime",
+      "last_produce_ts": "2026-05-21T10:08:00Z",
+      "earliest_offset_sum": 980000,
+      "latest_offset_sum": 88421042,
+      "storage": {
+        "bytes": null,
+        "source": "unknown",
+        "evidence": "UNKNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0, "earliest_offset": 81666, "latest_offset": 7368420, "size_bytes": null, "leader": 1 },
+        { "partition": 1, "earliest_offset": 81667, "latest_offset": 7368420, "size_bytes": null, "leader": 2 }
+      ],
+      "consumer_groups": [
+        { "group_id": "cc-payments-clearing", "state": "Stable", "member_count": 6, "committed_offset_sum": 88420800, "lag_sum": 242 }
+      ],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": ["cc-payments-flow-key", "cc-payments-flow-value"],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score":   0, "evidence": "ESTIMATED", "input": { "days_since_last_produce": 0, "timestamp_type": "CreateTime" } },
+          "tenancy":     { "score":   0, "evidence": "KNOWN",     "input": { "stable_group_with_members": true } },
+          "tonnage":     { "score":   0, "evidence": "UNKNOWN",   "input": { "reason": "describe_log_dirs_restricted" }, "skipped": true },
+          "intent":      { "score":   0, "evidence": "KNOWN",     "input": { "orphan": false } },
+          "consumption": { "score":   0, "evidence": "KNOWN",     "input": { "earliest_eq_latest": false } }
+        },
+        "raw_score": 0.0,
+        "verdict": "ACTIVE",
+        "verdict_capped_by": null
+      },
+      "flags": [],
+      "owner": {
+        "value": "payments-team@acme.com",
+        "source": "json"
+      },
+      "signals_missing": []
+    },
+    {
+      "name": "cc-tiered-archive",
+      "name_redacted": null,
+      "partitions": 6,
+      "replication_factor": 3,
+      "cleanup_policy": "delete",
+      "retention_ms": -1,
+      "remote_storage_enabled": true,
+      "message_timestamp_type": "CreateTime",
+      "last_produce_ts": "2026-02-21T00:00:00Z",
+      "earliest_offset_sum": 1500000,
+      "latest_offset_sum": 22481000,
+      "storage": {
+        "bytes": null,
+        "source": "unknown",
+        "evidence": "UNKNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0, "earliest_offset": 250000, "latest_offset": 3746833, "size_bytes": null, "leader": 1 },
+        { "partition": 1, "earliest_offset": 250000, "latest_offset": 3746833, "size_bytes": null, "leader": 2 }
+      ],
+      "consumer_groups": [
+        { "group_id": "cc-archive-reader", "state": "Empty", "member_count": 0, "committed_offset_sum": 22481000, "lag_sum": 0 }
+      ],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": ["cc-tiered-archive-value"],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score":  82, "evidence": "ESTIMATED", "input": { "days_since_last_produce": 89, "timestamp_type": "CreateTime" } },
+          "tenancy":     { "score":  80, "evidence": "KNOWN",     "input": { "all_groups_empty_caught_up": true } },
+          "tonnage":     { "score":   0, "evidence": "UNKNOWN",   "input": { "reason": "describe_log_dirs_restricted" }, "skipped": true },
+          "intent":      { "score":   0, "evidence": "KNOWN",     "input": { "orphan": false } },
+          "consumption": { "score":   0, "evidence": "KNOWN",     "input": { "earliest_eq_latest": false } }
+        },
+        "raw_score": 45.1,
+        "verdict": "INSPECT",
+        "verdict_capped_by": "REMOTE_STORAGE"
+      },
+      "flags": ["REMOTE_STORAGE"],
+      "owner": {
+        "value": "data-lake-team@acme.com",
+        "source": "file"
+      },
+      "signals_missing": []
+    }
+  ],
+  "telemetry": {
+    "anonymous_run_uuid": "8a2c4f10-7e1d-4b21-a3c2-bd0451e7c8f1",
+    "shared_summary_url": null
+  }
+}

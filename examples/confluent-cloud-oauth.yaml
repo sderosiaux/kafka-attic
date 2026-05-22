@@ -1,0 +1,101 @@
+# kattic.yaml — Confluent Cloud cluster authenticating via OAuth (OIDC).
+#
+# OAuth is preferred over static API keys for workloads with an IdP
+# (Okta, Auth0, Azure AD, etc.). kafka-attic fetches an access token from
+# token_endpoint using client-credentials, then presents it as
+# SASL_OAUTHBEARER to the broker.
+#
+# NOTE on Tonnage: Confluent Cloud restricts DescribeLogDirs. The Tonnage
+# sub-signal will be UNKNOWN for every topic — it is skipped and its weight
+# is redistributed across A/T/I/C per SPEC §4.2. This is expected and not a
+# misconfiguration.
+
+cluster:
+  name: prod-cc-eu-west-1
+  bootstrap: pkc-abc12.eu-west-1.aws.confluent.cloud:9092
+  auth:
+    type: oauth
+    token_endpoint: https://acme.okta.com/oauth2/default/v1/token
+    client_id_env:     CC_OAUTH_CLIENT_ID
+    client_secret_env: CC_OAUTH_CLIENT_SECRET
+    scope: kafka:read   # Confluent Cloud OAuth identity-pool scope
+    tls:
+      enabled: true
+
+# Confluent Cloud Schema Registry — different endpoint, different creds
+# (SR has its own API key/secret pair, distinct from Kafka cluster keys).
+schema_registry:
+  provider: confluent
+  url: https://psrc-xyz.eu-west-1.aws.confluent.cloud
+  auth:
+    type: basic
+    username_env: CC_SR_API_KEY
+    password_env: CC_SR_API_SECRET
+  subject_strategy: topic_name   # topic_name | topic_record | record_name
+  on_failure: warn
+
+# Owner resolution. JSON HTTP lookup first (e.g. an internal service-catalog
+# API exposing ownership); fall back to a regex file for unknowns.
+owners:
+  precedence: [json, file]
+  json:
+    url: 'https://catalog.acme.com/api/owners?topic={topic}'
+    headers:
+      Authorization: 'Bearer ${CATALOG_TOKEN}'
+    extract: '.team'             # jq-style extraction from the JSON response
+  file:
+    path: ./owners.yaml
+
+attic_score:
+  spec_version: 1.0.0
+  weights:
+    activity:    0.30
+    tenancy:     0.20
+    tonnage:     0.10
+    intent:      0.15
+    consumption: 0.25
+  thresholds:
+    likely_unused: 90
+    candidate:     70
+    inspect:       40
+  activity_curve:
+    - { days: 0,   score: 0   }
+    - { days: 30,  score: 25  }
+    - { days: 90,  score: 60  }
+    - { days: 180, score: 80  }
+    - { days: 365, score: 100 }
+
+oversized:
+  max_partitions_for_throughput: 12
+  low_traffic_msgs_per_sec: 1
+  requires_metrics: true
+
+skew:
+  max_ratio_to_average: 4
+
+history:
+  enabled: true
+  path: ~/.kattic/history.db
+  retention_days: 730
+
+exclude_patterns:
+  defaults: true
+  effect: omit_from_score
+
+protected_cleanup_policies:
+  - compact
+
+telemetry:
+  enabled: false                 # opt-in; first-run prompt may flip to true
+  endpoint: https://telemetry.conduktor.io/attic
+  include_anonymous_run_uuid: true
+
+report:
+  format: html
+  output: ./attic-report.html
+  include_cleanup_script: true
+  redact_topic_names: none
+  utm:
+    source: kafka-attic
+    medium: oss
+    campaign: report

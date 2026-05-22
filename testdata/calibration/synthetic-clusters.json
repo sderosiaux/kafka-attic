@@ -1,0 +1,137 @@
+{
+  "notice": "SYNTHETIC DATA. Generated for ATTIC Score calibration. Not derived from any real customer cluster. Distributions are illustrative only.",
+  "attic_spec_version": "1.0.0",
+  "seed": 42,
+  "generator": "tools/gen-calibration",
+  "clusters": [
+    {
+      "id": "synthetic-small-01",
+      "size_bucket": "small",
+      "cluster_type": "self_managed",
+      "schema_registry": true,
+      "tonnage_default_evidence": "KNOWN",
+      "topic_count": 52,
+      "total_bytes": 450971566080,
+      "reclaimable_bytes": 80452252,
+      "verdicts": {
+        "ACTIVE": 28,
+        "CANDIDATE": 6,
+        "INSPECT": 13,
+        "LIKELY_UNUSED": 5
+      },
+      "score_histogram": {
+        "0-9": 12,
+        "10-19": 5,
+        "20-29": 7,
+        "30-39": 4,
+        "40-49": 2,
+        "50-59": 3,
+        "60-69": 8,
+        "70-79": 2,
+        "80-89": 4,
+        "90-100": 5
+      },
+      "flag_counts": {
+        "APPEARS_NEVER_USED": 3,
+        "COMPACTED": 5,
+        "ORPHAN_SCHEMA": 13,
+        "PURGED": 4,
+        "SKEWED": 7
+      },
+      "mean_score": 41.23,
+      "median_score": 34.44
+    },
+    {
+      "id": "synthetic-medium-01",
+      "size_bucket": "medium",
+      "cluster_type": "msk_provisioned",
+      "schema_registry": true,
+      "tonnage_default_evidence": "KNOWN",
+      "topic_count": 487,
+      "total_bytes": 7301444403200,
+      "reclaimable_bytes": 10031344166,
+      "verdicts": {
+        "ACTIVE": 231,
+        "CANDIDATE": 92,
+        "INSPECT": 99,
+        "LIKELY_UNUSED": 65
+      },
+      "score_histogram": {
+        "0-9": 52,
+        "10-19": 56,
+        "20-29": 64,
+        "30-39": 59,
+        "40-49": 43,
+        "50-59": 24,
+        "60-69": 32,
+        "70-79": 48,
+        "80-89": 44,
+        "90-100": 65
+      },
+      "flag_counts": {
+        "APPEARS_NEVER_USED": 28,
+        "COMPACTED": 55,
+        "ORPHAN_SCHEMA": 112,
+        "PURGED": 35,
+        "REMOTE_STORAGE": 11,
+        "SKEWED": 56
+      },
+      "mean_score": 48.44,
+      "median_score": 43.95
+    },
+    {
+      "id": "synthetic-large-01",
+      "size_bucket": "large",
+      "cluster_type": "confluent_cloud",
+      "schema_registry": true,
+      "tonnage_default_evidence": "UNKNOWN",
+      "topic_count": 5142,
+      "total_bytes": 88046829568000,
+      "reclaimable_bytes": 486556720015,
+      "verdicts": {
+        "ACTIVE": 1614,
+        "CANDIDATE": 1462,
+        "INSPECT": 787,
+        "LIKELY_UNUSED": 1279
+      },
+      "score_histogram": {
+        "0-9": 404,
+        "10-19": 425,
+        "20-29": 398,
+        "30-39": 387,
+        "40-49": 250,
+        "50-59": 260,
+        "60-69": 277,
+        "70-79": 726,
+        "80-89": 736,
+        "90-100": 1279
+      },
+      "flag_counts": {
+        "APPEARS_NEVER_USED": 426,
+        "COMPACTED": 714,
+        "MISSING_SIGNAL": 912,
+        "ORPHAN_SCHEMA": 1384,
+        "PURGED": 541,
+        "REMOTE_STORAGE": 1130,
+        "SKEWED": 683
+      },
+      "mean_score": 61.06,
+      "median_score": 72.33
+    }
+  ],
+  "aggregate_verdicts": {
+    "ACTIVE": 1873,
+    "CANDIDATE": 1560,
+    "INSPECT": 899,
+    "LIKELY_UNUSED": 1349
+  },
+  "aggregate_flag_counts": {
+    "APPEARS_NEVER_USED": 457,
+    "COMPACTED": 774,
+    "MISSING_SIGNAL": 912,
+    "ORPHAN_SCHEMA": 1509,
+    "PURGED": 580,
+    "REMOTE_STORAGE": 1141,
+    "SKEWED": 746
+  }
+}

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>kafka-attic report — {{.Cluster.Name}}</title>
+<style>{{.CSS}}</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="brand">kafka-attic</div>
+  <div class="meta">
+    <span>{{.Cluster.Name}}</span>
+    <span>·</span>
+    <span>{{.Cluster.DetectedType}}</span>
+    <span>·</span>
+    <span>{{.GeneratedAt}}</span>
+  </div>
+</header>
+
+<main>
+
+<section id="exec-summary" class="card">
+  <div class="hero">
+    <div class="hero-label">RECLAIMABLE</div>
+    <div class="hero-value">{{.ReclaimableTB}}</div>
+    <div class="hero-unit">TB</div>
+  </div>
+  <div class="summary-grid">
+    <div class="stat"><div class="stat-label">Topics scanned</div><div class="stat-value">{{.Counts.Total}}</div></div>
+    <div class="stat"><div class="stat-label">Likely unused</div><div class="stat-value">{{.Counts.LikelyUnused}}</div></div>
+    <div class="stat"><div class="stat-label">Candidate</div><div class="stat-value">{{.Counts.Candidate}}</div></div>
+    <div class="stat"><div class="stat-label">Inspect</div><div class="stat-value">{{.Counts.Inspect}}</div></div>
+    <div class="stat"><div class="stat-label">Active</div><div class="stat-value">{{.Counts.Active}}</div></div>
+  </div>
+</section>
+
+<section id="verdict-breakdown" class="card">
+  <h2>Verdict breakdown</h2>
+  <div class="pie-wrap">
+    <svg class="pie" viewBox="-110 -110 220 220" role="img" aria-label="Verdict breakdown pie chart">
+      {{range .PieSlices}}
+        <path d="{{.Path}}" fill="{{.Color}}" stroke="#ffffff" stroke-width="1.5">
+          <title>{{.Label}}: {{.Count}}</title>
+        </path>
+      {{end}}
+    </svg>
+    <ul class="legend">
+      {{range .PieSlices}}
+        <li><span class="swatch" style="background:{{.Color}}"></span>{{.Label}} <span class="muted">({{.Count}})</span></li>
+      {{end}}
+    </ul>
+  </div>
+</section>
+
+<section id="top-candidates" class="card">
+  <h2>Top candidates</h2>
+  <p class="muted">Click a column to sort. Click a row to expand the per-signal contribution.</p>
+  <table id="topics-table" class="topics">
+    <thead>
+      <tr>
+        <th data-sort="string">Topic</th>
+        <th data-sort="number">Last produced (days)</th>
+        <th data-sort="number">Storage (bytes)</th>
+        <th data-sort="number">Score</th>
+        <th data-sort="string">Verdict</th>
+        <th data-sort="string">Flags</th>
+      </tr>
+    </thead>
+    <tbody>
+    {{range .Rows}}
+      <tr class="topic-row" data-topic="{{.Name}}">
+        <td>{{.Name}}</td>
+        <td data-value="{{.DaysSince}}">{{.LastProducedLabel}}</td>
+        <td data-value="{{.StorageBytes}}">{{.StorageLabel}}</td>
+        <td data-value="{{.Score}}">{{.ScoreLabel}}</td>
+        <td>{{.VerdictLabel}}</td>
+        <td>{{.FlagsLabel}}</td>
+      </tr>
+      <tr class="topic-detail" id="detail-{{.SlugID}}" hidden>
+        <td colspan="6">
+          <div class="detail-body">
+            <h3>Per-signal contribution</h3>
+            <table class="subscores">
+              <thead><tr><th>Signal</th><th>Score</th><th>Evidence</th><th>Weight</th></tr></thead>
+              <tbody>
+              {{range .SubRows}}
+                <tr><td>{{.Name}}</td><td>{{.Score}}</td><td>{{.Evidence}}</td><td>{{.Weight}}</td></tr>
+              {{end}}
+              </tbody>
+            </table>
+            {{if .Owner}}<p class="muted">Owner: {{.Owner}}</p>{{end}}
+          </div>
+        </td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+</section>
+
+<section id="flag-highlights" class="card">
+  <h2>Flag highlights</h2>
+  {{range .FlagGroups}}
+    <details>
+      <summary>{{.Label}} <span class="muted">({{.Count}})</span></summary>
+      <ul>{{range .Topics}}<li>{{.}}</li>{{end}}</ul>
+    </details>
+  {{else}}
+    <p class="muted">No flagged topics in this scan.</p>
+  {{end}}
+</section>
+
+{{if .MissingSignalsNotice}}
+<section id="missing-signals" class="card notice">
+  <h2>Missing signals</h2>
+  <p>{{.MissingSignalsNotice}}</p>
+  {{if .MissingPermissions}}
+    <ul>{{range .MissingPermissions}}<li>{{.}}</li>{{end}}</ul>
+  {{end}}
+</section>
+{{end}}
+
+<section id="cleanup-script" class="card">
+  <h2>Cleanup script</h2>
+  <div class="banner danger">
+    Permanent data deletion. Read this section fully. Kafka has no native dry-run for topic deletion. Every command below will permanently destroy data.
+  </div>
+  <div class="inclusion-rules">
+    <h3>Inclusion rules</h3>
+    <ul>
+      <li>Verdict is LIKELY_UNUSED (score ≥ 90)</li>
+      <li>No MISSING_SIGNAL flag</li>
+      <li>No COMPACTED flag</li>
+      <li>No REMOTE_STORAGE flag (MSK Tiered Storage, Confluent Cloud infinite retention)</li>
+      <li>All five ATTIC sub-signals have evidence KNOWN or ESTIMATED (no UNKNOWN)</li>
+    </ul>
+  </div>
+  {{if .Cleanup.Included}}
+  <pre class="script"><code>#!/usr/bin/env bash
+# kafka-attic cleanup script
+# Cluster: {{.Cluster.Name}} ({{.Cluster.Bootstrap}})
+# Generated: {{.GeneratedAt}}
+set -euo pipefail
+BS="{{.Cluster.Bootstrap}}"
+{{range .Cleanup.Included}}
+# ---- {{.Name}} ----{{if .OwnerLine}}
+{{.OwnerLine}}{{end}}
+# preflight
+kafka-topics    --bootstrap-server $BS --describe --topic {{.Name}}
+kafka-consumer-groups --bootstrap-server $BS --describe --all-groups --topic {{.Name}}
+# delete
+kafka-topics    --bootstrap-server $BS --delete --topic {{.Name}}
+{{end}}</code></pre>
+  {{else}}
+  <p class="muted">No topics satisfy the inclusion rules in this scan.</p>
+  {{end}}
+  <p class="conduktor-moment">
+    Approval workflow, audit trail, and owner ping before any of these commands run — see
+    <a href="{{.CleanupCTAURL}}" rel="noopener">Conduktor Console Insights</a>.
+  </p>
+</section>
+
+<section id="omitted" class="card">
+  <h2>Topics omitted from cleanup script</h2>
+  {{if .Cleanup.Omitted}}
+  <table class="omitted">
+    <thead><tr><th>Topic</th><th>Reason</th></tr></thead>
+    <tbody>
+    {{range .Cleanup.Omitted}}
+      <tr><td>{{.Name}}</td><td>{{.Reason}}</td></tr>
+    {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="muted">All scored topics that meet the score threshold also satisfy the inclusion rules.</p>
+  {{end}}
+</section>
+
+</main>
+
+<footer>
+  <p>
+    kafka-attic {{.KafkaAtticVersion}} · ATTIC Score™ spec {{.AtticSpecVersion}} ·
+    Continuous monitoring with <a href="{{.FooterCTAURL}}" rel="noopener">Conduktor Console Insights</a>.
+  </p>
+</footer>
+
+<script>{{.JS}}</script>
+</body>
+</html>

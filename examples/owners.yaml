@@ -1,0 +1,31 @@
+# owners.yaml — first-match-wins regex → owner mapping.
+#
+# Loaded by the `file` owner source when referenced from kattic.yaml.
+# Invalid regex patterns log a warning and are skipped at load time.
+#
+# Order matters: more specific patterns must come before broader ones.
+
+- pattern: '^orders-.*'
+  owner:   orders-team@acme.com
+
+- pattern: '^audit-.*'
+  owner:   security-team@acme.com
+
+- pattern: '^legacy-.*'
+  owner:   archive-team@acme.com
+
+- pattern: '.*-streams-.*'
+  owner:   streams-team@acme.com
+
+- pattern: '^payments-.*'
+  owner:   payments-team@acme.com
+
+# Exact topic names (still expressed as regex with anchors).
+- pattern: '^cc-cloud-empty$'
+  owner:   platform-team@acme.com
+
+- pattern: '^remote-archive$'
+  owner:   data-lake-team@acme.com
+
+- pattern: '^oversized-events$'
+  owner:   ingestion-team@acme.com

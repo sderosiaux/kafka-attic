@@ -1,0 +1,499 @@
+{
+  "schema_version": "1.0.0",
+  "attic_spec_version": "1.0.0",
+  "generated_at": "2026-05-21T09:38:00Z",
+  "kafka_attic_version": "1.0.0",
+  "cluster": {
+    "name": "prod-msk",
+    "bootstrap": "b-1.msk.eu-west-1.amazonaws.com:9098",
+    "detected_type": "msk",
+    "kafka_version_reported": "3.7.0"
+  },
+  "scan": {
+    "topic_count_scanned": 9,
+    "topic_count_excluded_by_pattern": 142,
+    "duration_ms": 18420,
+    "permissions_observed": {
+      "describe_cluster": true,
+      "describe_topics": true,
+      "describe_configs": true,
+      "describe_groups": true,
+      "describe_log_dirs": true,
+      "schema_registry_read": true
+    },
+    "missing_signals_global": [],
+    "config_snapshot": {
+      "attic_weights": {
+        "activity": 0.30,
+        "tenancy": 0.20,
+        "tonnage": 0.10,
+        "intent": 0.15,
+        "consumption": 0.25
+      },
+      "thresholds": {
+        "likely_unused": 90,
+        "candidate": 70,
+        "inspect": 40
+      },
+      "activity_curve": [
+        { "days": 0,   "score": 0   },
+        { "days": 30,  "score": 25  },
+        { "days": 90,  "score": 60  },
+        { "days": 180, "score": 80  },
+        { "days": 365, "score": 100 }
+      ]
+    }
+  },
+  "topics": [
+    {
+      "name": "legacy-events",
+      "name_redacted": null,
+      "partitions": 6,
+      "replication_factor": 3,
+      "cleanup_policy": "delete",
+      "retention_ms": 604800000,
+      "remote_storage_enabled": false,
+      "message_timestamp_type": "LogAppendTime",
+      "last_produce_ts": "2025-08-08T11:02:14Z",
+      "earliest_offset_sum": 145203,
+      "latest_offset_sum": 12847291,
+      "storage": {
+        "bytes": 13207180800,
+        "source": "log_dir",
+        "evidence": "KNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0, "earliest_offset": 24180, "latest_offset": 2141215, "size_bytes": 2201196800, "leader": 1 },
+        { "partition": 1, "earliest_offset": 24216, "latest_offset": 2141050, "size_bytes": 2200582400, "leader": 2 },
+        { "partition": 2, "earliest_offset": 24201, "latest_offset": 2141403, "size_bytes": 2201410000, "leader": 3 },
+        { "partition": 3, "earliest_offset": 24195, "latest_offset": 2141102, "size_bytes": 2200912000, "leader": 1 },
+        { "partition": 4, "earliest_offset": 24199, "latest_offset": 2141312, "size_bytes": 2201304400, "leader": 2 },
+        { "partition": 5, "earliest_offset": 24212, "latest_offset": 2141209, "size_bytes": 2201775200, "leader": 3 }
+      ],
+      "consumer_groups": [
+        { "group_id": "ingest-v1", "state": "Dead", "member_count": 0, "committed_offset_sum": 12847291, "lag_sum": 0 }
+      ],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": [],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score":  92, "evidence": "KNOWN", "input": { "days_since_last_produce": 287 } },
+          "tenancy":     { "score": 100, "evidence": "KNOWN", "input": { "all_groups_dead": true } },
+          "tonnage":     { "score":  96, "evidence": "KNOWN", "input": { "percentile": 4 } },
+          "intent":      { "score": 100, "evidence": "KNOWN", "input": { "orphan": true } },
+          "consumption": { "score":   0, "evidence": "KNOWN", "input": { "earliest_eq_latest": false } }
+        },
+        "raw_score": 72.2,
+        "verdict": "CANDIDATE",
+        "verdict_capped_by": null
+      },
+      "flags": ["ORPHAN_SCHEMA"],
+      "owner": {
+        "value": "data-platform@acme.com",
+        "source": "backstage",
+        "entity_ref": "component:default/orders-svc"
+      },
+      "signals_missing": []
+    },
+    {
+      "name": "never-touched",
+      "name_redacted": null,
+      "partitions": 3,
+      "replication_factor": 3,
+      "cleanup_policy": "delete",
+      "retention_ms": 604800000,
+      "remote_storage_enabled": false,
+      "message_timestamp_type": "LogAppendTime",
+      "last_produce_ts": null,
+      "earliest_offset_sum": 0,
+      "latest_offset_sum": 0,
+      "storage": {
+        "bytes": 0,
+        "source": "log_dir",
+        "evidence": "KNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0, "earliest_offset": 0, "latest_offset": 0, "size_bytes": 0, "leader": 1 },
+        { "partition": 1, "earliest_offset": 0, "latest_offset": 0, "size_bytes": 0, "leader": 2 },
+        { "partition": 2, "earliest_offset": 0, "latest_offset": 0, "size_bytes": 0, "leader": 3 }
+      ],
+      "consumer_groups": [],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": [],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score": 100, "evidence": "KNOWN", "input": { "days_since_last_produce": null, "never_produced": true } },
+          "tenancy":     { "score": 100, "evidence": "KNOWN", "input": { "no_group_consumes_topic": true } },
+          "tonnage":     { "score": 100, "evidence": "KNOWN", "input": { "percentile": 0 } },
+          "intent":      { "score": 100, "evidence": "KNOWN", "input": { "orphan": true } },
+          "consumption": { "score": 100, "evidence": "KNOWN", "input": { "earliest_eq_latest": true, "earliest": 0 } }
+        },
+        "raw_score": 100.0,
+        "verdict": "CANDIDATE",
+        "verdict_capped_by": "APPEARS_NEVER_USED"
+      },
+      "flags": ["APPEARS_NEVER_USED", "ORPHAN_SCHEMA"],
+      "owner": null,
+      "signals_missing": []
+    },
+    {
+      "name": "old-purged",
+      "name_redacted": null,
+      "partitions": 4,
+      "replication_factor": 3,
+      "cleanup_policy": "delete",
+      "retention_ms": 86400000,
+      "remote_storage_enabled": false,
+      "message_timestamp_type": "LogAppendTime",
+      "last_produce_ts": "2025-11-22T08:14:00Z",
+      "earliest_offset_sum": 1842910,
+      "latest_offset_sum": 1842910,
+      "storage": {
+        "bytes": 0,
+        "source": "log_dir",
+        "evidence": "KNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0, "earliest_offset": 460701, "latest_offset": 460701, "size_bytes": 0, "leader": 1 },
+        { "partition": 1, "earliest_offset": 460724, "latest_offset": 460724, "size_bytes": 0, "leader": 2 },
+        { "partition": 2, "earliest_offset": 460742, "latest_offset": 460742, "size_bytes": 0, "leader": 3 },
+        { "partition": 3, "earliest_offset": 460743, "latest_offset": 460743, "size_bytes": 0, "leader": 1 }
+      ],
+      "consumer_groups": [
+        { "group_id": "old-purged-consumer", "state": "Dead", "member_count": 0, "committed_offset_sum": 1842910, "lag_sum": 0 }
+      ],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": ["old-purged-value"],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score":  88, "evidence": "KNOWN", "input": { "days_since_last_produce": 180 } },
+          "tenancy":     { "score": 100, "evidence": "KNOWN", "input": { "all_groups_dead": true } },
+          "tonnage":     { "score": 100, "evidence": "KNOWN", "input": { "percentile": 0 } },
+          "intent":      { "score":   0, "evidence": "KNOWN", "input": { "orphan": false } },
+          "consumption": { "score":  90, "evidence": "KNOWN", "input": { "earliest_eq_latest": true, "earliest": 460701 } }
+        },
+        "raw_score": 79.9,
+        "verdict": "CANDIDATE",
+        "verdict_capped_by": null
+      },
+      "flags": ["PURGED"],
+      "owner": {
+        "value": "archive-team@acme.com",
+        "source": "file"
+      },
+      "signals_missing": []
+    },
+    {
+      "name": "orders-active",
+      "name_redacted": null,
+      "partitions": 12,
+      "replication_factor": 3,
+      "cleanup_policy": "delete",
+      "retention_ms": 604800000,
+      "remote_storage_enabled": false,
+      "message_timestamp_type": "LogAppendTime",
+      "last_produce_ts": "2026-05-21T09:37:54Z",
+      "earliest_offset_sum": 8421112,
+      "latest_offset_sum": 421842910,
+      "storage": {
+        "bytes": 84218400000,
+        "source": "log_dir",
+        "evidence": "KNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0,  "earliest_offset": 701420, "latest_offset": 35153575, "size_bytes": 7018200000, "leader": 1 },
+        { "partition": 1,  "earliest_offset": 701801, "latest_offset": 35153601, "size_bytes": 7018300000, "leader": 2 }
+      ],
+      "consumer_groups": [
+        { "group_id": "orders-billing",  "state": "Stable", "member_count": 4, "committed_offset_sum": 421840201, "lag_sum": 2709 },
+        { "group_id": "orders-shipping", "state": "Stable", "member_count": 6, "committed_offset_sum": 421842500, "lag_sum": 410 }
+      ],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": ["orders-active-key", "orders-active-value"],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score":   0, "evidence": "KNOWN", "input": { "days_since_last_produce": 0 } },
+          "tenancy":     { "score":   0, "evidence": "KNOWN", "input": { "stable_group_with_members": true } },
+          "tonnage":     { "score":  12, "evidence": "KNOWN", "input": { "percentile": 88 } },
+          "intent":      { "score":   0, "evidence": "KNOWN", "input": { "orphan": false } },
+          "consumption": { "score":   0, "evidence": "KNOWN", "input": { "earliest_eq_latest": false } }
+        },
+        "raw_score": 1.2,
+        "verdict": "ACTIVE",
+        "verdict_capped_by": null
+      },
+      "flags": [],
+      "owner": {
+        "value": "orders-team@acme.com",
+        "source": "backstage",
+        "entity_ref": "component:default/orders-svc"
+      },
+      "signals_missing": []
+    },
+    {
+      "name": "audit-trail",
+      "name_redacted": null,
+      "partitions": 6,
+      "replication_factor": 3,
+      "cleanup_policy": "delete",
+      "retention_ms": 7776000000,
+      "remote_storage_enabled": false,
+      "message_timestamp_type": "LogAppendTime",
+      "last_produce_ts": "2026-05-18T15:42:00Z",
+      "earliest_offset_sum": 1102000,
+      "latest_offset_sum": 9842410,
+      "storage": {
+        "bytes": 9842100000,
+        "source": "log_dir",
+        "evidence": "KNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0, "earliest_offset": 183701, "latest_offset": 1640501, "size_bytes": 1640300000, "leader": 1 },
+        { "partition": 1, "earliest_offset": 183700, "latest_offset": 1640402, "size_bytes": 1640300000, "leader": 2 }
+      ],
+      "consumer_groups": [
+        { "group_id": "audit-archiver", "state": "Stable", "member_count": 2, "committed_offset_sum": 9842410, "lag_sum": 0 }
+      ],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": [],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score":   2, "evidence": "KNOWN", "input": { "days_since_last_produce": 3 } },
+          "tenancy":     { "score":   0, "evidence": "KNOWN", "input": { "stable_group_with_members": true } },
+          "tonnage":     { "score":  35, "evidence": "KNOWN", "input": { "percentile": 65 } },
+          "intent":      { "score": 100, "evidence": "KNOWN", "input": { "orphan": true } },
+          "consumption": { "score":   0, "evidence": "KNOWN", "input": { "earliest_eq_latest": false } }
+        },
+        "raw_score": 19.1,
+        "verdict": "ACTIVE",
+        "verdict_capped_by": null
+      },
+      "flags": ["ORPHAN_SCHEMA"],
+      "owner": {
+        "value": "security-team@acme.com",
+        "source": "file"
+      },
+      "signals_missing": []
+    },
+    {
+      "name": "compacted-state",
+      "name_redacted": null,
+      "partitions": 8,
+      "replication_factor": 3,
+      "cleanup_policy": "compact",
+      "retention_ms": -1,
+      "remote_storage_enabled": false,
+      "message_timestamp_type": "LogAppendTime",
+      "last_produce_ts": "2026-05-20T12:00:00Z",
+      "earliest_offset_sum": 0,
+      "latest_offset_sum": 482910,
+      "storage": {
+        "bytes": 5577648640,
+        "source": "log_dir",
+        "evidence": "KNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0, "earliest_offset": 0, "latest_offset": 60342, "size_bytes": 697206080, "leader": 1 },
+        { "partition": 1, "earliest_offset": 0, "latest_offset": 60411, "size_bytes": 697206080, "leader": 2 }
+      ],
+      "consumer_groups": [
+        { "group_id": "compacted-reader", "state": "Empty", "member_count": 0, "committed_offset_sum": 482910, "lag_sum": 0 }
+      ],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": ["compacted-state-value"],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score":   1, "evidence": "KNOWN", "input": { "days_since_last_produce": 1 } },
+          "tenancy":     { "score":  80, "evidence": "KNOWN", "input": { "all_groups_empty_caught_up": true } },
+          "tonnage":     { "score":  45, "evidence": "KNOWN", "input": { "percentile": 55 } },
+          "intent":      { "score":   0, "evidence": "KNOWN", "input": { "orphan": false } },
+          "consumption": { "score":   0, "evidence": "KNOWN", "input": { "earliest_eq_latest": false } }
+        },
+        "raw_score": 21.3,
+        "verdict": "INSPECT",
+        "verdict_capped_by": "COMPACTED"
+      },
+      "flags": ["COMPACTED"],
+      "owner": {
+        "value": "streams-team@acme.com",
+        "source": "file"
+      },
+      "signals_missing": []
+    },
+    {
+      "name": "remote-archive",
+      "name_redacted": null,
+      "partitions": 12,
+      "replication_factor": 3,
+      "cleanup_policy": "delete",
+      "retention_ms": -1,
+      "remote_storage_enabled": true,
+      "message_timestamp_type": "LogAppendTime",
+      "last_produce_ts": "2026-02-20T08:00:00Z",
+      "earliest_offset_sum": 1240000,
+      "latest_offset_sum": 18402910,
+      "storage": {
+        "bytes": null,
+        "source": "unknown",
+        "evidence": "UNKNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0, "earliest_offset": 103333, "latest_offset": 1533576, "size_bytes": null, "leader": 1 },
+        { "partition": 1, "earliest_offset": 103340, "latest_offset": 1533572, "size_bytes": null, "leader": 2 }
+      ],
+      "consumer_groups": [],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": ["remote-archive-value"],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score":  82, "evidence": "KNOWN", "input": { "days_since_last_produce": 90 } },
+          "tenancy":     { "score": 100, "evidence": "KNOWN", "input": { "no_group_consumes_topic": true } },
+          "tonnage":     { "score":   0, "evidence": "UNKNOWN", "input": { "reason": "describe_log_dirs_skipped" }, "skipped": true },
+          "intent":      { "score":   0, "evidence": "KNOWN", "input": { "orphan": false } },
+          "consumption": { "score":   0, "evidence": "KNOWN", "input": { "earliest_eq_latest": false } }
+        },
+        "raw_score": 51.5,
+        "verdict": "INSPECT",
+        "verdict_capped_by": "REMOTE_STORAGE"
+      },
+      "flags": ["REMOTE_STORAGE", "MISSING_SIGNAL"],
+      "owner": {
+        "value": "data-lake-team@acme.com",
+        "source": "file"
+      },
+      "signals_missing": ["tonnage"]
+    },
+    {
+      "name": "oversized-events",
+      "name_redacted": null,
+      "partitions": 48,
+      "replication_factor": 3,
+      "cleanup_policy": "delete",
+      "retention_ms": 604800000,
+      "remote_storage_enabled": false,
+      "message_timestamp_type": "LogAppendTime",
+      "last_produce_ts": "2026-05-21T07:00:00Z",
+      "earliest_offset_sum": 240000,
+      "latest_offset_sum": 5240910,
+      "storage": {
+        "bytes": 442221363200,
+        "source": "log_dir",
+        "evidence": "KNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0, "earliest_offset": 5000, "latest_offset": 109182, "size_bytes": 38654705664, "leader": 1 },
+        { "partition": 1, "earliest_offset": 5000, "latest_offset": 109183, "size_bytes":  4294967296, "leader": 2 },
+        { "partition": 2, "earliest_offset": 5000, "latest_offset": 109184, "size_bytes":  5368709120, "leader": 3 },
+        { "partition": 3, "earliest_offset": 5000, "latest_offset": 109182, "size_bytes":  6442450944, "leader": 1 }
+      ],
+      "consumer_groups": [
+        { "group_id": "events-indexer", "state": "Stable", "member_count": 8, "committed_offset_sum": 5240412, "lag_sum": 498 }
+      ],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": ["oversized-events-value"],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score":   0, "evidence": "KNOWN", "input": { "days_since_last_produce": 0 } },
+          "tenancy":     { "score":   0, "evidence": "KNOWN", "input": { "stable_group_with_members": true } },
+          "tonnage":     { "score":   3, "evidence": "KNOWN", "input": { "percentile": 97 } },
+          "intent":      { "score":   0, "evidence": "KNOWN", "input": { "orphan": false } },
+          "consumption": { "score":   0, "evidence": "KNOWN", "input": { "earliest_eq_latest": false } }
+        },
+        "raw_score": 0.3,
+        "verdict": "ACTIVE",
+        "verdict_capped_by": null
+      },
+      "flags": ["OVERSIZED", "SKEWED"],
+      "owner": {
+        "value": "ingestion-team@acme.com",
+        "source": "file"
+      },
+      "signals_missing": []
+    },
+    {
+      "name": "cc-cloud-empty",
+      "name_redacted": null,
+      "partitions": 6,
+      "replication_factor": 3,
+      "cleanup_policy": "delete",
+      "retention_ms": 604800000,
+      "remote_storage_enabled": false,
+      "message_timestamp_type": "CreateTime",
+      "last_produce_ts": "2025-09-15T10:00:00Z",
+      "earliest_offset_sum": 0,
+      "latest_offset_sum": 0,
+      "storage": {
+        "bytes": 0,
+        "source": "log_dir",
+        "evidence": "KNOWN"
+      },
+      "partition_metrics": [
+        { "partition": 0, "earliest_offset": 0, "latest_offset": 0, "size_bytes": 0, "leader": 1 },
+        { "partition": 1, "earliest_offset": 0, "latest_offset": 0, "size_bytes": 0, "leader": 2 }
+      ],
+      "consumer_groups": [
+        { "group_id": "cc-cloud-empty-consumer", "state": "Dead", "member_count": 0, "committed_offset_sum": 0, "lag_sum": 0 }
+      ],
+      "schema_registry": {
+        "subject_strategy": "topic_name",
+        "subjects_found": [],
+        "evidence": "KNOWN"
+      },
+      "attic": {
+        "spec_version": "1.0.0",
+        "sub_scores": {
+          "activity":    { "score":  92, "evidence": "ESTIMATED", "input": { "days_since_last_produce": 248, "timestamp_type": "CreateTime" } },
+          "tenancy":     { "score": 100, "evidence": "KNOWN",     "input": { "all_groups_dead": true } },
+          "tonnage":     { "score": 100, "evidence": "KNOWN",     "input": { "percentile": 0 } },
+          "intent":      { "score": 100, "evidence": "KNOWN",     "input": { "orphan": true } },
+          "consumption": { "score": 100, "evidence": "KNOWN",     "input": { "earliest_eq_latest": true, "earliest": 0 } }
+        },
+        "raw_score": 97.6,
+        "verdict": "CANDIDATE",
+        "verdict_capped_by": "ESTIMATED_EVIDENCE"
+      },
+      "flags": ["APPEARS_NEVER_USED", "ORPHAN_SCHEMA"],
+      "owner": {
+        "value": "platform-team@acme.com",
+        "source": "file"
+      },
+      "signals_missing": []
+    }
+  ],
+  "telemetry": {
+    "anonymous_run_uuid": "d4a1b3c2-9f1e-4b80-9b3f-2cf2a1b1f0e9",
+    "shared_summary_url": null
+  }
+}

@@ -1,0 +1,15 @@
+* text=auto eol=lf
+
+# Explicit text for Go module metadata
+go.mod   text
+go.sum   text
+
+# Binary assets
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.ico    binary
+*.pdf    binary
+*.zip    binary
+*.gz     binary

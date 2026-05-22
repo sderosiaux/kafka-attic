@@ -1,0 +1,50 @@
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+
+output:
+  formats:
+    - format: colored-line-number
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gocritic
+    - gosec
+    - revive
+    - gofumpt
+    - misspell
+    - unconvert
+    - prealloc
+    - bodyclose
+    - contextcheck
+    - nilerr
+
+  settings:
+    errcheck:
+      exclude-functions:
+        - (io.Closer).Close
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - fmt.Fprint
+
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - gosec
+        text: "G104"
+      - path: _test\.go
+        linters:
+          - errcheck
+          - gocritic
+
+severity:
+  default: warning

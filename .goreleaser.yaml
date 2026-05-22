@@ -1,0 +1,129 @@
+version: 2
+
+project_name: kafka-attic
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: kattic
+    main: ./cmd/kattic
+    binary: kattic
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Date }}
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - LICENSE
+      - README.md
+      - CHANGELOG.md
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next-{{ .ShortCommit }}"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+
+brews:
+  - name: kafka-attic
+    repository:
+      owner: conduktor
+      name: homebrew-kafka-attic
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/conduktor/kafka-attic
+    description: "Read-only scanner that quantifies unused Kafka topics with the ATTIC Score"
+    license: Apache-2.0
+    install: |
+      bin.install "kattic"
+    test: |
+      system "#{bin}/kattic", "--version"
+
+scoops:
+  - name: kafka-attic
+    repository:
+      owner: conduktor
+      name: scoop-kafka-attic
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/conduktor/kafka-attic
+    description: "Read-only scanner that quantifies unused Kafka topics with the ATTIC Score"
+    license: Apache-2.0
+
+dockers:
+  - image_templates:
+      - "ghcr.io/conduktor/kafka-attic:{{ .Version }}-amd64"
+      - "ghcr.io/conduktor/kafka-attic:latest-amd64"
+    use: buildx
+    goos: linux
+    goarch: amd64
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.description=Read-only Kafka topic attic scanner"
+      - "--label=org.opencontainers.image.source=https://github.com/conduktor/kafka-attic"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.licenses=Apache-2.0"
+
+  - image_templates:
+      - "ghcr.io/conduktor/kafka-attic:{{ .Version }}-arm64"
+      - "ghcr.io/conduktor/kafka-attic:latest-arm64"
+    use: buildx
+    goos: linux
+    goarch: arm64
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.description=Read-only Kafka topic attic scanner"
+      - "--label=org.opencontainers.image.source=https://github.com/conduktor/kafka-attic"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.licenses=Apache-2.0"
+
+docker_manifests:
+  - name_template: "ghcr.io/conduktor/kafka-attic:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/conduktor/kafka-attic:{{ .Version }}-amd64"
+      - "ghcr.io/conduktor/kafka-attic:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/conduktor/kafka-attic:latest"
+    image_templates:
+      - "ghcr.io/conduktor/kafka-attic:latest-amd64"
+      - "ghcr.io/conduktor/kafka-attic:latest-arm64"
+
+release:
+  draft: false
+  prerelease: auto

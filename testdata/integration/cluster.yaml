@@ -1,0 +1,31 @@
+# Template kattic config consumed by integration_test.go. The bootstrap
+# address is rewritten at runtime to point at the testcontainers Redpanda
+# broker; everything else is the production default shape from SPEC App B.
+cluster:
+  name: integration-test
+  bootstrap: PLACEHOLDER:0
+  auth:
+    type: none
+
+attic_score:
+  spec_version: 1.0.0
+  weights:
+    activity: 0.30
+    tenancy: 0.20
+    tonnage: 0.10
+    intent: 0.15
+    consumption: 0.25
+  thresholds:
+    likely_unused: 90
+    candidate: 70
+    inspect: 40
+  activity_curve:
+    - { days: 0,   score: 0 }
+    - { days: 30,  score: 25 }
+    - { days: 90,  score: 60 }
+    - { days: 180, score: 80 }
+    - { days: 365, score: 100 }
+
+exclude_patterns:
+  defaults: true
+  effect: omit_from_score

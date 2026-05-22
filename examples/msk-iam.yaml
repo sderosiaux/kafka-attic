@@ -1,0 +1,113 @@
+# kattic.yaml — AWS MSK cluster authenticating via IAM.
+#
+# IAM auth uses the AWS SDK credential chain (env vars, profile, instance
+# role, IRSA, SSO). kafka-attic signs SASL_OAUTHBEARER tokens locally — no
+# extra agent or proxy.
+#
+# Required AWS permissions (read-only):
+#   kafka-cluster:Connect
+#   kafka-cluster:DescribeCluster
+#   kafka-cluster:DescribeTopic
+#   kafka-cluster:DescribeGroup
+#   (optional) kafka-cluster:DescribeClusterDynamicConfiguration
+
+cluster:
+  name: prod-msk-eu-west-1
+  bootstrap: b-1.prodmsk.abc123.c2.kafka.eu-west-1.amazonaws.com:9098,b-2.prodmsk.abc123.c2.kafka.eu-west-1.amazonaws.com:9098
+  auth:
+    type: iam
+    region: eu-west-1
+    # AWS profile to use. Leave commented to fall back to the SDK credential
+    # chain (AWS_PROFILE → env vars → EC2/EKS instance role → SSO).
+    # profile: prod-readonly
+
+    # Assume a role across accounts. Useful when kafka-attic runs in a
+    # tooling account but the MSK cluster lives in a workload account.
+    # assume_role_arn: arn:aws:iam::123456789012:role/kafka-attic-readonly
+
+    # EKS IRSA — projected service-account token + role exchange.
+    # web_identity:
+    #   role_arn: arn:aws:iam::123456789012:role/kafka-attic-irsa
+    #   token_file: /var/run/secrets/eks.amazonaws.com/serviceaccount/token
+    #   role_session_name: kafka-attic
+
+    # MSK requires TLS. IAM auth implies SASL_SSL on port 9098.
+    tls:
+      enabled: true
+
+# NOTE: MSK does not ship a Schema Registry. AWS Glue Schema Registry is the
+# managed option, but v1 of kafka-attic supports Confluent SR only — Glue
+# lands in v1.1. Leaving schema_registry omitted means the Intent sub-signal
+# is skipped and its weight is redistributed across A/T/T/C.
+
+# Owner resolution: try Backstage first (it usually has the authoritative
+# mapping), fall back to a static file for topics Backstage doesn't know
+# about (legacy, externally-owned, etc.).
+owners:
+  precedence: [backstage, file]
+  backstage:
+    url: https://backstage.acme.com
+    auth:
+      type: bearer
+      token_env: BACKSTAGE_TOKEN
+    entity_pattern: 'component:default/{topic}-svc'
+    fallback_relation: ownedBy
+  file:
+    path: ./owners.yaml
+
+attic_score:
+  spec_version: 1.0.0
+  weights:
+    activity:    0.30
+    tenancy:     0.20
+    tonnage:     0.10
+    intent:      0.15
+    consumption: 0.25
+  thresholds:
+    likely_unused: 90
+    candidate:     70
+    inspect:       40
+  activity_curve:
+    - { days: 0,   score: 0   }
+    - { days: 30,  score: 25  }
+    - { days: 90,  score: 60  }
+    - { days: 180, score: 80  }
+    - { days: 365, score: 100 }
+
+oversized:
+  max_partitions_for_throughput: 12
+  low_traffic_msgs_per_sec: 1
+  requires_metrics: true
+
+skew:
+  max_ratio_to_average: 4
+
+history:
+  enabled: true
+  path: ~/.kattic/history.db
+  retention_days: 730
+
+exclude_patterns:
+  defaults: true
+  effect: omit_from_score
+
+protected_cleanup_policies:
+  - compact
+
+# Telemetry enabled here — anonymous run UUID + cluster-size bucket + flags
+# only. No topic names, broker addresses, or owner data are ever sent.
+# See SPEC §5.7 for the exact payload. Disable by setting enabled: false.
+telemetry:
+  enabled: true
+  endpoint: https://telemetry.conduktor.io/attic
+  include_anonymous_run_uuid: true
+
+report:
+  format: html
+  output: ./attic-report.html
+  include_cleanup_script: true
+  redact_topic_names: none
+  utm:
+    source: kafka-attic
+    medium: oss
+    campaign: report
