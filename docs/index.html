@@ -2106,6 +2106,110 @@
         </div>
       </section>
 
+      <section id="methodology" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <div class="wrap">
+          <span class="eyebrow">Open methodology</span>
+          <h2>The ATTIC Score is a public spec, not a black box.</h2>
+          <p class="lede">
+            Every sub-signal, every weight, every evidence transition, every verdict cap is
+            documented in a versioned spec. Snapshots pin the spec version they were computed
+            under, so historical diffs stay comparable.
+          </p>
+
+          <div class="method-grid">
+            <div class="method-brief">
+              <ul>
+                <li>
+                  <span class="letter">A</span>
+                  <div>
+                    <div class="name">Activity</div>
+                    <div class="desc">Days since the most recent record.</div>
+                  </div>
+                  <span class="w">w 0.30</span>
+                </li>
+                <li>
+                  <span class="letter">T</span>
+                  <div>
+                    <div class="name">Tenancy</div>
+                    <div class="desc">State of consumer groups on the topic.</div>
+                  </div>
+                  <span class="w">w 0.20</span>
+                </li>
+                <li>
+                  <span class="letter">T</span>
+                  <div>
+                    <div class="name">Tonnage</div>
+                    <div class="desc">Storage footprint percentile.</div>
+                  </div>
+                  <span class="w">w 0.10</span>
+                </li>
+                <li>
+                  <span class="letter">I</span>
+                  <div>
+                    <div class="name">Intent</div>
+                    <div class="desc">Schema subject targeting the topic.</div>
+                  </div>
+                  <span class="w">w 0.15</span>
+                </li>
+                <li>
+                  <span class="letter">C</span>
+                  <div>
+                    <div class="name">Consumption</div>
+                    <div class="desc">Record presence right now.</div>
+                  </div>
+                  <span class="w">w 0.25</span>
+                </li>
+              </ul>
+              <p class="method-note">
+                Evidence levels: <code>KNOWN</code>, <code>ESTIMATED</code>, <code>UNKNOWN</code>.
+                Verdict caps — any <code>ESTIMATED</code> → max Candidate; <code>COMPACTED</code>
+                or <code>REMOTE_STORAGE</code> → max Inspect; <code>APPEARS_NEVER_USED</code>
+                without <code>PURGED</code> → max Candidate.
+              </p>
+              <p class="method-note">
+                Read the full spec →
+                <a href="https://github.com/sderosiaux/kafka-attic/blob/main/docs/attic-score-spec-v1.0.md" target="_blank" rel="noopener"
+                  ><code>docs/attic-score-spec-v1.0.md</code></a
+                >. Methodology is published under
+                <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>
+                so other Kafka tooling can adopt it independently of this implementation — the way
+                DORA, SPACE, and similar measurement frameworks are shared.
+              </p>
+            </div>
+
+            <pre class="code-block" aria-label="ATTIC Score spec excerpt">
+<span class="c"># attic-score-spec-v1.0.md (excerpt)</span>
+
+<span class="h">verdict_bands:</span>
+  <span class="k">likely_unused:</span> <span class="n">>= 90</span>
+  <span class="k">candidate:</span>     <span class="n">70 .. 89</span>
+  <span class="k">inspect:</span>       <span class="n">40 .. 69</span>
+  <span class="k">active:</span>        <span class="n">< 40</span>
+
+<span class="h">activity_curve:</span> <span class="c"># days → sub-score (0..100)</span>
+  <span class="k">0d:</span>   <span class="n">0</span>
+  <span class="k">30d:</span>  <span class="n">25</span>
+  <span class="k">90d:</span>  <span class="n">55</span>
+  <span class="k">180d:</span> <span class="n">80</span>
+  <span class="k">365d:</span> <span class="n">100</span>
+
+<span class="h">verdict_caps:</span>
+  - <span class="k">when:</span> <span class="s">"any sub-signal evidence == ESTIMATED"</span>
+    <span class="k">max:</span> <span class="s">CANDIDATE</span>
+  - <span class="k">when:</span> <span class="s">"flag includes COMPACTED"</span>
+    <span class="k">max:</span> <span class="s">INSPECT</span>
+  - <span class="k">when:</span> <span class="s">"flag includes REMOTE_STORAGE"</span>
+    <span class="k">max:</span> <span class="s">INSPECT</span>
+  - <span class="k">when:</span> <span class="s">"APPEARS_NEVER_USED && !PURGED"</span>
+    <span class="k">max:</span> <span class="s">CANDIDATE</span>
+
+<span class="h">weight_redistribution:</span> <span class="c"># when a signal is UNKNOWN</span>
+  <span class="k">policy:</span> <span class="s">proportional</span>
+  <span class="k">note:</span>   <span class="s">"score still computes from one fewer signal"</span></pre>
+          </div>
+        </div>
+      </section>
+
       <section id="how">
         <div class="wrap">
           <span class="eyebrow">How it works</span>
@@ -2409,110 +2513,6 @@
                 <span class="label">Auth:</span> <span class="v">SASL/SCRAM, mTLS</span>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="methodology" style="background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
-        <div class="wrap">
-          <span class="eyebrow">Open methodology</span>
-          <h2>The ATTIC Score is a public spec, not a black box.</h2>
-          <p class="lede">
-            Every sub-signal, every weight, every evidence transition, every verdict cap is
-            documented in a versioned spec. Snapshots pin the spec version they were computed
-            under, so historical diffs stay comparable.
-          </p>
-
-          <div class="method-grid">
-            <div class="method-brief">
-              <ul>
-                <li>
-                  <span class="letter">A</span>
-                  <div>
-                    <div class="name">Activity</div>
-                    <div class="desc">Days since the most recent record.</div>
-                  </div>
-                  <span class="w">w 0.30</span>
-                </li>
-                <li>
-                  <span class="letter">T</span>
-                  <div>
-                    <div class="name">Tenancy</div>
-                    <div class="desc">State of consumer groups on the topic.</div>
-                  </div>
-                  <span class="w">w 0.20</span>
-                </li>
-                <li>
-                  <span class="letter">T</span>
-                  <div>
-                    <div class="name">Tonnage</div>
-                    <div class="desc">Storage footprint percentile.</div>
-                  </div>
-                  <span class="w">w 0.10</span>
-                </li>
-                <li>
-                  <span class="letter">I</span>
-                  <div>
-                    <div class="name">Intent</div>
-                    <div class="desc">Schema subject targeting the topic.</div>
-                  </div>
-                  <span class="w">w 0.15</span>
-                </li>
-                <li>
-                  <span class="letter">C</span>
-                  <div>
-                    <div class="name">Consumption</div>
-                    <div class="desc">Record presence right now.</div>
-                  </div>
-                  <span class="w">w 0.25</span>
-                </li>
-              </ul>
-              <p class="method-note">
-                Evidence levels: <code>KNOWN</code>, <code>ESTIMATED</code>, <code>UNKNOWN</code>.
-                Verdict caps — any <code>ESTIMATED</code> → max Candidate; <code>COMPACTED</code>
-                or <code>REMOTE_STORAGE</code> → max Inspect; <code>APPEARS_NEVER_USED</code>
-                without <code>PURGED</code> → max Candidate.
-              </p>
-              <p class="method-note">
-                Read the full spec →
-                <a href="https://github.com/sderosiaux/kafka-attic/blob/main/docs/attic-score-spec-v1.0.md" target="_blank" rel="noopener"
-                  ><code>docs/attic-score-spec-v1.0.md</code></a
-                >. Methodology is published under
-                <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>
-                so other Kafka tooling can adopt it independently of this implementation — the way
-                DORA, SPACE, and similar measurement frameworks are shared.
-              </p>
-            </div>
-
-            <pre class="code-block" aria-label="ATTIC Score spec excerpt">
-<span class="c"># attic-score-spec-v1.0.md (excerpt)</span>
-
-<span class="h">verdict_bands:</span>
-  <span class="k">likely_unused:</span> <span class="n">>= 90</span>
-  <span class="k">candidate:</span>     <span class="n">70 .. 89</span>
-  <span class="k">inspect:</span>       <span class="n">40 .. 69</span>
-  <span class="k">active:</span>        <span class="n">< 40</span>
-
-<span class="h">activity_curve:</span> <span class="c"># days → sub-score (0..100)</span>
-  <span class="k">0d:</span>   <span class="n">0</span>
-  <span class="k">30d:</span>  <span class="n">25</span>
-  <span class="k">90d:</span>  <span class="n">55</span>
-  <span class="k">180d:</span> <span class="n">80</span>
-  <span class="k">365d:</span> <span class="n">100</span>
-
-<span class="h">verdict_caps:</span>
-  - <span class="k">when:</span> <span class="s">"any sub-signal evidence == ESTIMATED"</span>
-    <span class="k">max:</span> <span class="s">CANDIDATE</span>
-  - <span class="k">when:</span> <span class="s">"flag includes COMPACTED"</span>
-    <span class="k">max:</span> <span class="s">INSPECT</span>
-  - <span class="k">when:</span> <span class="s">"flag includes REMOTE_STORAGE"</span>
-    <span class="k">max:</span> <span class="s">INSPECT</span>
-  - <span class="k">when:</span> <span class="s">"APPEARS_NEVER_USED && !PURGED"</span>
-    <span class="k">max:</span> <span class="s">CANDIDATE</span>
-
-<span class="h">weight_redistribution:</span> <span class="c"># when a signal is UNKNOWN</span>
-  <span class="k">policy:</span> <span class="s">proportional</span>
-  <span class="k">note:</span>   <span class="s">"score still computes from one fewer signal"</span></pre>
           </div>
         </div>
       </section>
