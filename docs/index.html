@@ -734,27 +734,6 @@
           radial-gradient(80% 80% at 0% 100%, rgba(15, 23, 42, 0.05), transparent 65%),
           linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
       }
-      .tco-icon {
-        position: absolute;
-        top: 26px;
-        right: 28px;
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.7);
-        border: 1px solid var(--border);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--accent);
-        backdrop-filter: blur(8px);
-      }
-      .tco-icon svg { width: 18px; height: 18px; display: block; }
-      .tco-card[data-domain="partitions"] .tco-icon { color: #0891b2; }
-      .tco-card[data-domain="controller"] .tco-icon { color: #6366f1; }
-      .tco-card[data-domain="schema"] .tco-icon { color: #a855f7; }
-      .tco-card[data-domain="monitoring"] .tco-icon { color: #14b8a6; }
-      .tco-card[data-domain="governance"] .tco-icon { color: #475569; }
       .tco-stat {
         font-family: var(--mono);
         font-size: 44px;
@@ -1098,16 +1077,25 @@
 
       /* Embedded mini-term in a mosaic card */
       .anti-term {
-        margin: 16px 0 14px;
+        margin: 14px 0 14px;
         background: var(--bg-code);
         border: 1px solid #1e293b;
         border-radius: 10px;
         padding: 14px 16px;
         font-family: var(--mono);
-        font-size: 11.5px;
-        line-height: 1.7;
+        font-size: 10.5px;
+        line-height: 1.6;
         color: #cbd5e1;
+        height: 200px;
         overflow: hidden;
+        box-sizing: border-box;
+      }
+      .anti-term pre {
+        margin: 0;
+        font: inherit;
+        white-space: pre;
+        overflow: hidden;
+        text-overflow: clip;
       }
       .anti-term .topic { color: #e2e8f0; font-weight: 600; }
       .anti-term .crit { color: #f87171; font-weight: 600; }
@@ -1117,13 +1105,13 @@
       .anti-term .dim { color: #475569; }
       .anti-term .label { color: #94a3b8; }
       .anti-term .num { color: #fbbf24; }
-      .anti-term .head { color: #94a3b8; font-size: 10.5px; letter-spacing: 0.06em; }
+      .anti-term .head { color: #94a3b8; font-size: 10px; letter-spacing: 0.04em; }
 
       .anti p {
         color: var(--muted);
         font-size: 14px;
         line-height: 1.55;
-        margin-top: auto;
+        margin-top: 0;
       }
       .anti p code {
         background: var(--bg-soft);
@@ -1979,13 +1967,6 @@
           <div class="tco-grid">
             <article class="tco-card" data-domain="storage">
               <div class="tco-visual">
-                <span class="tco-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                    <path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
-                    <path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/>
-                  </svg>
-                </span>
                 <span class="tco-stat">38.2<span class="unit">TB</span></span>
                 <div class="tco-sub">reclaimable*</div>
                 <div class="tco-bar" style="--fill: 25%;"></div>
@@ -2001,14 +1982,6 @@
 
             <article class="tco-card" data-domain="partitions">
               <div class="tco-visual">
-                <span class="tco-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" rx="1"/>
-                    <rect x="14" y="3" width="7" height="7" rx="1"/>
-                    <rect x="3" y="14" width="7" height="7" rx="1"/>
-                    <rect x="14" y="14" width="7" height="7" rx="1"/>
-                  </svg>
-                </span>
                 <span class="tco-stat">~10<span class="unit">MB heap / partition</span></span>
                 <div class="tco-sub">leader-side overhead</div>
                 <div class="tco-bar" style="--fill: 60%;"></div>
@@ -2024,16 +1997,6 @@
 
             <article class="tco-card" data-domain="controller">
               <div class="tco-visual">
-                <span class="tco-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="5" r="2.5"/>
-                    <circle cx="5" cy="18" r="2.5"/>
-                    <circle cx="19" cy="18" r="2.5"/>
-                    <path d="M12 7.5L5 15.5"/>
-                    <path d="M12 7.5L19 15.5"/>
-                    <path d="M5 18h14"/>
-                  </svg>
-                </span>
                 <span class="tco-stat">O(N)<span class="unit">metadata records</span></span>
                 <div class="tco-sub">replayed on every failover</div>
                 <div class="tco-bar" style="--fill: 70%;"></div>
@@ -2049,14 +2012,6 @@
 
             <article class="tco-card" data-domain="schema">
               <div class="tco-visual">
-                <span class="tco-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="8" y1="13" x2="16" y2="13"/>
-                    <line x1="8" y1="17" x2="13" y2="17"/>
-                  </svg>
-                </span>
                 <span class="tco-stat">1 + 1<span class="unit">subjects / topic</span></span>
                 <div class="tco-sub">-key &amp; -value never deleted</div>
                 <div class="tco-bar" style="--fill: 45%;"></div>
@@ -2072,16 +2027,7 @@
 
             <article class="tco-card" data-domain="monitoring">
               <div class="tco-visual">
-                <span class="tco-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 17 8 12 12 14 16 9 21 13"/>
-                    <circle cx="8" cy="12" r="1.2" fill="currentColor"/>
-                    <circle cx="12" cy="14" r="1.2" fill="currentColor"/>
-                    <circle cx="16" cy="9" r="1.2" fill="currentColor"/>
-                    <path d="M3 21h18"/>
-                  </svg>
-                </span>
-                <span class="tco-stat">N × M<span class="unit">time series / broker</span></span>
+                <span class="tco-stat">N × M<span class="unit">time series</span></span>
                 <div class="tco-sub">Prometheus / Datadog cardinality</div>
                 <div class="tco-bar" style="--fill: 80%;"></div>
               </div>
@@ -2096,14 +2042,6 @@
 
             <article class="tco-card" data-domain="governance">
               <div class="tco-visual">
-                <span class="tco-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
-                </span>
                 <span class="tco-stat">Hours<span class="unit">per audit cycle</span></span>
                 <div class="tco-sub">amortized across topic count</div>
                 <div class="tco-bar" style="--fill: 55%;"></div>
