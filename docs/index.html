@@ -374,8 +374,7 @@
         justify-content: space-between;
         height: 64px;
       }
-      .brand { display: inline-flex; align-items: center; }
-      .brand-home {
+      .brand {
         display: inline-flex;
         align-items: center;
         gap: 10px;
@@ -383,7 +382,7 @@
         line-height: 1;
         text-decoration: none;
       }
-      .brand-home:hover { color: var(--text); }
+      .brand:hover { color: var(--text); }
       .brand-icon {
         width: 34px;
         height: 34px;
@@ -421,8 +420,6 @@
         letter-spacing: 0.01em;
         line-height: 1;
       }
-      .brand-text .by .by-link { color: var(--muted); text-decoration: none; }
-      .brand-text .by .by-link:hover { color: var(--text); }
 
       /* Star button */
       .nav-star {
@@ -554,16 +551,6 @@
         width: 6px; height: 6px; border-radius: 50%; background: var(--success);
       }
       .hero h1 { max-width: 880px; }
-      .hero h1 .hero-name {
-        display: block;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--muted);
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        margin-bottom: 14px;
-        font-family: var(--mono);
-      }
       .hero h1 .accent {
         background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
         -webkit-background-clip: text;
@@ -1744,21 +1731,19 @@
   <body>
     <header class="nav" id="nav">
       <div class="wrap nav-inner">
-        <div class="brand">
-          <a class="brand-home" href="#top" aria-label="kafka-attic — back to top">
-            <span class="brand-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 21V8l8-5 8 5v13"/>
-                <path d="M9 21v-7h6v7"/>
-                <path d="M4 8h16"/>
-              </svg>
-            </span>
-            <span class="brand-text">
-              <span class="name">kafka-attic</span>
-              <span class="by">by <a class="by-link" href="https://conduktor.io?utm_source=kafka-attic&amp;utm_medium=oss&amp;utm_campaign=landing&amp;utm_content=brand" rel="noopener">Conduktor</a></span>
-            </span>
-          </a>
-        </div>
+        <a class="brand" href="#top" aria-label="kafka-attic — back to top">
+          <span class="brand-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 21V8l8-5 8 5v13"/>
+              <path d="M9 21v-7h6v7"/>
+              <path d="M4 8h16"/>
+            </svg>
+          </span>
+          <span class="brand-text">
+            <span class="name">kafka-attic</span>
+            <span class="by">by Conduktor</span>
+          </span>
+        </a>
         <nav class="nav-links">
           <a href="#why">Why</a>
           <a href="#tco">Cost</a>
@@ -1793,10 +1778,7 @@
     <main id="top">
       <section class="hero">
         <div class="wrap">
-          <h1>
-            <span class="hero-name">kafka-attic</span>
-            Find your Kafka <span class="accent">topic graveyard.</span>
-          </h1>
+          <h1>Find your Kafka <span class="accent">topic graveyard.</span></h1>
           <p class="lede">
             Read-only CLI that scores every topic against a published methodology. Stale, empty,
             oversized, abandoned — flagged, ranked, reclaim-quantified. One binary. Read-only by
@@ -2804,21 +2786,19 @@
       <div class="wrap">
         <div class="foot-grid">
           <div class="foot-brand">
-            <div class="brand">
-              <a class="brand-home" href="#top" aria-label="kafka-attic — back to top">
-                <span class="brand-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 21V8l8-5 8 5v13"/>
-                    <path d="M9 21v-7h6v7"/>
-                    <path d="M4 8h16"/>
-                  </svg>
-                </span>
-                <span class="brand-text">
-                  <span class="name">kafka-attic</span>
-                  <span class="by">by Conduktor</span>
-                </span>
-              </a>
-            </div>
+            <a class="brand" href="#top" aria-label="kafka-attic — back to top">
+              <span class="brand-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 21V8l8-5 8 5v13"/>
+                  <path d="M9 21v-7h6v7"/>
+                  <path d="M4 8h16"/>
+                </svg>
+              </span>
+              <span class="brand-text">
+                <span class="name">kafka-attic</span>
+                <span class="by">by Conduktor</span>
+              </span>
+            </a>
             <p>
               Read-only Kafka topic governance CLI. Score, rank, and reclaim — with a published
               methodology you can defend in a review meeting.
