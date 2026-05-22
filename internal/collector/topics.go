@@ -155,7 +155,7 @@ func listTopicsAndConfigs(ctx context.Context, adm KafkaAdmin, cfg *config.Confi
 		// error here as "configs unavailable" and continue. The downstream
 		// stages decide how much that degrades evidence.
 		res.configsAuthErr = true
-		return res, nil
+		return res, nil //nolint:nilerr // intentional: configs unavailable degrades evidence but never fails the scan
 	}
 
 	wantOwnerKey := ""
@@ -201,20 +201,6 @@ func configString(configs map[string]string, key, fallback string) string {
 		return v
 	}
 	return fallback
-}
-
-// configBool parses a textual broker config value into a bool. "true" wins,
-// everything else is false (the broker is the source of truth for the textual
-// form, and Kafka has consistently used lowercase booleans for these keys).
-func configBool(configs map[string]string, key string) bool {
-	if configs == nil {
-		return false
-	}
-	v, ok := configs[key]
-	if !ok {
-		return false
-	}
-	return strings.EqualFold(strings.TrimSpace(v), "true")
 }
 
 // configInt64 parses a numeric broker config value into int64. Returns the

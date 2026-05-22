@@ -58,6 +58,7 @@ func makeDescribedGroup(name, state string, members int, joinTopics []string) ka
 func wrapJoinMeta(_ *kmsg.ConsumerMemberMetadata) kadm.GroupMemberMetadata {
 	return kadm.GroupMemberMetadata{}
 }
+
 func wrapAssignment(_ *kmsg.ConsumerMemberAssignment) kadm.GroupMemberAssignment {
 	return kadm.GroupMemberAssignment{}
 }
@@ -109,7 +110,8 @@ func TestListAndDescribeGroups_EveryStateVerbatim(t *testing.T) {
 		fetchManyOffsetsFn: func(_ context.Context, _ ...string) kadm.FetchOffsetsResponses { return fetched },
 	}
 
-	res, err := listAndDescribeGroups(context.Background(), adm,
+	res, err := listAndDescribeGroups(
+		context.Background(), adm,
 		map[string]struct{}{topic: {}},
 		map[string]map[int32]int64{topic: {0: 1000}},
 	)

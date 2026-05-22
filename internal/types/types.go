@@ -7,6 +7,7 @@ import "time"
 // Verdict is the machine enum for the overall topic verdict.
 type Verdict string
 
+// Verdict enum values.
 const (
 	VerdictLikelyUnused Verdict = "LIKELY_UNUSED"
 	VerdictCandidate    Verdict = "CANDIDATE"
@@ -33,6 +34,7 @@ func (v Verdict) Display() string {
 // Flag annotates a topic with a structured marker.
 type Flag string
 
+// Flag enum values.
 const (
 	FlagAppearsNeverUsed Flag = "APPEARS_NEVER_USED"
 	FlagPurged           Flag = "PURGED"
@@ -71,6 +73,7 @@ func (f Flag) Display() string {
 // Evidence is the trust level for a collected sub-signal.
 type Evidence string
 
+// Evidence enum values.
 const (
 	EvidenceKnown     Evidence = "KNOWN"
 	EvidenceEstimated Evidence = "ESTIMATED"
@@ -80,6 +83,7 @@ const (
 // SubSignal names one of the five ATTIC sub-signals.
 type SubSignal string
 
+// SubSignal enum values.
 const (
 	SubSignalActivity    SubSignal = "activity"
 	SubSignalTenancy     SubSignal = "tenancy"
@@ -100,10 +104,10 @@ type SubScore struct {
 
 // AtticScore is the per-topic ATTIC result.
 type AtticScore struct {
-	SpecVersion    string                  `json:"spec_version"`
-	SubScores      map[SubSignal]SubScore  `json:"sub_scores"`
-	RawScore       float64                 `json:"raw_score"`
-	Verdict        Verdict                 `json:"verdict"`
+	SpecVersion     string                 `json:"spec_version"`
+	SubScores       map[SubSignal]SubScore `json:"sub_scores"`
+	RawScore        float64                `json:"raw_score"`
+	Verdict         Verdict                `json:"verdict"`
 	VerdictCappedBy *string                `json:"verdict_capped_by"`
 }
 
@@ -111,7 +115,7 @@ type AtticScore struct {
 type StorageInfo struct {
 	// Bytes is null when truly unknown.
 	Bytes    *int64   `json:"bytes"`
-	Source   string   `json:"source"`   // log_dir | estimate | unknown
+	Source   string   `json:"source"` // log_dir | estimate | unknown
 	Evidence Evidence `json:"evidence"`
 }
 
@@ -126,11 +130,11 @@ type PartitionMetric struct {
 
 // ConsumerGroupInfo is one consumer group's view of a topic.
 type ConsumerGroupInfo struct {
-	GroupID           string `json:"group_id"`
-	State             string `json:"state"`
-	MemberCount       int    `json:"member_count"`
-	CommittedOffsetSum int64 `json:"committed_offset_sum"`
-	LagSum            int64  `json:"lag_sum"`
+	GroupID            string `json:"group_id"`
+	State              string `json:"state"`
+	MemberCount        int    `json:"member_count"`
+	CommittedOffsetSum int64  `json:"committed_offset_sum"`
+	LagSum             int64  `json:"lag_sum"`
 }
 
 // SchemaRegistryInfo is the SR view for a topic.
@@ -149,34 +153,34 @@ type OwnerInfo struct {
 
 // Topic is the full per-topic snapshot row.
 type Topic struct {
-	Name                  string              `json:"name"`
-	NameRedacted          *string             `json:"name_redacted"`
-	Partitions            int                 `json:"partitions"`
-	ReplicationFactor     int                 `json:"replication_factor"`
-	CleanupPolicy         string              `json:"cleanup_policy"`
-	RetentionMs           int64               `json:"retention_ms"`
-	RemoteStorageEnabled  bool                `json:"remote_storage_enabled"`
-	MessageTimestampType  string              `json:"message_timestamp_type"`
-	LastProduceTs         *time.Time          `json:"last_produce_ts"`
-	EarliestOffsetSum     int64               `json:"earliest_offset_sum"`
-	LatestOffsetSum       int64               `json:"latest_offset_sum"`
-	Storage               StorageInfo         `json:"storage"`
-	PartitionMetrics      []PartitionMetric   `json:"partition_metrics"`
-	ConsumerGroups        []ConsumerGroupInfo `json:"consumer_groups"`
-	SchemaRegistry        *SchemaRegistryInfo `json:"schema_registry,omitempty"`
-	Attic                 AtticScore          `json:"attic"`
-	Flags                 []Flag              `json:"flags"`
-	Owner                 *OwnerInfo          `json:"owner"`
-	SignalsMissing        []SubSignal         `json:"signals_missing"`
-	ExcludedByPattern     bool                `json:"excluded_by_pattern,omitempty"`
+	Name                 string              `json:"name"`
+	NameRedacted         *string             `json:"name_redacted"`
+	Partitions           int                 `json:"partitions"`
+	ReplicationFactor    int                 `json:"replication_factor"`
+	CleanupPolicy        string              `json:"cleanup_policy"`
+	RetentionMs          int64               `json:"retention_ms"`
+	RemoteStorageEnabled bool                `json:"remote_storage_enabled"`
+	MessageTimestampType string              `json:"message_timestamp_type"`
+	LastProduceTs        *time.Time          `json:"last_produce_ts"`
+	EarliestOffsetSum    int64               `json:"earliest_offset_sum"`
+	LatestOffsetSum      int64               `json:"latest_offset_sum"`
+	Storage              StorageInfo         `json:"storage"`
+	PartitionMetrics     []PartitionMetric   `json:"partition_metrics"`
+	ConsumerGroups       []ConsumerGroupInfo `json:"consumer_groups"`
+	SchemaRegistry       *SchemaRegistryInfo `json:"schema_registry,omitempty"`
+	Attic                AtticScore          `json:"attic"`
+	Flags                []Flag              `json:"flags"`
+	Owner                *OwnerInfo          `json:"owner"`
+	SignalsMissing       []SubSignal         `json:"signals_missing"`
+	ExcludedByPattern    bool                `json:"excluded_by_pattern,omitempty"`
 }
 
 // ClusterInfo describes the connected cluster.
 type ClusterInfo struct {
-	Name                  string `json:"name"`
-	Bootstrap             string `json:"bootstrap"`
-	DetectedType          string `json:"detected_type"`
-	KafkaVersionReported  string `json:"kafka_version_reported"`
+	Name                 string `json:"name"`
+	Bootstrap            string `json:"bootstrap"`
+	DetectedType         string `json:"detected_type"`
+	KafkaVersionReported string `json:"kafka_version_reported"`
 }
 
 // PermissionsObserved records which APIs succeeded during the scan.
@@ -198,30 +202,30 @@ type ConfigSnapshot struct {
 
 // ScanInfo summarizes the scan run itself.
 type ScanInfo struct {
-	TopicCountScanned          int                 `json:"topic_count_scanned"`
-	TopicCountExcludedByPattern int                `json:"topic_count_excluded_by_pattern"`
-	DurationMs                 int64               `json:"duration_ms"`
-	PermissionsObserved        PermissionsObserved `json:"permissions_observed"`
-	MissingSignalsGlobal       []string            `json:"missing_signals_global"`
-	ConfigSnapshot             ConfigSnapshot      `json:"config_snapshot"`
+	TopicCountScanned           int                 `json:"topic_count_scanned"`
+	TopicCountExcludedByPattern int                 `json:"topic_count_excluded_by_pattern"`
+	DurationMs                  int64               `json:"duration_ms"`
+	PermissionsObserved         PermissionsObserved `json:"permissions_observed"`
+	MissingSignalsGlobal        []string            `json:"missing_signals_global"`
+	ConfigSnapshot              ConfigSnapshot      `json:"config_snapshot"`
 }
 
 // TelemetryBlock is the optional telemetry envelope of a snapshot.
 type TelemetryBlock struct {
-	AnonymousRunUUID  string  `json:"anonymous_run_uuid"`
-	SharedSummaryURL  *string `json:"shared_summary_url"`
+	AnonymousRunUUID string  `json:"anonymous_run_uuid"`
+	SharedSummaryURL *string `json:"shared_summary_url"`
 }
 
 // Snapshot is the top-level JSON snapshot consumed by `kattic diff`.
 type Snapshot struct {
-	SchemaVersion      string         `json:"schema_version"`
-	AtticSpecVersion   string         `json:"attic_spec_version"`
-	GeneratedAt        time.Time      `json:"generated_at"`
-	KafkaAtticVersion  string         `json:"kafka_attic_version"`
-	Cluster            ClusterInfo    `json:"cluster"`
-	Scan               ScanInfo       `json:"scan"`
-	Topics             []Topic        `json:"topics"`
-	Telemetry          TelemetryBlock `json:"telemetry"`
+	SchemaVersion     string         `json:"schema_version"`
+	AtticSpecVersion  string         `json:"attic_spec_version"`
+	GeneratedAt       time.Time      `json:"generated_at"`
+	KafkaAtticVersion string         `json:"kafka_attic_version"`
+	Cluster           ClusterInfo    `json:"cluster"`
+	Scan              ScanInfo       `json:"scan"`
+	Topics            []Topic        `json:"topics"`
+	Telemetry         TelemetryBlock `json:"telemetry"`
 }
 
 // AtticWeights are the per-sub-signal weights; they must sum to 1.0.

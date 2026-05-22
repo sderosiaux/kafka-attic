@@ -9,7 +9,7 @@ import (
 // scoreTonnage computes per-topic Tonnage score from the cluster-wide size
 // distribution per SPEC §4.2.
 //
-//   tonnage_score = max(0, 100 - p)
+//	tonnage_score = max(0, 100 - p)
 //
 // where p ∈ [0, 100] is the percentile rank of this topic's storage size
 // across the cluster's *KNOWN/ESTIMATED* topics. Smaller topics → higher
@@ -48,7 +48,7 @@ func scoreTonnage(
 //
 // Definition (matches SPEC §4.6 worked example where p=4 yields 96):
 //
-//   p = round( count(x < v) / N × 100 )
+//	p = round( count(x < v) / N × 100 )
 //
 // xs must be sorted ascending. We use sort.Search to find the position of the
 // first element >= v in O(log N).

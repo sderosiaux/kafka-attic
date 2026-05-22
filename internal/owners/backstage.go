@@ -28,9 +28,7 @@ type backstageSource struct {
 	entityPattern    string
 	fallbackRelation string
 
-	client    *http.Client
-	authToken string // resolved from token_env at construction time
-	authBasic string // already base64 of "user:pass" when basic auth is used
+	client *http.Client
 
 	auth config.SRAuthConfig // kept for late env resolution per request
 }
@@ -93,7 +91,8 @@ func (s *backstageSource) Lookup(ctx context.Context, topic string, _ map[string
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("%s/api/catalog/entities/by-name/%s/%s/%s",
+	endpoint := fmt.Sprintf(
+		"%s/api/catalog/entities/by-name/%s/%s/%s",
 		s.baseURL,
 		url.PathEscape(kind),
 		url.PathEscape(namespace),

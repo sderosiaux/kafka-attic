@@ -36,7 +36,7 @@ func New(cfg *config.Config, snap *types.Snapshot, now time.Time) *Scorer {
 // The function is idempotent: callers may invoke it multiple times against
 // the same topic without producing different output, provided the inputs
 // haven't changed.
-func (s *Scorer) Score(snap *types.Snapshot, t *types.Topic) {
+func (s *Scorer) Score(_ *types.Snapshot, t *types.Topic) {
 	if t == nil || s == nil {
 		return
 	}
@@ -236,10 +236,8 @@ func (s *Scorer) Score(snap *types.Snapshot, t *types.Topic) {
 			hasPurged = true
 		}
 	}
-	if hasMissing {
-		// Either flag presence or any sub-signal evidence == UNKNOWN that
-		// isn't skipped (Activity/Tenancy/Consumption per SPEC Appendix E).
-	}
+	// hasMissing covers both flag presence and any sub-signal evidence == UNKNOWN
+	// that isn't skipped (Activity/Tenancy/Consumption per SPEC Appendix E).
 	for _, sub := range subs {
 		if sub.Skipped {
 			continue

@@ -154,8 +154,8 @@ func buildView(s *types.Snapshot, cfg Config, base, css, js string) view {
 		GeneratedAt:       s.GeneratedAt.UTC().Format(time.RFC3339),
 		KafkaAtticVersion: s.KafkaAtticVersion,
 		AtticSpecVersion:  s.AtticSpecVersion,
-		CSS:               template.CSS(css),
-		JS:                template.JS(js),
+		CSS:               template.CSS(css), //nolint:gosec // css is a baked-in asset, not user input
+		JS:                template.JS(js),   //nolint:gosec // js is a baked-in asset, not user input
 		CleanupCTAURL:     utmURL(base, "cleanup-script"),
 		FooterCTAURL:      utmURL(base, "footer"),
 	}
@@ -251,7 +251,7 @@ func buildPie(c counts) []pieSlice {
 			// Full circle via two semicircle arcs.
 			d := fmt.Sprintf("M %.4f %.4f A %.4f %.4f 0 1 1 %.4f %.4f A %.4f %.4f 0 1 1 %.4f %.4f Z",
 				0.0, -r, r, r, 0.0, r, r, r, 0.0, -r)
-			out = append(out, pieSlice{Label: e.label, Count: e.count, Color: e.color, Path: template.HTML(d)})
+			out = append(out, pieSlice{Label: e.label, Count: e.count, Color: e.color, Path: template.HTML(d)}) //nolint:gosec // SVG path built from numeric data; not user-controlled
 		}
 		return out
 	}
@@ -270,7 +270,7 @@ func buildPie(c counts) []pieSlice {
 			large = 1
 		}
 		d := fmt.Sprintf("M 0 0 L %.4f %.4f A %.4f %.4f 0 %d 1 %.4f %.4f Z", x1, y1, r, r, large, x2, y2)
-		out = append(out, pieSlice{Label: e.label, Count: e.count, Color: e.color, Path: template.HTML(d)})
+		out = append(out, pieSlice{Label: e.label, Count: e.count, Color: e.color, Path: template.HTML(d)}) //nolint:gosec // SVG path built from numeric data; not user-controlled
 		angle = next
 	}
 	return out
@@ -306,8 +306,8 @@ func buildRows(topics []types.Topic, now time.Time, weights types.AtticWeights) 
 	// Pre-sort by score desc so the initial render matches "Top candidates".
 	sort.SliceStable(rows, func(i, j int) bool {
 		var si, sj int
-		fmt.Sscanf(rows[i].Score, "%d", &si)
-		fmt.Sscanf(rows[j].Score, "%d", &sj)
+		_, _ = fmt.Sscanf(rows[i].Score, "%d", &si)
+		_, _ = fmt.Sscanf(rows[j].Score, "%d", &sj)
 		return si > sj
 	})
 	return rows
@@ -518,7 +518,7 @@ func hasMissingSignals(s *types.Snapshot) bool {
 		return true
 	}
 	p := s.Scan.PermissionsObserved
-	if !(p.DescribeCluster && p.DescribeTopics && p.DescribeConfigs && p.DescribeGroups && p.DescribeLogDirs) {
+	if !p.DescribeCluster || !p.DescribeTopics || !p.DescribeConfigs || !p.DescribeGroups || !p.DescribeLogDirs {
 		return true
 	}
 	for _, t := range s.Topics {

@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 
+	// Pure-Go SQLite driver registration (no CGO).
 	_ "modernc.org/sqlite"
 )
 
@@ -46,7 +47,7 @@ func Open(path string) (*Store, error) {
 		path = p
 	}
 	if dir := filepath.Dir(path); dir != "" && dir != "." {
-		if err := os.MkdirAll(dir, 0o755); err != nil {
+		if err := os.MkdirAll(dir, 0o750); err != nil {
 			return nil, fmt.Errorf("history: mkdir %s: %w", dir, err)
 		}
 	}

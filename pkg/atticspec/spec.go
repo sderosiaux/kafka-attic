@@ -56,6 +56,7 @@ var DefaultActivityCurve = []ActivityCurvePoint{
 // Verdict is the overall topic verdict enum.
 type Verdict string
 
+// Verdict enum values, ordered from least-active to most-active.
 const (
 	VerdictLikelyUnused Verdict = "LIKELY_UNUSED"
 	VerdictCandidate    Verdict = "CANDIDATE"
@@ -66,6 +67,7 @@ const (
 // SubSignal names one of the five ATTIC sub-signals.
 type SubSignal string
 
+// SubSignal enum values, one per ATTIC component.
 const (
 	SubSignalActivity    SubSignal = "activity"
 	SubSignalTenancy     SubSignal = "tenancy"
@@ -77,6 +79,7 @@ const (
 // Evidence is the trust level for a collected sub-signal.
 type Evidence string
 
+// Evidence enum values, ordered from highest to lowest trust.
 const (
 	EvidenceKnown     Evidence = "KNOWN"
 	EvidenceEstimated Evidence = "ESTIMATED"
@@ -87,6 +90,7 @@ const (
 // numeric score; several cap the verdict (see VerdictCaps).
 type Flag string
 
+// Flag enum values.
 const (
 	FlagAppearsNeverUsed Flag = "APPEARS_NEVER_USED"
 	FlagPurged           Flag = "PURGED"

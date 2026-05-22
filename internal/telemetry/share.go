@@ -34,14 +34,14 @@ const DefaultShareEndpoint = "https://telemetry.conduktor.io/attic/share"
 // What is NEVER sent: topic names, broker addresses, owner data, schema
 // subject names, raw byte totals, raw topic counts.
 type SharePayload struct {
-	Version            string             `json:"version"`
-	OS                 string             `json:"os"`
-	RunUUID            string             `json:"run_uuid"`
-	ClusterSizeBucket  ClusterSizeBucket  `json:"cluster_size_bucket"`
-	VerdictCounts      map[string]int     `json:"verdict_counts"`
-	ReclaimableBucket  string             `json:"reclaimable_bytes_bucket"`
-	TopicCountBucket   ClusterSizeBucket  `json:"topic_count_bucket"`
-	SchemaVersion      string             `json:"schema_version"`
+	Version           string            `json:"version"`
+	OS                string            `json:"os"`
+	RunUUID           string            `json:"run_uuid"`
+	ClusterSizeBucket ClusterSizeBucket `json:"cluster_size_bucket"`
+	VerdictCounts     map[string]int    `json:"verdict_counts"`
+	ReclaimableBucket string            `json:"reclaimable_bytes_bucket"`
+	TopicCountBucket  ClusterSizeBucket `json:"topic_count_bucket"`
+	SchemaVersion     string            `json:"schema_version"`
 }
 
 // ShareSchemaVersion versions the share payload schema independently of the

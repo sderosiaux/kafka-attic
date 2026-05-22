@@ -8,9 +8,9 @@ import (
 func TestTopicConfigSource_ReadsConfiguredKey(t *testing.T) {
 	src := newTopicConfigSource("owner")
 	owner, err := src.Lookup(context.Background(), "orders-1", map[string]string{
-		"owner":           "team-orders@acme.com",
-		"retention.ms":    "604800000",
-		"cleanup.policy":  "delete",
+		"owner":          "team-orders@acme.com",
+		"retention.ms":   "604800000",
+		"cleanup.policy": "delete",
 	})
 	if err != nil {
 		t.Fatalf("Lookup: %v", err)

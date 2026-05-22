@@ -223,11 +223,12 @@ func formatStorageBytes(bytes *int64, estimated bool) string {
 	// 1 decimal place, but drop ".0" only when the value is a whole number
 	// AND >= 100 (matches "412 GB" sample). Otherwise keep 1 decimal.
 	var num string
-	if val >= 100 && val == math.Trunc(val) {
+	switch {
+	case val >= 100 && val == math.Trunc(val):
 		num = fmt.Sprintf("%d", int64(val))
-	} else if val >= 100 {
+	case val >= 100:
 		num = fmt.Sprintf("%.0f", val)
-	} else {
+	default:
 		num = fmt.Sprintf("%.1f", val)
 	}
 	s := fmt.Sprintf("%s %s", num, unit)

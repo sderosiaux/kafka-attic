@@ -17,8 +17,8 @@ func i64(v int64) *int64 { return &v }
 
 func sampleSnapshot() *types.Snapshot {
 	return &types.Snapshot{
-		SchemaVersion:    "1.0.0",
-		AtticSpecVersion: "1.0.0",
+		SchemaVersion:     "1.0.0",
+		AtticSpecVersion:  "1.0.0",
 		KafkaAtticVersion: "1.0.0",
 		Scan: types.ScanInfo{
 			TopicCountScanned: 4821,
@@ -178,7 +178,7 @@ func TestSharer_Send_PayloadSchemaAndResponse(t *testing.T) {
 }
 
 func TestSharer_Send_RejectsEmptyURLResponse(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"url":""}`))
 	}))
@@ -194,7 +194,7 @@ func TestSharer_Send_RejectsEmptyURLResponse(t *testing.T) {
 }
 
 func TestSharer_Send_HTTPErrorPropagates(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}))
 	defer srv.Close()

@@ -150,7 +150,7 @@ func listAndDescribeGroups(
 // do it on the sums because per-partition committed → latest mapping is not
 // preserved past the FetchManyOffsets step. This matches SPEC §4.2 Tenancy
 // rules which only ask "is committed < latest" at the topic level.
-func computeLag(topic string, committedSum int64, latest map[int32]int64) int64 {
+func computeLag(_ string, committedSum int64, latest map[int32]int64) int64 {
 	if latest == nil {
 		return 0
 	}
@@ -186,11 +186,11 @@ func latestPerPartitionFromMetrics(metrics *offsetsResult) map[string]map[int32]
 // Kept as a comment + exported constants so callers (M2 scorer) reference the
 // same string identifiers and the test suite can drive every variant.
 const (
-	GroupStateStable               = "Stable"
-	GroupStatePreparingRebalance   = "PreparingRebalance"
-	GroupStateCompletingRebalance  = "CompletingRebalance"
-	GroupStateEmpty                = "Empty"
-	GroupStateDead                 = "Dead"
+	GroupStateStable              = "Stable"
+	GroupStatePreparingRebalance  = "PreparingRebalance"
+	GroupStateCompletingRebalance = "CompletingRebalance"
+	GroupStateEmpty               = "Empty"
+	GroupStateDead                = "Dead"
 )
 
 // Guard against an unused-import situation on linkers that don't fold the

@@ -121,7 +121,8 @@ func TestStoreInsertRetentionPrunesOldScans(t *testing.T) {
 	}
 	defer store.Close()
 
-	old := sampleSnapshot(time.Now().UTC().Add(-30*24*time.Hour),
+	old := sampleSnapshot(
+		time.Now().UTC().Add(-30*24*time.Hour),
 		topic("legacy", types.VerdictCandidate, 75, mkBytes(100)),
 	)
 	if _, err := store.Insert(old, 0); err != nil {
@@ -129,7 +130,8 @@ func TestStoreInsertRetentionPrunesOldScans(t *testing.T) {
 	}
 
 	// Inserting a new scan with retention=7 days must prune the 30-day-old one.
-	fresh := sampleSnapshot(time.Now().UTC(),
+	fresh := sampleSnapshot(
+		time.Now().UTC(),
 		topic("legacy", types.VerdictCandidate, 75, mkBytes(100)),
 	)
 	if _, err := store.Insert(fresh, 7); err != nil {

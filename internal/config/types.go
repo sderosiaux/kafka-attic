@@ -29,6 +29,7 @@ type ClusterConfig struct {
 // AuthType enumerates the supported authentication mechanisms.
 type AuthType string
 
+// AuthType enum values.
 const (
 	AuthNone      AuthType = "none"
 	AuthSASLPlain AuthType = "sasl_plain"
@@ -54,16 +55,16 @@ type AuthConfig struct {
 	Mechanism string `yaml:"mechanism,omitempty" mapstructure:"mechanism"` // SCRAM-SHA-256 | SCRAM-SHA-512
 
 	// iam
-	Region        string  `yaml:"region,omitempty" mapstructure:"region"`
-	Profile       *string `yaml:"profile,omitempty" mapstructure:"profile"`
-	AssumeRoleARN *string `yaml:"assume_role_arn,omitempty" mapstructure:"assume_role_arn"`
+	Region        string             `yaml:"region,omitempty" mapstructure:"region"`
+	Profile       *string            `yaml:"profile,omitempty" mapstructure:"profile"`
+	AssumeRoleARN *string            `yaml:"assume_role_arn,omitempty" mapstructure:"assume_role_arn"`
 	WebIdentity   *WebIdentityConfig `yaml:"web_identity,omitempty" mapstructure:"web_identity"`
 
 	// oauth
-	TokenEndpoint string `yaml:"token_endpoint,omitempty" mapstructure:"token_endpoint"`
-	ClientIDEnv   string `yaml:"client_id_env,omitempty" mapstructure:"client_id_env"`
+	TokenEndpoint   string `yaml:"token_endpoint,omitempty" mapstructure:"token_endpoint"`
+	ClientIDEnv     string `yaml:"client_id_env,omitempty" mapstructure:"client_id_env"`
 	ClientSecretEnv string `yaml:"client_secret_env,omitempty" mapstructure:"client_secret_env"`
-	Scope         string `yaml:"scope,omitempty" mapstructure:"scope"`
+	Scope           string `yaml:"scope,omitempty" mapstructure:"scope"`
 }
 
 // TLSConfig configures broker-side and client-side TLS material.
@@ -85,11 +86,11 @@ type WebIdentityConfig struct {
 
 // SchemaRegistryConfig — optional Confluent SR integration.
 type SchemaRegistryConfig struct {
-	Provider        string         `yaml:"provider" mapstructure:"provider"`
-	URL             string         `yaml:"url" mapstructure:"url"`
-	Auth            SRAuthConfig   `yaml:"auth" mapstructure:"auth"`
-	SubjectStrategy string         `yaml:"subject_strategy" mapstructure:"subject_strategy"`
-	OnFailure       string         `yaml:"on_failure" mapstructure:"on_failure"`
+	Provider        string       `yaml:"provider" mapstructure:"provider"`
+	URL             string       `yaml:"url" mapstructure:"url"`
+	Auth            SRAuthConfig `yaml:"auth" mapstructure:"auth"`
+	SubjectStrategy string       `yaml:"subject_strategy" mapstructure:"subject_strategy"`
+	OnFailure       string       `yaml:"on_failure" mapstructure:"on_failure"`
 }
 
 // SRAuthConfig — basic or bearer auth on top of the SR HTTP endpoint.
@@ -102,21 +103,24 @@ type SRAuthConfig struct {
 
 // OwnersConfig — sources and precedence for owner resolution.
 type OwnersConfig struct {
-	Precedence  []string                `yaml:"precedence" mapstructure:"precedence"`
-	File        *OwnersFileConfig       `yaml:"file,omitempty" mapstructure:"file"`
-	TopicConfig *OwnersTopicConfig      `yaml:"topic_config,omitempty" mapstructure:"topic_config"`
-	Backstage   *OwnersBackstageConfig  `yaml:"backstage,omitempty" mapstructure:"backstage"`
-	JSON        *OwnersJSONConfig       `yaml:"json,omitempty" mapstructure:"json"`
+	Precedence  []string               `yaml:"precedence" mapstructure:"precedence"`
+	File        *OwnersFileConfig      `yaml:"file,omitempty" mapstructure:"file"`
+	TopicConfig *OwnersTopicConfig     `yaml:"topic_config,omitempty" mapstructure:"topic_config"`
+	Backstage   *OwnersBackstageConfig `yaml:"backstage,omitempty" mapstructure:"backstage"`
+	JSON        *OwnersJSONConfig      `yaml:"json,omitempty" mapstructure:"json"`
 }
 
+// OwnersFileConfig configures a local YAML/JSON file owner source.
 type OwnersFileConfig struct {
 	Path string `yaml:"path" mapstructure:"path"`
 }
 
+// OwnersTopicConfig configures owner extraction from a Kafka topic config key.
 type OwnersTopicConfig struct {
 	Key string `yaml:"key" mapstructure:"key"`
 }
 
+// OwnersBackstageConfig configures the Backstage catalog owner source.
 type OwnersBackstageConfig struct {
 	URL              string       `yaml:"url" mapstructure:"url"`
 	Auth             SRAuthConfig `yaml:"auth" mapstructure:"auth"`
@@ -124,6 +128,7 @@ type OwnersBackstageConfig struct {
 	FallbackRelation string       `yaml:"fallback_relation" mapstructure:"fallback_relation"`
 }
 
+// OwnersJSONConfig configures a generic JSON HTTP owner source.
 type OwnersJSONConfig struct {
 	URL     string            `yaml:"url" mapstructure:"url"`
 	Headers map[string]string `yaml:"headers" mapstructure:"headers"`
@@ -132,9 +137,9 @@ type OwnersJSONConfig struct {
 
 // AtticScoreConfig — weights, thresholds and the piecewise activity curve.
 type AtticScoreConfig struct {
-	SpecVersion   string             `yaml:"spec_version" mapstructure:"spec_version"`
-	Weights       Weights            `yaml:"weights" mapstructure:"weights"`
-	Thresholds    Thresholds         `yaml:"thresholds" mapstructure:"thresholds"`
+	SpecVersion   string               `yaml:"spec_version" mapstructure:"spec_version"`
+	Weights       Weights              `yaml:"weights" mapstructure:"weights"`
+	Thresholds    Thresholds           `yaml:"thresholds" mapstructure:"thresholds"`
 	ActivityCurve []ActivityCurvePoint `yaml:"activity_curve" mapstructure:"activity_curve"`
 }
 
@@ -165,44 +170,52 @@ type ActivityCurvePoint struct {
 	Score float64 `yaml:"score" mapstructure:"score"`
 }
 
+// OversizedConfig governs the OVERSIZED flag detector.
 type OversizedConfig struct {
 	MaxPartitionsForThroughput int  `yaml:"max_partitions_for_throughput" mapstructure:"max_partitions_for_throughput"`
 	LowTrafficMsgsPerSec       int  `yaml:"low_traffic_msgs_per_sec" mapstructure:"low_traffic_msgs_per_sec"`
 	RequiresMetrics            bool `yaml:"requires_metrics" mapstructure:"requires_metrics"`
 }
 
+// SkewConfig governs the SKEWED flag detector.
 type SkewConfig struct {
 	MaxRatioToAverage float64 `yaml:"max_ratio_to_average" mapstructure:"max_ratio_to_average"`
 }
 
+// MetricsConfig selects the optional external metrics source.
 type MetricsConfig struct {
-	Source     string                  `yaml:"source" mapstructure:"source"`
+	Source     string                   `yaml:"source" mapstructure:"source"`
 	Prometheus *MetricsPrometheusConfig `yaml:"prometheus,omitempty" mapstructure:"prometheus"`
 }
 
+// MetricsPrometheusConfig configures the Prometheus metrics source.
 type MetricsPrometheusConfig struct {
-	URL              string `yaml:"url" mapstructure:"url"`
-	QueryMsgsPerSec  string `yaml:"query_msgs_per_sec" mapstructure:"query_msgs_per_sec"`
+	URL             string `yaml:"url" mapstructure:"url"`
+	QueryMsgsPerSec string `yaml:"query_msgs_per_sec" mapstructure:"query_msgs_per_sec"`
 }
 
+// HistoryConfig configures the local SQLite history store.
 type HistoryConfig struct {
 	Enabled       bool   `yaml:"enabled" mapstructure:"enabled"`
 	Path          string `yaml:"path" mapstructure:"path"`
 	RetentionDays int    `yaml:"retention_days" mapstructure:"retention_days"`
 }
 
+// ExcludePatternsConfig configures topic-name exclusion patterns.
 type ExcludePatternsConfig struct {
 	Defaults   bool     `yaml:"defaults" mapstructure:"defaults"`
 	Effect     string   `yaml:"effect" mapstructure:"effect"`
 	Additional []string `yaml:"additional" mapstructure:"additional"`
 }
 
+// TelemetryConfig configures anonymous telemetry pings.
 type TelemetryConfig struct {
 	Enabled                 bool   `yaml:"enabled" mapstructure:"enabled"`
 	Endpoint                string `yaml:"endpoint" mapstructure:"endpoint"`
 	IncludeAnonymousRunUUID bool   `yaml:"include_anonymous_run_uuid" mapstructure:"include_anonymous_run_uuid"`
 }
 
+// ReportConfig configures report rendering and output.
 type ReportConfig struct {
 	Format               string            `yaml:"format" mapstructure:"format"`
 	Output               string            `yaml:"output" mapstructure:"output"`

@@ -34,7 +34,7 @@ func newAuditCmd() *cobra.Command {
 The HTML report always includes a cleanup script section (SPEC §3.1) listing
 only topics that satisfy every inclusion rule. The default output path is
 ./attic-report.html.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			cfg, err := loadConfig()
 			if err != nil {
 				return err
@@ -105,7 +105,7 @@ func renderHTML(w io.Writer, snap *types.Snapshot, cfg *config.Config) error {
 // SPEC reserves the rich rendering for the HTML report; this is the CLI echo.
 func printCleanupSection(w io.Writer, snap *types.Snapshot) {
 	fmt.Fprintln(w, "Cleanup candidates (LIKELY_UNUSED with full evidence):")
-	any := false
+	found := false
 	for _, t := range snap.Topics {
 		if t.Attic.Verdict != types.VerdictLikelyUnused {
 			continue
@@ -122,10 +122,10 @@ func printCleanupSection(w io.Writer, snap *types.Snapshot) {
 		if blocked {
 			continue
 		}
-		any = true
+		found = true
 		fmt.Fprintf(w, "  - %s\n", t.Name)
 	}
-	if !any {
+	if !found {
 		fmt.Fprintln(w, "  (none)")
 	}
 }
@@ -137,7 +137,7 @@ func insertHistory(snap *types.Snapshot, hc *config.HistoryConfig) error {
 	if err != nil {
 		return err
 	}
-	defer store.Close()
+	defer func() { _ = store.Close() }()
 	_, err = store.Insert(snap, hc.RetentionDays)
 	return err
 }

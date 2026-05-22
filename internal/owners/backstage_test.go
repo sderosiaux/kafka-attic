@@ -56,7 +56,7 @@ func TestBackstage_SpecOwner(t *testing.T) {
 }
 
 func TestBackstage_FallbackToRelations(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`{
 			"spec":{"owner":""},
 			"relations":[
@@ -107,7 +107,7 @@ func TestBackstage_NotFoundReturnsNil(t *testing.T) {
 }
 
 func TestBackstage_5xxReturnsError(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		http.Error(w, "boom", http.StatusInternalServerError)
 	}))
 	defer srv.Close()

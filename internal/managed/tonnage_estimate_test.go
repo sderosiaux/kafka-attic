@@ -131,7 +131,7 @@ func TestEstimateTonnage_FractionalAverageRoundsDown(t *testing.T) {
 // someone adds a "sample bytes" input later, this test will fail to compile
 // because the literal below enumerates every field by name. SPEC §5.6
 // privacy guarantee.
-func TestEstimateTonnage_NoRecordSamplingContract(t *testing.T) {
+func TestEstimateTonnage_NoRecordSamplingContract(_ *testing.T) {
 	_ = EstimateInput{
 		SegmentBytes:       0,
 		SegmentRecordCount: 0,

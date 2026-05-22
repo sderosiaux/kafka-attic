@@ -25,12 +25,13 @@ const PingTimeout = 5 * time.Second
 // Bucketing protects against fingerprinting individual clusters by topic count.
 type ClusterSizeBucket string
 
+// ClusterSizeBucket enum values.
 const (
-	BucketUnknown      ClusterSizeBucket = "unknown"
-	Bucket1To100       ClusterSizeBucket = "1-100"
-	Bucket100To1k      ClusterSizeBucket = "100-1k"
-	Bucket1kTo10k      ClusterSizeBucket = "1k-10k"
-	Bucket10kPlus      ClusterSizeBucket = "10k+"
+	BucketUnknown ClusterSizeBucket = "unknown"
+	Bucket1To100  ClusterSizeBucket = "1-100"
+	Bucket100To1k ClusterSizeBucket = "100-1k"
+	Bucket1kTo10k ClusterSizeBucket = "1k-10k"
+	Bucket10kPlus ClusterSizeBucket = "10k+"
 )
 
 // BucketFor returns the ClusterSizeBucket for a given topic count.

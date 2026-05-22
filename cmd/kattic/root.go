@@ -39,7 +39,7 @@ Kafka and never reads record contents.`,
 		Version:       fmt.Sprintf("%s (commit %s, built %s)", version, commit, date),
 		SilenceUsage:  true,
 		SilenceErrors: false,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// Run the first-run telemetry consent prompt before any subcommand
 			// touches a cluster. The prompt is a no-op on second runs and when
 			// stdin is not a TTY.
@@ -79,8 +79,9 @@ func resolveConfigPath() string {
 func ensureConsent(cmd *cobra.Command) error {
 	store, err := telemetry.DefaultStore()
 	if err != nil {
-		// No home dir — skip silently.
-		return nil
+		// No home dir — skip silently. Telemetry is best-effort and must
+		// never block a command from running.
+		return nil //nolint:nilerr // intentional fall-through on missing home dir
 	}
 	interactive := isTerminal(os.Stdin)
 	_, _ = telemetry.EnsurePrompted(store, telemetry.Prompter{

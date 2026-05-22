@@ -48,7 +48,8 @@ func TestKatticScanAgainstRedpanda(t *testing.T) {
 	defer cancel()
 
 	// ── 1. Start Redpanda ────────────────────────────────────────────────
-	container, err := rpcontainer.Run(ctx,
+	container, err := rpcontainer.Run(
+		ctx,
 		"redpandadata/redpanda:latest",
 		testcontainers.WithEnv(map[string]string{
 			// Smaller cluster footprint for local Docker.

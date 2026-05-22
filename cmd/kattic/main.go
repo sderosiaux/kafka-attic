@@ -1,3 +1,4 @@
+// Package main is the kattic command-line entry point.
 package main
 
 import (

@@ -70,7 +70,7 @@ func TestJSONSource_CustomExtractAndHeaderEnv(t *testing.T) {
 }
 
 func TestJSONSource_ExtractNoMatchReturnsNil(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`{"team":"x"}`))
 	}))
 	defer srv.Close()
@@ -123,14 +123,14 @@ func TestExpandEnv(t *testing.T) {
 	t.Setenv("FOO", "bar")
 	t.Setenv("BAZ", "qux")
 	cases := map[string]string{
-		"$FOO":            "bar",
-		"${FOO}":          "bar",
-		"Bearer ${FOO}":   "Bearer bar",
-		"$FOO-$BAZ":       "bar-qux",
-		"no vars here":    "no vars here",
-		"$MISSING":        "",
-		"${MISSING}":      "",
-		"$":               "$",
+		"$FOO":          "bar",
+		"${FOO}":        "bar",
+		"Bearer ${FOO}": "Bearer bar",
+		"$FOO-$BAZ":     "bar-qux",
+		"no vars here":  "no vars here",
+		"$MISSING":      "",
+		"${MISSING}":    "",
+		"$":             "$",
 	}
 	for in, want := range cases {
 		got := expandEnv(in)

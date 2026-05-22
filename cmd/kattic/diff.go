@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -50,7 +51,7 @@ func newDiffCmd() *cobra.Command {
 
 // loadSnapshotFile reads a JSON snapshot from disk.
 func loadSnapshotFile(path string) (*types.Snapshot, error) {
-	b, err := os.ReadFile(path)
+	b, err := os.ReadFile(filepath.Clean(path)) //nolint:gosec // operator-supplied snapshot path
 	if err != nil {
 		return nil, err
 	}

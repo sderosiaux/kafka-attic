@@ -78,11 +78,13 @@ func TestDiffEmpty(t *testing.T) {
 }
 
 func TestDiffNoChanges(t *testing.T) {
-	a := sampleSnapshot(time.Now().UTC(),
+	a := sampleSnapshot(
+		time.Now().UTC(),
 		topic("x", types.VerdictActive, 5, mkBytes(100)),
 		topic("y", types.VerdictLikelyUnused, 95, mkBytes(1)),
 	)
-	b := sampleSnapshot(time.Now().UTC(),
+	b := sampleSnapshot(
+		time.Now().UTC(),
 		topic("x", types.VerdictActive, 5, mkBytes(100)),
 		topic("y", types.VerdictLikelyUnused, 95, mkBytes(1)),
 	)
@@ -93,7 +95,8 @@ func TestDiffNoChanges(t *testing.T) {
 }
 
 func TestDiffRenderHumanIncludesKeyFields(t *testing.T) {
-	a := sampleSnapshot(time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC),
+	a := sampleSnapshot(
+		time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC),
 		topic("dead", types.VerdictCandidate, 80, mkBytes(1<<20)),
 	)
 	b := sampleSnapshot(time.Date(2026, 5, 8, 0, 0, 0, 0, time.UTC))

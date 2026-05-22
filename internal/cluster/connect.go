@@ -1,3 +1,5 @@
+// Package cluster builds franz-go kgo.Client configurations from kafka-attic
+// cluster + auth configuration, including TLS, SASL, and OAuth.
 package cluster
 
 import (

@@ -120,7 +120,7 @@ func TestResolver_ResolveAllConcurrent(t *testing.T) {
 
 func TestResolver_ResolveAllPassesTopicConfigs(t *testing.T) {
 	src := &stubSource{
-		name: "tc",
+		name:    "tc",
 		answers: map[string]*types.OwnerInfo{},
 	}
 	// Custom source that reads from the per-topic configs map directly.

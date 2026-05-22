@@ -63,7 +63,7 @@ func (s *Store) Insert(snap *types.Snapshot, retentionDays int) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("history: prepare topic insert: %w", err)
 	}
-	defer stmt.Close()
+	defer func() { _ = stmt.Close() }()
 
 	for _, t := range snap.Topics {
 		var (

@@ -11,17 +11,17 @@ import (
 // scorer.go from the topic + the per-sub-signal results, so flags.go can stay
 // a pure function over a small struct.
 type flagInputs struct {
-	Topic              *types.Topic
-	IntentSkipped      bool
-	IntentScore        int
-	TonnageEvidence    types.Evidence
-	TonnageSkipped     bool
-	PartitionAuthFail  bool
-	GroupsHaveCommit   bool  // any group has committed_offset > 0
-	StrategyOK         bool  // topic-derived strategy (topic_name / topic_record)
-	MetricsConfigured  bool  // cfg.Metrics != nil → OVERSIZED can be emitted
-	OversizedFlagged   bool  // pre-computed elsewhere; default false here
-	SkewedFlagged      bool  // pre-computed elsewhere; default false here
+	Topic             *types.Topic
+	IntentSkipped     bool
+	IntentScore       int
+	TonnageEvidence   types.Evidence
+	TonnageSkipped    bool
+	PartitionAuthFail bool
+	GroupsHaveCommit  bool // any group has committed_offset > 0
+	StrategyOK        bool // topic-derived strategy (topic_name / topic_record)
+	MetricsConfigured bool // cfg.Metrics != nil → OVERSIZED can be emitted
+	OversizedFlagged  bool // pre-computed elsewhere; default false here
+	SkewedFlagged     bool // pre-computed elsewhere; default false here
 }
 
 // computeFlags returns the per-topic flag set per SPEC §4.5 and Appendix D.
@@ -71,7 +71,7 @@ func computeFlags(in flagInputs, cfg *config.Config) []types.Flag {
 	// passes OversizedFlagged=true. We additionally enforce the
 	// cfg.Oversized.RequiresMetrics gate.
 	if in.OversizedFlagged && in.MetricsConfigured {
-		if cfg == nil || cfg.Oversized == nil || cfg.Oversized.RequiresMetrics == false || in.MetricsConfigured {
+		if cfg == nil || cfg.Oversized == nil || !cfg.Oversized.RequiresMetrics || in.MetricsConfigured {
 			set[types.FlagOversized] = struct{}{}
 		}
 	}

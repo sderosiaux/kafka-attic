@@ -7,11 +7,11 @@ import (
 // Consumer-group states reported by Kafka (KIP-211 + KIP-839). We match these
 // case-sensitively because kadm returns them verbatim from the broker.
 const (
-	groupStable               = "Stable"
-	groupPreparingRebalance   = "PreparingRebalance"
-	groupCompletingRebalance  = "CompletingRebalance"
-	groupEmpty                = "Empty"
-	groupDead                 = "Dead"
+	groupStable              = "Stable"
+	groupPreparingRebalance  = "PreparingRebalance"
+	groupCompletingRebalance = "CompletingRebalance"
+	groupEmpty               = "Empty"
+	groupDead                = "Dead"
 )
 
 // scoreTenancy implements the cascade in SPEC §4.2. The first matching rule

@@ -26,12 +26,12 @@ import (
 
 // clusterProfile drives one synthetic cluster summary.
 type clusterProfile struct {
-	ID                 string
-	SizeBucket         string // small | medium | large
-	TopicCount         int
-	ClusterType        string // self_managed | msk_provisioned | msk_serverless | confluent_cloud | redpanda | aiven
-	SchemaRegistry     bool
-	TonnageDefault     atticspec.Evidence
+	ID             string
+	SizeBucket     string // small | medium | large
+	TopicCount     int
+	ClusterType    string // self_managed | msk_provisioned | msk_serverless | confluent_cloud | redpanda | aiven
+	SchemaRegistry bool
+	TonnageDefault atticspec.Evidence
 	// Mix knobs (sum < 1; rest goes to active).
 	FracLikelyUnused float64
 	FracCandidate    float64
@@ -44,30 +44,30 @@ type clusterProfile struct {
 
 // clusterSummary is the per-cluster output row.
 type clusterSummary struct {
-	ID               string                     `json:"id"`
-	SizeBucket       string                     `json:"size_bucket"`
-	ClusterType      string                     `json:"cluster_type"`
-	SchemaRegistry   bool                       `json:"schema_registry"`
-	TonnageDefault   atticspec.Evidence         `json:"tonnage_default_evidence"`
-	TopicCount       int                        `json:"topic_count"`
-	TotalBytes       int64                      `json:"total_bytes"`
-	ReclaimableBytes int64                      `json:"reclaimable_bytes"`
-	Verdicts         map[atticspec.Verdict]int  `json:"verdicts"`
-	ScoreHistogram   map[string]int             `json:"score_histogram"`
-	FlagCounts       map[atticspec.Flag]int     `json:"flag_counts"`
-	MeanScore        float64                    `json:"mean_score"`
-	MedianScore      float64                    `json:"median_score"`
+	ID               string                    `json:"id"`
+	SizeBucket       string                    `json:"size_bucket"`
+	ClusterType      string                    `json:"cluster_type"`
+	SchemaRegistry   bool                      `json:"schema_registry"`
+	TonnageDefault   atticspec.Evidence        `json:"tonnage_default_evidence"`
+	TopicCount       int                       `json:"topic_count"`
+	TotalBytes       int64                     `json:"total_bytes"`
+	ReclaimableBytes int64                     `json:"reclaimable_bytes"`
+	Verdicts         map[atticspec.Verdict]int `json:"verdicts"`
+	ScoreHistogram   map[string]int            `json:"score_histogram"`
+	FlagCounts       map[atticspec.Flag]int    `json:"flag_counts"`
+	MeanScore        float64                   `json:"mean_score"`
+	MedianScore      float64                   `json:"median_score"`
 }
 
 // document is the top-level JSON envelope.
 type document struct {
-	Notice       string                     `json:"notice"`
-	SpecVersion  string                     `json:"attic_spec_version"`
-	Seed         uint64                     `json:"seed"`
-	Generator    string                     `json:"generator"`
-	Clusters     []clusterSummary           `json:"clusters"`
-	Aggregate    map[atticspec.Verdict]int  `json:"aggregate_verdicts"`
-	AggregateFlg map[atticspec.Flag]int     `json:"aggregate_flag_counts"`
+	Notice       string                    `json:"notice"`
+	SpecVersion  string                    `json:"attic_spec_version"`
+	Seed         uint64                    `json:"seed"`
+	Generator    string                    `json:"generator"`
+	Clusters     []clusterSummary          `json:"clusters"`
+	Aggregate    map[atticspec.Verdict]int `json:"aggregate_verdicts"`
+	AggregateFlg map[atticspec.Flag]int    `json:"aggregate_flag_counts"`
 }
 
 var defaultProfiles = []clusterProfile{
@@ -143,7 +143,7 @@ func main() {
 	seed := flag.Uint64("seed", 42, "PRNG seed (idempotent: same seed → same JSON)")
 	flag.Parse()
 
-	rng := rand.New(rand.NewPCG(*seed, *seed^0x9E3779B97F4A7C15))
+	rng := rand.New(rand.NewPCG(*seed, *seed^0x9E3779B97F4A7C15)) //nolint:gosec // deterministic synthetic-data generator, not security-sensitive
 
 	clusters := make([]clusterSummary, 0, len(defaultProfiles))
 	aggregate := map[atticspec.Verdict]int{}
@@ -241,7 +241,7 @@ func simulate(rng *rand.Rand, p clusterProfile) clusterSummary {
 		// LIKELY_UNUSED / CANDIDATE topics tend to be smaller than ACTIVE
 		// (the "long tail of forgotten topics" pattern). Scale down.
 		if v == atticspec.VerdictLikelyUnused || v == atticspec.VerdictCandidate {
-			base = base / 3
+			base /= 3
 		}
 		if v == atticspec.VerdictLikelyUnused {
 			// REMOTE_STORAGE / MISSING_SIGNAL would block reclaim — skip.

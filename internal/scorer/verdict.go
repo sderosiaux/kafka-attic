@@ -9,11 +9,11 @@ import (
 // match the names listed in SPEC Appendix C ("e.g., ESTIMATED_EVIDENCE,
 // COMPACTED, REMOTE_STORAGE").
 const (
-	cappedByMissingSignal      = "MISSING_SIGNAL"
-	cappedByEstimatedEvidence  = "ESTIMATED_EVIDENCE"
-	cappedByCompacted          = "COMPACTED"
-	cappedByRemoteStorage      = "REMOTE_STORAGE"
-	cappedByAppearsNeverUsed   = "APPEARS_NEVER_USED"
+	cappedByMissingSignal     = "MISSING_SIGNAL"
+	cappedByEstimatedEvidence = "ESTIMATED_EVIDENCE"
+	cappedByCompacted         = "COMPACTED"
+	cappedByRemoteStorage     = "REMOTE_STORAGE"
+	cappedByAppearsNeverUsed  = "APPEARS_NEVER_USED"
 )
 
 // computeRawScore returns the weighted sum of sub-scores with skipped-weight
@@ -90,7 +90,8 @@ func scoreToVerdict(raw float64, th config.Thresholds) types.Verdict {
 
 // verdictRank assigns an ordering so we can apply caps (caps lower the
 // verdict; we keep the lower of the two).
-//   ACTIVE < INSPECT < CANDIDATE < LIKELY_UNUSED
+//
+//	ACTIVE < INSPECT < CANDIDATE < LIKELY_UNUSED
 func verdictRank(v types.Verdict) int {
 	switch v {
 	case types.VerdictActive:

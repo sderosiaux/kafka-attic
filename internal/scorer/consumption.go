@@ -6,9 +6,9 @@ import (
 
 // scoreConsumption implements SPEC §4.2 Consumption:
 //
-//   earliest == latest == 0 across partitions  → 100  (never used)
-//   earliest > 0 && earliest == latest          → 90  (PURGED)
-//   otherwise                                   →  0  (records present)
+//	earliest == latest == 0 across partitions  → 100  (never used)
+//	earliest > 0 && earliest == latest          → 90  (PURGED)
+//	otherwise                                   →  0  (records present)
 //
 // Evidence is KNOWN unless any partition's ListOffsets failed (caller passes
 // partitionAuthFailed=true) → UNKNOWN + neutral 50 + MISSING_SIGNAL.
@@ -21,8 +21,8 @@ import (
 // Decision rule (per-partition):
 //   - If every partition has earliest == latest, the topic has no live
 //     records. Subdivide:
-//       earliest == 0 across all  → 100 (never used)
-//       earliest > 0 anywhere     →  90 (purged)
+//     earliest == 0 across all  → 100 (never used)
+//     earliest > 0 anywhere     →  90 (purged)
 //   - Otherwise at least one partition has earliest < latest → records
 //     present → 0.
 func scoreConsumption(

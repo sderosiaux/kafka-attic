@@ -6,7 +6,9 @@ run:
 
 output:
   formats:
-    - format: colored-line-number
+    text:
+      path: stdout
+      colors: true
 
 linters:
   default: none
@@ -19,7 +21,6 @@ linters:
     - gocritic
     - gosec
     - revive
-    - gofumpt
     - misspell
     - unconvert
     - prealloc
@@ -40,11 +41,16 @@ linters:
       - path: _test\.go
         linters:
           - gosec
-        text: "G104"
       - path: _test\.go
         linters:
           - errcheck
           - gocritic
+
+formatters:
+  enable:
+    - gofumpt
+    - gofmt
+    - goimports
 
 severity:
   default: warning

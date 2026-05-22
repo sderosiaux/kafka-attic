@@ -1,3 +1,4 @@
+// Package config loads, validates, and represents kattic.yaml configuration.
 package config
 
 import (
@@ -159,7 +160,7 @@ func validateWeights(w Weights) error {
 }
 
 func validateThresholds(t Thresholds) error {
-	if !(t.LikelyUnused > t.Candidate && t.Candidate > t.Inspect) {
+	if t.LikelyUnused <= t.Candidate || t.Candidate <= t.Inspect {
 		return fmt.Errorf("attic_score.thresholds must satisfy likely_unused > candidate > inspect, got likely_unused=%d candidate=%d inspect=%d",
 			t.LikelyUnused, t.Candidate, t.Inspect)
 	}

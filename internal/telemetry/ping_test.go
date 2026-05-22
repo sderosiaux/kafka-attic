@@ -207,7 +207,7 @@ func TestPinger_Send_Times_OutFast(t *testing.T) {
 	// register srv.Close FIRST, then close(release) SECOND — so on teardown
 	// release closes first, the handler returns, then srv.Close finishes.
 	release := make(chan struct{})
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
 		select {
 		case <-release:
 		case <-r.Context().Done():

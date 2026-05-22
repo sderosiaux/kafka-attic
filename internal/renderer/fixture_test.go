@@ -10,8 +10,7 @@ import (
 // "287d ago" / "2h ago" outputs deterministic.
 var fixedNow = time.Date(2026, 5, 21, 9, 38, 0, 0, time.UTC)
 
-func ptrInt64(v int64) *int64       { return &v }
-func ptrString(v string) *string    { return &v }
+func ptrInt64(v int64) *int64        { return &v }
 func ptrTime(v time.Time) *time.Time { return &v }
 
 // fixtureSnapshot returns the snapshot exercised by every renderer test.
@@ -59,8 +58,8 @@ func fixtureSnapshot() *types.Snapshot {
 			},
 			MissingSignalsGlobal: []string{},
 			ConfigSnapshot: types.ConfigSnapshot{
-				AtticWeights: weights,
-				Thresholds:   types.AtticThresholds{LikelyUnused: 90, Candidate: 70, Inspect: 40},
+				AtticWeights:  weights,
+				Thresholds:    types.AtticThresholds{LikelyUnused: 90, Candidate: 70, Inspect: 40},
 				ActivityCurve: curve,
 			},
 		},

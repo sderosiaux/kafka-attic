@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"runtime"
 	"time"
 
@@ -29,7 +30,7 @@ func newScanCmd() *cobra.Command {
 
 By default the output goes to stdout in the 'table' format. Use --format json
 or --format csv for machine-readable output, and --output to redirect to a file.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			cfg, err := loadConfig()
 			if err != nil {
 				return err
@@ -91,7 +92,7 @@ func openOutput(path string) (io.Writer, func(), error) {
 	if path == "" {
 		return os.Stdout, func() {}, nil
 	}
-	f, err := os.Create(path)
+	f, err := os.Create(filepath.Clean(path)) //nolint:gosec // operator-supplied output path
 	if err != nil {
 		return nil, func() {}, fmt.Errorf("create output %s: %w", path, err)
 	}

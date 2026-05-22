@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 
 	"github.com/conduktor/kafka-attic/internal/types"
@@ -32,7 +33,7 @@ type compiledEntry struct {
 }
 
 func newFileSource(path string) (Source, []string, error) {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(filepath.Clean(path)) //nolint:gosec // path is operator-supplied config value
 	if err != nil {
 		return nil, nil, fmt.Errorf("read %s: %w", path, err)
 	}

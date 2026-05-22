@@ -9,13 +9,13 @@ import (
 // TopicDelta describes the change between two recorded states for a single
 // topic. Either Before or After can be nil to signal "did not exist".
 type TopicDelta struct {
-	Name           string        `json:"name"`
-	BeforeVerdict  types.Verdict `json:"before_verdict,omitempty"`
-	AfterVerdict   types.Verdict `json:"after_verdict,omitempty"`
-	BeforeScore    *float64      `json:"before_score,omitempty"`
-	AfterScore     *float64      `json:"after_score,omitempty"`
-	BeforeBytes    *int64        `json:"before_bytes,omitempty"`
-	AfterBytes     *int64        `json:"after_bytes,omitempty"`
+	Name          string        `json:"name"`
+	BeforeVerdict types.Verdict `json:"before_verdict,omitempty"`
+	AfterVerdict  types.Verdict `json:"after_verdict,omitempty"`
+	BeforeScore   *float64      `json:"before_score,omitempty"`
+	AfterScore    *float64      `json:"after_score,omitempty"`
+	BeforeBytes   *int64        `json:"before_bytes,omitempty"`
+	AfterBytes    *int64        `json:"after_bytes,omitempty"`
 }
 
 // DiffReport summarises the per-topic transitions between two snapshots
@@ -100,10 +100,10 @@ func Diff(a, b *types.Snapshot) *DiffReport {
 			// Brand new topic.
 			if bt.Attic.Verdict == types.VerdictLikelyUnused {
 				report.NewlyLikelyUnused = append(report.NewlyLikelyUnused, TopicDelta{
-					Name:          name,
-					AfterVerdict:  bt.Attic.Verdict,
-					AfterScore:    ptrFloat(bt.Attic.RawScore),
-					AfterBytes:    copyBytes(bt.Storage.Bytes),
+					Name:         name,
+					AfterVerdict: bt.Attic.Verdict,
+					AfterScore:   ptrFloat(bt.Attic.RawScore),
+					AfterBytes:   copyBytes(bt.Storage.Bytes),
 				})
 			}
 			continue

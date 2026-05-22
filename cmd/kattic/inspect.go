@@ -19,7 +19,7 @@ func newInspectCmd() *cobra.Command {
 		Use:   "inspect",
 		Short: "Single-topic deep dive",
 		Long:  "Print every signal, evidence level, and the score breakdown for a single topic as JSON.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			if topic == "" {
 				return fmt.Errorf("--topic is required")
 			}
