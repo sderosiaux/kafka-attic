@@ -254,15 +254,16 @@
         height: 64px;
       }
       .brand {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 10px;
         color: var(--text);
+        line-height: 1;
       }
       .brand-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
         flex-shrink: 0;
         box-shadow: var(--shadow-sm);
         background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
@@ -270,23 +271,31 @@
         align-items: center;
         justify-content: center;
         color: #fff;
-        font-family: var(--mono);
-        font-weight: 700;
-        font-size: 16px;
-        letter-spacing: -0.04em;
       }
-      .brand-text { display: flex; flex-direction: column; line-height: 1.05; }
+      .brand-icon svg {
+        width: 20px;
+        height: 20px;
+        display: block;
+      }
+      .brand-text {
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 2px;
+        line-height: 1;
+      }
       .brand-text .name {
         font-weight: 650;
         font-size: 15px;
         letter-spacing: -0.01em;
+        line-height: 1;
       }
       .brand-text .by {
-        font-size: 10.5px;
+        font-size: 11px;
         color: var(--muted);
         font-weight: 500;
-        margin-top: 2px;
         letter-spacing: 0.01em;
+        line-height: 1;
       }
       .brand-text .by a { color: var(--muted); }
       .brand-text .by a:hover { color: var(--text); }
@@ -531,6 +540,119 @@
 
       /* Sections */
       section { padding: 96px 0; }
+
+      /* TCO section */
+      .tco {
+        background: linear-gradient(180deg, #fff 0%, var(--bg-soft) 100%);
+        border-bottom: 1px solid var(--border);
+      }
+      .tco-grid {
+        margin-top: 48px;
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(3, 1fr);
+      }
+      @media (max-width: 980px) { .tco-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 640px) { .tco-grid { grid-template-columns: 1fr; } }
+      .tco-card {
+        position: relative;
+        padding: 28px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      }
+      .tco-card::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 12px; bottom: 12px;
+        width: 3px;
+        border-radius: 0 3px 3px 0;
+        background: linear-gradient(180deg, #2563eb 0%, #06b6d4 100%);
+      }
+      .tco-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.18),
+          0 26px 50px -25px rgba(15, 23, 42, 0.25);
+        border-color: transparent;
+      }
+      .tco-card .tco-label {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .tco-card .tco-number {
+        font-family: var(--mono);
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--text);
+        letter-spacing: -0.02em;
+      }
+      .tco-card .tco-number .unit {
+        font-size: 14px;
+        color: var(--muted);
+        font-weight: 500;
+        margin-left: 4px;
+        letter-spacing: 0;
+      }
+      .tco-card h3 {
+        margin: 0;
+      }
+      .tco-card p {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .tco-card code {
+        font-family: var(--mono);
+        font-size: 12px;
+        background: var(--bg-soft);
+        padding: 1px 6px;
+        border-radius: 4px;
+        color: var(--text);
+      }
+      .tco-notes {
+        margin-top: 56px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+      }
+      @media (max-width: 760px) { .tco-notes { grid-template-columns: 1fr; } }
+      .tco-note {
+        padding: 24px 28px;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+      }
+      .tco-note h4 {
+        margin: 0 0 8px;
+        font-size: 15px;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+      }
+      .tco-note p {
+        margin: 0;
+        font-size: 13.5px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .tco-note .provider {
+        display: inline-block;
+        margin-bottom: 8px;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
       section .eyebrow {
         display: inline-block;
         font-size: 12px;
@@ -1304,7 +1426,13 @@
     <header class="nav" id="nav">
       <div class="wrap nav-inner">
         <a class="brand" href="#top">
-          <span class="brand-icon" aria-hidden="true">k</span>
+          <span class="brand-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 21V8l8-5 8 5v13"/>
+              <path d="M9 21v-7h6v7"/>
+              <path d="M4 8h16"/>
+            </svg>
+          </span>
           <span class="brand-text">
             <span class="name">kafka-attic</span>
             <span class="by">by <a href="https://conduktor.io?utm_source=kafka-attic&amp;utm_medium=oss&amp;utm_campaign=landing&amp;utm_content=brand" rel="noopener">Conduktor</a></span>
@@ -1312,6 +1440,7 @@
         </a>
         <nav class="nav-links">
           <a href="#why">Why</a>
+          <a href="#tco">Cost</a>
           <a href="#how">How it works</a>
           <a href="#features">Features</a>
           <a href="#faq">FAQ</a>
@@ -1343,11 +1472,6 @@
     <main id="top">
       <section class="hero">
         <div class="wrap">
-          <div class="badges">
-            <span class="badge"><span class="dot"></span>v1.0 — Apache 2.0</span>
-            <span class="badge">Single static binary</span>
-            <span class="badge">Read-only by construction</span>
-          </div>
           <h1>
             <span class="hero-name">kafka-attic</span>
             Find your Kafka <span class="accent">topic graveyard.</span>
@@ -1538,6 +1662,102 @@
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="tco" id="tco">
+        <div class="wrap">
+          <span class="eyebrow">Cost &amp; TCO</span>
+          <h2>Every dead topic still <span class="accent">rents disk, memory, and metadata.</span></h2>
+          <p class="lede">
+            Kafka topic sprawl is not a cosmetic problem. Storage, partitions, broker memory, controller state, schema subjects, and managed-Kafka per-resource billing all compound. A 4,000-topic cluster where 25% is dead is a real line item on the platform budget — and a real performance ceiling on the controller.
+          </p>
+
+          <div class="tco-grid">
+            <div class="tco-card">
+              <span class="tco-label">Storage</span>
+              <span class="tco-number">38.2 <span class="unit">TB reclaimable*</span></span>
+              <h3>Disk is the obvious one</h3>
+              <p>
+                Stale and oversized topics keep retention windows full of records nobody reads. On managed Kafka, that's a direct GB-month bill; on self-managed, it's EBS / SSD provisioning, replication bandwidth across <code>min.insync.replicas</code>, and longer recovery times after broker restarts.
+              </p>
+            </div>
+            <div class="tco-card">
+              <span class="tco-label">Partitions</span>
+              <span class="tco-number">~10 <span class="unit">MB heap / partition</span></span>
+              <h3>Every partition has overhead</h3>
+              <p>
+                Each partition consumes leader-side broker memory (page-cache reservation, index files, follower-fetch state), controller metadata records, replication threads, and file-handle budget. Over-provisioned topics quietly cap the cluster's total partition headroom — often the first scaling wall hit before disk.
+              </p>
+            </div>
+            <div class="tco-card">
+              <span class="tco-label">Controller</span>
+              <span class="tco-number">O(N) <span class="unit">metadata records</span></span>
+              <h3>KRaft / controller load</h3>
+              <p>
+                Every topic, partition, replica assignment, and config override is a record in the metadata log. Dead topics still get described, fetched, and replayed on controller failover. A leaner cluster means faster recovery, faster metadata propagation, and lower KRaft snapshot pressure.
+              </p>
+            </div>
+            <div class="tco-card">
+              <span class="tco-label">Schema Registry</span>
+              <span class="tco-number">1 subject <span class="unit">= 1 line item</span></span>
+              <h3>Orphan subjects rent storage too</h3>
+              <p>
+                Schema Registry providers bill per stored subject (Confluent Cloud) or per managed registry instance with storage caps (AWS Glue, Apicurio). Topics whose producers were decommissioned years ago still have <code>-key</code> and <code>-value</code> subjects taking up the budget.
+              </p>
+            </div>
+            <div class="tco-card">
+              <span class="tco-label">Monitoring</span>
+              <span class="tco-number">N × M <span class="unit">time series</span></span>
+              <h3>Observability scales with topics</h3>
+              <p>
+                Every topic emits per-partition metrics: <code>bytes_in</code>, <code>bytes_out</code>, <code>messages_in</code>, replica lag, ISR shrink/expand, log-end-offset. At <code>N</code> topics × <code>M</code> partitions × <code>K</code> brokers, the cardinality bills your Prometheus, your Datadog, and your Splunk indexing tier — for series nobody plots.
+              </p>
+            </div>
+            <div class="tco-card">
+              <span class="tco-label">Governance</span>
+              <span class="tco-number">Audit cost</span>
+              <h3>The human bill</h3>
+              <p>
+                Every governance review, every ACL audit, every onboarding doc, every <em>"do we still own this?"</em> Slack thread is amortized across the topic count. Halving the surface halves the cognitive overhead for the platform team — that's where the real, hard-to-quantify savings live.
+              </p>
+            </div>
+          </div>
+
+          <div class="tco-notes">
+            <div class="tco-note">
+              <span class="provider">Confluent Cloud</span>
+              <h4>Per-partition + per-GB pricing compounds.</h4>
+              <p>
+                Confluent Cloud bills eCKU partition consumption and storage independently of throughput. A topic that hasn't seen a record in six months is still billed for its allocated partitions and any retained data. Cleanup translates directly into invoice deltas.
+              </p>
+            </div>
+            <div class="tco-note">
+              <span class="provider">AWS MSK</span>
+              <h4>Broker-class scaling, not topic scaling.</h4>
+              <p>
+                MSK Provisioned bills broker-hours and EBS, not per-topic. But every dead partition still costs replication bandwidth, broker memory headroom, and time-to-recover. MSK Serverless charges by partition-hour and storage-month — dead topics there <em>are</em> directly billed.
+              </p>
+            </div>
+            <div class="tco-note">
+              <span class="provider">Aiven / Redpanda Cloud</span>
+              <h4>Tier-locked partition ceilings.</h4>
+              <p>
+                Aiven and Redpanda Cloud plans cap total partitions per tier; dead topics quietly push you toward the next, more expensive tier — even when your throughput could happily sit on the cheaper one.
+              </p>
+            </div>
+            <div class="tco-note">
+              <span class="provider">Self-managed</span>
+              <h4>The hidden costs are time, not invoice.</h4>
+              <p>
+                On self-managed, the bill arrives as broker count, IOPS, and oncall pages. Controller recovery, partition reassignment, and rolling broker restarts all scale with active metadata. A clean cluster reboots faster, rebalances faster, and pages less often.
+              </p>
+            </div>
+          </div>
+
+          <p class="lede" style="margin-top: 40px;">
+            <code style="font-family: var(--mono); font-size: 13.5px; background: var(--bg-soft); padding: 2px 8px; border-radius: 4px;">kattic scan</code> prints the reclaimable-TB number in the first line. Translate it to your provider's price sheet and you have the dollar value of one Friday afternoon's cleanup. <span style="color: var(--muted); font-size: 13px;">*number is illustrative, taken from the sample output above.</span>
+          </p>
         </div>
       </section>
 
