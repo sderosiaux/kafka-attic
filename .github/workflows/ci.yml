@@ -36,7 +36,7 @@ jobs:
         run: go test ./... -race -count=1 -coverprofile=coverage.out -covermode=atomic -coverpkg=./...
 
       - name: Upload coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: coverage.out
