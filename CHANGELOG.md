@@ -16,12 +16,14 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Security
 
-## [1.0.0] - 2026-05-22
+## [0.1.0] - 2026-05-22
+
+First public release. Pre-1.0 — CLI flags, config schema, and output shape may change between minor versions until v1.0. Breaking changes will be called out under a `Breaking` heading.
 
 ### Added
 
 - 4-subcommand CLI: `scan`, `audit`, `inspect`, `diff`.
-- ATTIC Score v1.0.0 with five sub-signals: **A**ctivity, **T**onnage, **T**raffic, **I**ntent, **C**onfiguration.
+- ATTIC Score v1.0.0 methodology with five sub-signals: **A**ctivity, **T**enancy, **T**onnage, **I**ntent, **C**onsumption.
 - 5 authentication types: `sasl_plain`, `scram` (SHA-256 and SHA-512), `mtls`, `iam` (AWS — supports `AWS_PROFILE`, `assume_role`, and `web_identity`), and `oauth`.
 - Confluent Schema Registry integration for schema-aware audit signals.
 - 4 owner-resolution sources: static file, topic config key, Backstage catalog, and arbitrary JSON endpoint.
@@ -39,5 +41,5 @@ All notable changes to this project will be documented in this file. The format 
 - Opt-in SHA-256 redaction of topic names in shared and exported output.
 - Cleanup script inclusion rules explicitly exclude topics marked `COMPACTED`, `REMOTE_STORAGE`, or `MISSING_SIGNAL`.
 
-[Unreleased]: https://github.com/sderosiaux/kafka-attic/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/sderosiaux/kafka-attic/releases/tag/v1.0.0
+[Unreleased]: https://github.com/sderosiaux/kafka-attic/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/sderosiaux/kafka-attic/releases/tag/v0.1.0
