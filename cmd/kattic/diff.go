@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/conduktor/kafka-attic/internal/history"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/history"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // newDiffCmd wires `kattic diff OLD.json NEW.json`: loads two snapshots from
@@ -51,13 +51,14 @@ func newDiffCmd() *cobra.Command {
 
 // loadSnapshotFile reads a JSON snapshot from disk.
 func loadSnapshotFile(path string) (*types.Snapshot, error) {
-	b, err := os.ReadFile(filepath.Clean(path)) //nolint:gosec // operator-supplied snapshot path
+	b, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return nil, err
 	}
 	var snap types.Snapshot
-	if err := json.Unmarshal(b, &snap); err != nil {
-		return nil, fmt.Errorf("decode snapshot: %w", err)
+	uerr := json.Unmarshal(b, &snap)
+	if uerr != nil {
+		return nil, fmt.Errorf("decode snapshot: %w", uerr)
 	}
 	return &snap, nil
 }

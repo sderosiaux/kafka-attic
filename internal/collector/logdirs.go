@@ -58,7 +58,7 @@ func describeLogDirs(
 	ctx context.Context,
 	adm KafkaAdmin,
 	metrics *offsetsResult,
-) (*logDirsResult, error) {
+) *logDirsResult {
 	res := &logDirsResult{
 		BytesByTopic:              make(map[string]int64),
 		PartitionBytes:            make(map[string]map[int32]int64),
@@ -67,7 +67,7 @@ func describeLogDirs(
 	}
 
 	if len(metrics.Partitions) == 0 {
-		return res, nil
+		return res
 	}
 
 	// Build a TopicsSet that mirrors the partitions we already collected.
@@ -83,14 +83,10 @@ func describeLogDirs(
 
 	all, err := adm.DescribeAllLogDirs(ctx, set)
 	if err != nil {
-		if isAuthError(err) {
-			res.Auth = true
-			return res, nil
-		}
-		// On a hard transport failure (not an auth issue) we still degrade
-		// rather than abort: storage is best-effort.
+		// Auth and transport failures alike degrade to "no log-dir data":
+		// storage is best-effort.
 		res.Auth = true
-		return res, nil
+		return res
 	}
 
 	// DescribedAllLogDirs is {brokerID → DescribedLogDirs}. Each DescribedLogDir
@@ -137,5 +133,5 @@ func describeLogDirs(
 		// Either nothing came back, or every dir entry was an auth error.
 		res.Auth = true
 	}
-	return res, nil
+	return res
 }

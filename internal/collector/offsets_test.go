@@ -54,8 +54,8 @@ func TestListOffsets_HappyPath(t *testing.T) {
 	if parts[0].EarliestOffset != 100 || parts[0].LatestOffset != 1500 {
 		t.Fatalf("partition 0 wrong offsets: %+v", parts[0])
 	}
-	if res.LastProduceTs["orders"] != 1_750_000_000_000 {
-		t.Fatalf("expected max ts 1_750_000_000_000, got %d", res.LastProduceTs["orders"])
+	if res.LastProduceTS["orders"] != 1_750_000_000_000 {
+		t.Fatalf("expected max ts 1_750_000_000_000, got %d", res.LastProduceTS["orders"])
 	}
 	if res.PartitionAuth["orders"] {
 		t.Fatal("partition auth flag should be false on happy path")
@@ -104,7 +104,7 @@ func TestListOffsets_PartialAuthError(t *testing.T) {
 }
 
 // TestListOffsets_NoTimestamp emulates an old broker where the
-// ListOffsetsAfterMilli call errors out. LastProduceTs should fall back to -1.
+// ListOffsetsAfterMilli call errors out. LastProduceTS should fall back to -1.
 func TestListOffsets_NoTimestamp(t *testing.T) {
 	adm := &fakeAdmin{
 		listStartOffsetsFn: func(_ context.Context, _ ...string) (kadm.ListedOffsets, error) {
@@ -122,8 +122,8 @@ func TestListOffsets_NoTimestamp(t *testing.T) {
 	if err != nil {
 		t.Fatalf("listOffsets returned err: %v", err)
 	}
-	if res.LastProduceTs["old-topic"] != -1 {
-		t.Fatalf("expected -1 sentinel, got %d", res.LastProduceTs["old-topic"])
+	if res.LastProduceTS["old-topic"] != -1 {
+		t.Fatalf("expected -1 sentinel, got %d", res.LastProduceTS["old-topic"])
 	}
 }
 

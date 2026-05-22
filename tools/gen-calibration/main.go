@@ -21,7 +21,7 @@ import (
 	"os"
 	"sort"
 
-	"github.com/conduktor/kafka-attic/pkg/atticspec"
+	"github.com/sderosiaux/kafka-attic/pkg/atticspec"
 )
 
 // clusterProfile drives one synthetic cluster summary.
@@ -143,7 +143,7 @@ func main() {
 	seed := flag.Uint64("seed", 42, "PRNG seed (idempotent: same seed → same JSON)")
 	flag.Parse()
 
-	rng := rand.New(rand.NewPCG(*seed, *seed^0x9E3779B97F4A7C15)) //nolint:gosec // deterministic synthetic-data generator, not security-sensitive
+	rng := rand.New(rand.NewPCG(*seed, *seed^0x9E3779B97F4A7C15))
 
 	clusters := make([]clusterSummary, 0, len(defaultProfiles))
 	aggregate := map[atticspec.Verdict]int{}
@@ -172,7 +172,8 @@ func main() {
 
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "  ")
-	if err := enc.Encode(doc); err != nil {
+	err := enc.Encode(doc)
+	if err != nil {
 		fmt.Fprintln(os.Stderr, "encode:", err)
 		os.Exit(1)
 	}
@@ -195,7 +196,7 @@ func simulate(rng *rand.Rand, p clusterProfile) clusterSummary {
 	var reclaim int64
 
 	// Per-topic size: lognormal-ish. Most topics small, fat tail.
-	for i := 0; i < p.TopicCount; i++ {
+	for range p.TopicCount {
 		// Pick verdict by stratification.
 		r := rng.Float64()
 		var v atticspec.Verdict

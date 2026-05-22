@@ -16,10 +16,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/cluster"
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/managed"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/cluster"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/managed"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // Version constants the snapshot reports. Kept here so they are owned by the
@@ -84,10 +84,7 @@ func collectWith(ctx context.Context, adm KafkaAdmin, srClient SRClient, cfg *co
 	perms.DescribeGroups = !groupsRes.DescribeAuth
 
 	// ── 4. Log directories (storage bytes) ───────────────────────────────
-	logRes, err := describeLogDirs(ctx, adm, offsRes)
-	if err != nil {
-		return nil, err
-	}
+	logRes := describeLogDirs(ctx, adm, offsRes)
 	perms.DescribeLogDirs = !logRes.Auth
 
 	// ── 4b. Detect cluster type (SPEC §5.5) ──────────────────────────────
@@ -198,35 +195,7 @@ func buildTopic(
 	// not from a kadm/kmsg response. When cfg.Metrics is nil we keep the
 	// topic at storage.source="unknown" so the scorer skips Tonnage and
 	// redistributes the weight per SPEC Appendix E.
-	storage := types.StorageInfo{Source: "unknown", Evidence: types.EvidenceUnknown}
-	hasLogDir := false
-	if !logs.Auth {
-		if bytes, ok := logs.BytesByTopic[name]; ok {
-			b := bytes
-			storage = types.StorageInfo{Bytes: &b, Source: "log_dir", Evidence: types.EvidenceKnown}
-			hasLogDir = true
-		}
-	}
-	if !hasLogDir && cfg != nil && cfg.Metrics != nil {
-		segBytes, hasSegBytes := logs.SegmentBytesByTopic[name]
-		segRecs, hasSegRecs := logs.SegmentRecordCountByTopic[name]
-		// Only attempt the estimate when we have BOTH per-topic segment
-		// inputs AND per-partition offsets (no offsets → no live-record
-		// count to multiply by avg-record-size).
-		_, hasParts := offs.Partitions[name]
-		if hasSegBytes && hasSegRecs && hasParts {
-			est := managed.EstimateTonnage(managed.EstimateInput{
-				SegmentBytes:       segBytes,
-				SegmentRecordCount: segRecs,
-				EarliestOffsetSum:  earliestSum,
-				LatestOffsetSum:    latestSum,
-			})
-			if est.OK {
-				b := est.Bytes
-				storage = types.StorageInfo{Bytes: &b, Source: "estimate", Evidence: types.EvidenceEstimated}
-			}
-		}
-	}
+	storage := resolveStorage(name, logs, offs, earliestSum, latestSum, cfg)
 
 	// Activity evidence comes from message.timestamp.type. The actual
 	// recency interpretation is M2's job.
@@ -251,30 +220,7 @@ func buildTopic(
 		flags = append(flags, types.FlagRemoteStorage)
 	}
 
-	// Per-signal MISSING_SIGNAL bookkeeping (Activity / Tenancy / Consumption
-	// per SPEC Appendix E).
-	var signalsMissing []types.SubSignal
-	// Consumption: per-partition list offsets failed for at least one partition.
-	if offs.PartitionAuth[name] {
-		signalsMissing = append(signalsMissing, types.SubSignalConsumption)
-	}
-	// Activity: no timestamp returned for any partition AND broker did return
-	// data otherwise. We approximate "broker returned data" as len(parts) > 0.
-	// SPEC §5.1 says: timestamp absent → UNKNOWN → MISSING_SIGNAL.
-	hasTs := offs.LastProduceTs[name] > 0
-	if !hasTs && len(parts) > 0 && !offs.PartitionAuth[name] {
-		// LogAppendTime brokers always stamp; CreateTime brokers usually do
-		// once records exist. An empty topic legitimately has no ts — we do
-		// NOT flag empty topics as MISSING_SIGNAL because that would make
-		// every brand-new topic INSPECT-capped.
-		if earliestSum != latestSum {
-			signalsMissing = append(signalsMissing, types.SubSignalActivity)
-		}
-	}
-	// Tenancy: DescribeGroups or FetchManyOffsets denied.
-	if groups.DescribeAuth || groups.FetchAuth {
-		signalsMissing = append(signalsMissing, types.SubSignalTenancy)
-	}
+	signalsMissing := missingSignalsFor(name, parts, offs, groups, earliestSum, latestSum)
 	if len(signalsMissing) > 0 {
 		flags = append(flags, types.FlagMissingSignal)
 	}
@@ -301,7 +247,7 @@ func buildTopic(
 		RetentionMs:          retentionMs,
 		RemoteStorageEnabled: remote,
 		MessageTimestampType: mtype,
-		LastProduceTs:        tsToTime(offs.LastProduceTs[name]),
+		LastProduceTS:        tsToTime(offs.LastProduceTS[name]),
 		EarliestOffsetSum:    earliestSum,
 		LatestOffsetSum:      latestSum,
 		Storage:              storage,
@@ -335,6 +281,77 @@ func buildGlobalMissing(perms types.PermissionsObserved, sr *srResult, warnings 
 	}
 	out = append(out, warnings...)
 	return out
+}
+
+// missingSignalsFor returns the list of sub-signals that lack evidence for
+// topic name (per SPEC Appendix E).
+func missingSignalsFor(
+	name string,
+	parts map[int32]types.PartitionMetric,
+	offs *offsetsResult,
+	groups *groupsResult,
+	earliestSum, latestSum int64,
+) []types.SubSignal {
+	var signalsMissing []types.SubSignal
+	// Consumption: per-partition list offsets failed for at least one partition.
+	if offs.PartitionAuth[name] {
+		signalsMissing = append(signalsMissing, types.SubSignalConsumption)
+	}
+	// Activity: no timestamp returned for any partition AND broker did return
+	// data otherwise. We approximate "broker returned data" as len(parts) > 0.
+	// SPEC §5.1 says: timestamp absent → UNKNOWN → MISSING_SIGNAL.
+	hasTS := offs.LastProduceTS[name] > 0
+	if !hasTS && len(parts) > 0 && !offs.PartitionAuth[name] && earliestSum != latestSum {
+		// LogAppendTime brokers always stamp; CreateTime brokers usually do
+		// once records exist. An empty topic legitimately has no ts — we do
+		// NOT flag empty topics as MISSING_SIGNAL because that would make
+		// every brand-new topic INSPECT-capped.
+		signalsMissing = append(signalsMissing, types.SubSignalActivity)
+	}
+	// Tenancy: DescribeGroups or FetchManyOffsets denied.
+	if groups.DescribeAuth || groups.FetchAuth {
+		signalsMissing = append(signalsMissing, types.SubSignalTenancy)
+	}
+	return signalsMissing
+}
+
+// resolveStorage derives the per-topic storage block (size + evidence) from
+// the log-dirs result, falling back to the metrics-driven estimate when
+// DescribeLogDirs returned no data and cfg.Metrics is configured.
+func resolveStorage(
+	name string,
+	logs *logDirsResult,
+	offs *offsetsResult,
+	earliestSum, latestSum int64,
+	cfg *config.Config,
+) types.StorageInfo {
+	storage := types.StorageInfo{Source: "unknown", Evidence: types.EvidenceUnknown}
+	if !logs.Auth {
+		if b, ok := logs.BytesByTopic[name]; ok {
+			v := b
+			return types.StorageInfo{Bytes: &v, Source: "log_dir", Evidence: types.EvidenceKnown}
+		}
+	}
+	if cfg == nil || cfg.Metrics == nil {
+		return storage
+	}
+	segBytes, hasSegBytes := logs.SegmentBytesByTopic[name]
+	segRecs, hasSegRecs := logs.SegmentRecordCountByTopic[name]
+	_, hasParts := offs.Partitions[name]
+	if !hasSegBytes || !hasSegRecs || !hasParts {
+		return storage
+	}
+	est := managed.EstimateTonnage(managed.EstimateInput{
+		SegmentBytes:       segBytes,
+		SegmentRecordCount: segRecs,
+		EarliestOffsetSum:  earliestSum,
+		LatestOffsetSum:    latestSum,
+	})
+	if !est.OK {
+		return storage
+	}
+	b := est.Bytes
+	return types.StorageInfo{Bytes: &b, Source: "estimate", Evidence: types.EvidenceEstimated}
 }
 
 // configSnapshotFrom mirrors the scoring config into the snapshot per SPEC

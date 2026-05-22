@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // TestRenderJSONRoundtrip ensures the rendered JSON parses back into a
@@ -17,7 +17,8 @@ func TestRenderJSONRoundtrip(t *testing.T) {
 	in := fixtureSnapshot()
 
 	var buf bytes.Buffer
-	if err := RenderJSON(&buf, in, JSONOptions{AnonymousRunUUID: "00000000-0000-4000-8000-000000000001"}); err != nil {
+	err := RenderJSON(&buf, in, JSONOptions{AnonymousRunUUID: "00000000-0000-4000-8000-000000000001"})
+	if err != nil {
 		t.Fatalf("render: %v", err)
 	}
 
@@ -56,10 +57,11 @@ func TestRenderJSONShared(t *testing.T) {
 	in := fixtureSnapshot()
 	url := "https://attic.conduktor.io/r/abc"
 	var buf bytes.Buffer
-	if err := RenderJSON(&buf, in, JSONOptions{
+	err := RenderJSON(&buf, in, JSONOptions{
 		AnonymousRunUUID: "00000000-0000-4000-8000-000000000002",
 		SharedSummaryURL: &url,
-	}); err != nil {
+	})
+	if err != nil {
 		t.Fatalf("render: %v", err)
 	}
 	if !strings.Contains(buf.String(), `"shared_summary_url": "https://attic.conduktor.io/r/abc"`) {
@@ -72,7 +74,8 @@ func TestRenderJSONShared(t *testing.T) {
 func TestRenderJSONRedactionInJSON(t *testing.T) {
 	in := fixtureSnapshot()
 	var buf bytes.Buffer
-	if err := RenderJSON(&buf, in, JSONOptions{Redact: true, AnonymousRunUUID: "00000000-0000-4000-8000-000000000003"}); err != nil {
+	err := RenderJSON(&buf, in, JSONOptions{Redact: true, AnonymousRunUUID: "00000000-0000-4000-8000-000000000003"})
+	if err != nil {
 		t.Fatalf("render: %v", err)
 	}
 	if bytes.Contains(buf.Bytes(), []byte("legacy-events")) {
@@ -88,7 +91,8 @@ func TestRenderJSONRedactionInJSON(t *testing.T) {
 func TestRenderJSONUUIDGenerated(t *testing.T) {
 	in := fixtureSnapshot()
 	var buf bytes.Buffer
-	if err := RenderJSON(&buf, in, JSONOptions{}); err != nil {
+	err := RenderJSON(&buf, in, JSONOptions{})
+	if err != nil {
 		t.Fatalf("render: %v", err)
 	}
 	var out types.Snapshot

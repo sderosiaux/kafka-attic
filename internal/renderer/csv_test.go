@@ -17,7 +17,8 @@ func TestRenderCSVGolden(t *testing.T) {
 	}
 	goldenPath := filepath.Join("testdata", "csv.golden")
 	if *updateGolden {
-		if err := os.WriteFile(goldenPath, buf.Bytes(), 0o644); err != nil {
+		err := os.WriteFile(goldenPath, buf.Bytes(), 0o644)
+		if err != nil {
 			t.Fatalf("write golden: %v", err)
 		}
 	}

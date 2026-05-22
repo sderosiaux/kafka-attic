@@ -1,7 +1,7 @@
 package scorer
 
 import (
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // scoreConsumption implements SPEC §4.2 Consumption:

@@ -59,7 +59,7 @@ func TestDetect_ConfluentCloudFromAuthHint(t *testing.T) {
 	}
 }
 
-// TestDetect_OpaqueWithoutHintStaysUnknown locks in conservative behaviour:
+// TestDetect_OpaqueWithoutHintStaysUnknown locks in conservative behavior:
 // without any positive evidence, the detector must return Unknown. The
 // collector relies on this to avoid mis-attributing a self-hosted cluster.
 func TestDetect_OpaqueWithoutHintStaysUnknown(t *testing.T) {

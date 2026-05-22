@@ -26,7 +26,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // stringPtr is a small helper so topic config maps remain readable inline.

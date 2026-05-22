@@ -1,7 +1,7 @@
 package scorer
 
 import (
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // Consumer-group states reported by Kafka (KIP-211 + KIP-839). We match these

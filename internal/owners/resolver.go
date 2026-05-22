@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // resolver walks an ordered list of sources, first non-nil wins.
@@ -64,15 +64,13 @@ func (r *resolver) ResolveAll(ctx context.Context, topics []string, topicConfigs
 	results := make(chan result, len(topics))
 
 	var wg sync.WaitGroup
-	for i := 0; i < concurrency; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range concurrency {
+		wg.Go(func() {
 			for topic := range jobs {
 				owner := r.Resolve(ctx, topic, topicConfigs[topic])
 				results <- result{topic: topic, owner: owner}
 			}
-		}()
+		})
 	}
 
 	for _, t := range topics {

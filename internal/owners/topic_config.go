@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // topicConfigSource reads a configurable broker topic-config key (default
@@ -30,15 +30,15 @@ func (s *topicConfigSource) Name() string { return SourceTopicConfig }
 
 func (s *topicConfigSource) Lookup(_ context.Context, _ string, topicConfigs map[string]string) (*types.OwnerInfo, error) {
 	if topicConfigs == nil {
-		return nil, nil
+		return nil, nil //nolint:nilnil // documented contract: nil owner means no mapping
 	}
 	v, ok := topicConfigs[s.key]
 	if !ok {
-		return nil, nil
+		return nil, nil //nolint:nilnil // documented contract: nil owner means no mapping
 	}
 	v = strings.TrimSpace(v)
 	if v == "" {
-		return nil, nil
+		return nil, nil //nolint:nilnil // documented contract: nil owner means no mapping
 	}
 	return &types.OwnerInfo{
 		Value:  v,

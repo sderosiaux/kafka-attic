@@ -2,11 +2,12 @@ package html
 
 import (
 	"bytes"
+	"slices"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 var fixedNow = time.Date(2026, 5, 21, 9, 38, 0, 0, time.UTC)
@@ -81,7 +82,7 @@ func fixtureSnapshot() *types.Snapshot {
 				Partitions:           4,
 				CleanupPolicy:        "delete",
 				MessageTimestampType: "LogAppendTime",
-				LastProduceTs:        ptrTime(fixedNow.AddDate(0, 0, -400)),
+				LastProduceTS:        ptrTime(fixedNow.AddDate(0, 0, -400)),
 				Storage:              types.StorageInfo{Bytes: ptrInt64(123_000_000), Source: "log_dir", Evidence: types.EvidenceKnown},
 				Attic: types.AtticScore{
 					SpecVersion: "1.0.0", SubScores: mkSubKnown(), RawScore: 96, Verdict: types.VerdictLikelyUnused,
@@ -93,7 +94,7 @@ func fixtureSnapshot() *types.Snapshot {
 				Partitions:           1,
 				CleanupPolicy:        "delete",
 				MessageTimestampType: "LogAppendTime",
-				LastProduceTs:        nil,
+				LastProduceTS:        nil,
 				Storage:              types.StorageInfo{Bytes: ptrInt64(0), Source: "log_dir", Evidence: types.EvidenceKnown},
 				Attic: types.AtticScore{
 					SpecVersion: "1.0.0", SubScores: mkSubKnown(), RawScore: 95, Verdict: types.VerdictLikelyUnused,
@@ -105,7 +106,7 @@ func fixtureSnapshot() *types.Snapshot {
 				Partitions:           4,
 				CleanupPolicy:        "compact",
 				MessageTimestampType: "LogAppendTime",
-				LastProduceTs:        ptrTime(fixedNow.AddDate(0, 0, -120)),
+				LastProduceTS:        ptrTime(fixedNow.AddDate(0, 0, -120)),
 				Storage:              types.StorageInfo{Bytes: ptrInt64(5_000_000_000), Source: "estimate", Evidence: types.EvidenceEstimated},
 				Attic: types.AtticScore{
 					SpecVersion: "1.0.0", SubScores: mkSubKnown(), RawScore: 92, Verdict: types.VerdictLikelyUnused,
@@ -118,7 +119,7 @@ func fixtureSnapshot() *types.Snapshot {
 				CleanupPolicy:        "delete",
 				RemoteStorageEnabled: true,
 				MessageTimestampType: "LogAppendTime",
-				LastProduceTs:        ptrTime(fixedNow.AddDate(0, 0, -200)),
+				LastProduceTS:        ptrTime(fixedNow.AddDate(0, 0, -200)),
 				Storage:              types.StorageInfo{Bytes: nil, Source: "unknown", Evidence: types.EvidenceUnknown},
 				Attic: types.AtticScore{
 					SpecVersion: "1.0.0", SubScores: mkSubKnown(), RawScore: 91, Verdict: types.VerdictLikelyUnused,
@@ -130,7 +131,7 @@ func fixtureSnapshot() *types.Snapshot {
 				Partitions:           2,
 				CleanupPolicy:        "delete",
 				MessageTimestampType: "CreateTime",
-				LastProduceTs:        ptrTime(fixedNow.AddDate(0, 0, -300)),
+				LastProduceTS:        ptrTime(fixedNow.AddDate(0, 0, -300)),
 				Storage:              types.StorageInfo{Bytes: ptrInt64(100_000_000), Source: "log_dir", Evidence: types.EvidenceKnown},
 				Attic: types.AtticScore{
 					SpecVersion: "1.0.0", SubScores: mkSubFuzzy(), RawScore: 90, Verdict: types.VerdictLikelyUnused,
@@ -141,7 +142,7 @@ func fixtureSnapshot() *types.Snapshot {
 				Partitions:           3,
 				CleanupPolicy:        "delete",
 				MessageTimestampType: "LogAppendTime",
-				LastProduceTs:        ptrTime(fixedNow.AddDate(0, 0, -1)),
+				LastProduceTS:        ptrTime(fixedNow.AddDate(0, 0, -1)),
 				Storage:              types.StorageInfo{Bytes: ptrInt64(890_000_000), Source: "log_dir", Evidence: types.EvidenceKnown},
 				Attic: types.AtticScore{
 					SpecVersion: "1.0.0", SubScores: mkSubActive(), RawScore: 11, Verdict: types.VerdictActive,
@@ -154,7 +155,8 @@ func fixtureSnapshot() *types.Snapshot {
 func render(t *testing.T) string {
 	t.Helper()
 	var buf bytes.Buffer
-	if err := Render(&buf, fixtureSnapshot(), Config{Now: fixedNow}); err != nil {
+	err := Render(&buf, fixtureSnapshot(), Config{Now: fixedNow})
+	if err != nil {
 		t.Fatalf("Render: %v", err)
 	}
 	return buf.String()
@@ -312,13 +314,7 @@ func TestRender_MissingSignalsNoticeConditional(t *testing.T) {
 	clean := fixtureSnapshot()
 	kept := clean.Topics[:0]
 	for _, top := range clean.Topics {
-		skip := false
-		for _, f := range top.Flags {
-			if f == types.FlagMissingSignal {
-				skip = true
-				break
-			}
-		}
+		skip := slices.Contains(top.Flags, types.FlagMissingSignal)
 		if !skip {
 			kept = append(kept, top)
 		}

@@ -7,7 +7,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // neutralScore is the value assigned to a MISSING_SIGNAL sub-signal so it
@@ -20,7 +20,7 @@ const neutralScore = 50
 // The curve is piecewise-linear over (days, score) anchors sorted ascending by
 // days. Inputs:
 //   - now: the scan time (defaults to time.Now() when zero)
-//   - lastProduceTs: nil when no broker timestamp was returned
+//   - lastProduceTS: nil when no broker timestamp was returned
 //   - timestampType: "LogAppendTime", "CreateTime", or "" (unknown)
 //   - curve: from cfg.AtticScore.ActivityCurve, monotonic days, monotonic score
 //
@@ -30,28 +30,25 @@ const neutralScore = 50
 //   - no ts → UNKNOWN (caller flags MISSING_SIGNAL and uses neutral 50)
 func scoreActivity(
 	now time.Time,
-	lastProduceTs *time.Time,
+	lastProduceTS *time.Time,
 	timestampType string,
 	curve []types.ActivityCurvePoint,
 ) (score int, evidence types.Evidence, days float64, ok bool) {
-	if lastProduceTs == nil {
+	if lastProduceTS == nil {
 		// No broker timestamp → caller treats as MISSING_SIGNAL + neutral 50.
 		return neutralScore, types.EvidenceUnknown, 0, false
 	}
 	if now.IsZero() {
 		now = time.Now().UTC()
 	}
-	delta := now.Sub(*lastProduceTs)
-	if delta < 0 {
-		delta = 0
-	}
+	delta := max(now.Sub(*lastProduceTS), 0)
 	days = delta.Hours() / 24.0
 	score = interpolateCurve(days, curve)
 	switch timestampType {
 	case "LogAppendTime":
 		evidence = types.EvidenceKnown
 	case "CreateTime", "":
-		// Default Kafka behaviour is CreateTime when unset; we treat the empty
+		// Default Kafka behavior is CreateTime when unset; we treat the empty
 		// string the same way because a broker that returned a timestamp but
 		// failed to report message.timestamp.type cannot be trusted to be
 		// LogAppendTime. SPEC §5.1 reads conservatively.

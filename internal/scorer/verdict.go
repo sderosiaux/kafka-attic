@@ -1,8 +1,10 @@
 package scorer
 
 import (
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"slices"
+
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // Verdict-cap reason strings recorded in AtticScore.VerdictCappedBy. They
@@ -128,12 +130,7 @@ func applyVerdictCaps(
 	hasPurged bool,
 ) (types.Verdict, string) {
 	hasFlag := func(target types.Flag) bool {
-		for _, f := range flags {
-			if f == target {
-				return true
-			}
-		}
-		return false
+		return slices.Contains(flags, target)
 	}
 
 	type rule struct {

@@ -11,13 +11,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/conduktor/kafka-attic/internal/cluster"
-	"github.com/conduktor/kafka-attic/internal/collector"
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/renderer"
-	"github.com/conduktor/kafka-attic/internal/scorer"
-	"github.com/conduktor/kafka-attic/internal/telemetry"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/cluster"
+	"github.com/sderosiaux/kafka-attic/internal/collector"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/renderer"
+	"github.com/sderosiaux/kafka-attic/internal/scorer"
+	"github.com/sderosiaux/kafka-attic/internal/telemetry"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // newScanCmd wires `kattic scan`: read-only connect → collect → score →
@@ -51,8 +51,9 @@ or --format csv for machine-readable output, and --output to redirect to a file.
 			if flags.output == "" {
 				out = cmd.OutOrStdout()
 			}
-			if err := renderSnapshot(out, snap, cfg, flags.format); err != nil {
-				return err
+			rerr := renderSnapshot(out, snap, cfg, flags.format)
+			if rerr != nil {
+				return rerr
 			}
 			pingTelemetryAsync(cfg, snap, []string{"--format", flags.format}, 0)
 			return nil
@@ -92,7 +93,7 @@ func openOutput(path string) (io.Writer, func(), error) {
 	if path == "" {
 		return os.Stdout, func() {}, nil
 	}
-	f, err := os.Create(filepath.Clean(path)) //nolint:gosec // operator-supplied output path
+	f, err := os.Create(filepath.Clean(path))
 	if err != nil {
 		return nil, func() {}, fmt.Errorf("create output %s: %w", path, err)
 	}

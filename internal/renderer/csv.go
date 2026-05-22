@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // CSVOptions controls CSV rendering.
@@ -49,7 +49,8 @@ var csvColumns = []string{
 // RenderCSV writes a CSV row per topic to w with a stable header row.
 func RenderCSV(w io.Writer, s *types.Snapshot, opts CSVOptions) error {
 	cw := csv.NewWriter(w)
-	if err := cw.Write(csvColumns); err != nil {
+	err := cw.Write(csvColumns)
+	if err != nil {
 		return err
 	}
 	for _, t := range s.Topics {
@@ -65,7 +66,7 @@ func RenderCSV(w io.Writer, s *types.Snapshot, opts CSVOptions) error {
 			strconv.FormatInt(t.RetentionMs, 10),
 			strconv.FormatBool(t.RemoteStorageEnabled),
 			t.MessageTimestampType,
-			isoOrEmpty(t.LastProduceTs),
+			isoOrEmpty(t.LastProduceTS),
 			strconv.FormatInt(t.EarliestOffsetSum, 10),
 			strconv.FormatInt(t.LatestOffsetSum, 10),
 			storageBytesString(t.Storage.Bytes),
@@ -84,7 +85,8 @@ func RenderCSV(w io.Writer, s *types.Snapshot, opts CSVOptions) error {
 			ownerSource(t.Owner),
 			signalsMissingCSV(t.SignalsMissing, opts.Redact),
 		}
-		if err := cw.Write(row); err != nil {
+		err := cw.Write(row)
+		if err != nil {
 			return err
 		}
 	}

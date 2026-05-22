@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/conduktor/kafka-attic/internal/telemetry"
+	"github.com/sderosiaux/kafka-attic/internal/telemetry"
 )
 
 // globalFlags holds the four CLI-wide flags wired by M0. They're declared at

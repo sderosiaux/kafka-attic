@@ -62,12 +62,18 @@ changelog:
 brews:
   - name: kafka-attic
     repository:
-      owner: conduktor
-      name: homebrew-kafka-attic
+      owner: sderosiaux
+      name: kafka-attic
+      branch: main
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-    homepage: https://github.com/conduktor/kafka-attic
+    directory: Formula
+    homepage: https://github.com/sderosiaux/kafka-attic
     description: "Read-only scanner that quantifies unused Kafka topics with the ATTIC Score"
     license: Apache-2.0
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    commit_msg_template: "chore(release): brew formula for {{ .ProjectName }} {{ .Tag }}"
     install: |
       bin.install "kattic"
     test: |
@@ -76,17 +82,23 @@ brews:
 scoops:
   - name: kafka-attic
     repository:
-      owner: conduktor
-      name: scoop-kafka-attic
+      owner: sderosiaux
+      name: kafka-attic
+      branch: main
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-    homepage: https://github.com/conduktor/kafka-attic
+    directory: Scoop
+    homepage: https://github.com/sderosiaux/kafka-attic
     description: "Read-only scanner that quantifies unused Kafka topics with the ATTIC Score"
     license: Apache-2.0
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    commit_msg_template: "chore(release): scoop manifest for {{ .ProjectName }} {{ .Tag }}"
 
 dockers:
   - image_templates:
-      - "ghcr.io/conduktor/kafka-attic:{{ .Version }}-amd64"
-      - "ghcr.io/conduktor/kafka-attic:latest-amd64"
+      - "ghcr.io/sderosiaux/kafka-attic:{{ .Version }}-amd64"
+      - "ghcr.io/sderosiaux/kafka-attic:latest-amd64"
     use: buildx
     goos: linux
     goarch: amd64
@@ -94,14 +106,14 @@ dockers:
       - "--platform=linux/amd64"
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
       - "--label=org.opencontainers.image.description=Read-only Kafka topic attic scanner"
-      - "--label=org.opencontainers.image.source=https://github.com/conduktor/kafka-attic"
+      - "--label=org.opencontainers.image.source=https://github.com/sderosiaux/kafka-attic"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.licenses=Apache-2.0"
 
   - image_templates:
-      - "ghcr.io/conduktor/kafka-attic:{{ .Version }}-arm64"
-      - "ghcr.io/conduktor/kafka-attic:latest-arm64"
+      - "ghcr.io/sderosiaux/kafka-attic:{{ .Version }}-arm64"
+      - "ghcr.io/sderosiaux/kafka-attic:latest-arm64"
     use: buildx
     goos: linux
     goarch: arm64
@@ -109,20 +121,20 @@ dockers:
       - "--platform=linux/arm64"
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
       - "--label=org.opencontainers.image.description=Read-only Kafka topic attic scanner"
-      - "--label=org.opencontainers.image.source=https://github.com/conduktor/kafka-attic"
+      - "--label=org.opencontainers.image.source=https://github.com/sderosiaux/kafka-attic"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.licenses=Apache-2.0"
 
 docker_manifests:
-  - name_template: "ghcr.io/conduktor/kafka-attic:{{ .Version }}"
+  - name_template: "ghcr.io/sderosiaux/kafka-attic:{{ .Version }}"
     image_templates:
-      - "ghcr.io/conduktor/kafka-attic:{{ .Version }}-amd64"
-      - "ghcr.io/conduktor/kafka-attic:{{ .Version }}-arm64"
-  - name_template: "ghcr.io/conduktor/kafka-attic:latest"
+      - "ghcr.io/sderosiaux/kafka-attic:{{ .Version }}-amd64"
+      - "ghcr.io/sderosiaux/kafka-attic:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/sderosiaux/kafka-attic:latest"
     image_templates:
-      - "ghcr.io/conduktor/kafka-attic:latest-amd64"
-      - "ghcr.io/conduktor/kafka-attic:latest-arm64"
+      - "ghcr.io/sderosiaux/kafka-attic:latest-amd64"
+      - "ghcr.io/sderosiaux/kafka-attic:latest-arm64"
 
 release:
   draft: false

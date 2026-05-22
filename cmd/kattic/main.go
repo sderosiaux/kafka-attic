@@ -14,7 +14,8 @@ var (
 )
 
 func main() {
-	if err := newRootCmd().Execute(); err != nil {
+	err := newRootCmd().Execute()
+	if err != nil {
 		// Cobra already prints the error to stderr; exit non-zero so CI catches it.
 		os.Exit(1)
 	}

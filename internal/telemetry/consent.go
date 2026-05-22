@@ -93,8 +93,9 @@ func (s *Store) Load() (Consent, error) {
 		return Consent{}, nil
 	}
 	var c Consent
-	if err := json.Unmarshal(b, &c); err != nil {
-		return Consent{}, fmt.Errorf("parse telemetry config %s: %w", s.Path, err)
+	uerr := json.Unmarshal(b, &c)
+	if uerr != nil {
+		return Consent{}, fmt.Errorf("parse telemetry config %s: %w", s.Path, uerr)
 	}
 	return c, nil
 }
@@ -106,8 +107,9 @@ func (s *Store) Save(c Consent) error {
 		return errors.New("telemetry store path is empty")
 	}
 	dir := filepath.Dir(s.Path)
-	if err := os.MkdirAll(dir, 0o700); err != nil {
-		return fmt.Errorf("mkdir %s: %w", dir, err)
+	merr := os.MkdirAll(dir, 0o700)
+	if merr != nil {
+		return fmt.Errorf("mkdir %s: %w", dir, merr)
 	}
 	b, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
@@ -120,9 +122,10 @@ func (s *Store) Save(c Consent) error {
 	tmpPath := tmp.Name()
 	// Best-effort cleanup if anything below fails.
 	defer func() { _ = os.Remove(tmpPath) }()
-	if _, err := tmp.Write(b); err != nil {
+	_, werr := tmp.Write(b)
+	if werr != nil {
 		_ = tmp.Close()
-		return fmt.Errorf("write temp config: %w", err)
+		return fmt.Errorf("write temp config: %w", werr)
 	}
 	if err := tmp.Chmod(0o600); err != nil {
 		_ = tmp.Close()
@@ -170,8 +173,8 @@ func EnsurePrompted(store *Store, p Prompter) (Consent, error) {
 		// later interactive run can still ask.
 		return c, nil
 	}
-	if _, err := fmt.Fprint(p.Out, PromptText); err != nil {
-		return c, fmt.Errorf("write prompt: %w", err)
+	if _, werr := fmt.Fprint(p.Out, PromptText); werr != nil {
+		return c, fmt.Errorf("write prompt: %w", werr)
 	}
 	reader := bufio.NewReader(p.In)
 	line, err := reader.ReadString('\n')

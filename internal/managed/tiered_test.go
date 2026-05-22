@@ -111,7 +111,7 @@ func TestIsTieredStorage_EmptyConfigs(t *testing.T) {
 }
 
 // TestIsTieredStorage_EmptyPlacementValueIgnored matches the broker
-// behaviour where `confluent.placement.constraints` exists as a key but is
+// behavior where `confluent.placement.constraints` exists as a key but is
 // blank. We must not flag REMOTE_STORAGE on a whitespace-only value.
 func TestIsTieredStorage_EmptyPlacementValueIgnored(t *testing.T) {
 	got := IsTieredStorage(TieredCheck{

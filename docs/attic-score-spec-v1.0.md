@@ -3,7 +3,7 @@
 **Status**: Stable
 **Spec version**: `1.0.0`
 **License**: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (this specification)
-**Reference implementation**: `kafka-attic` v1.0 ([github.com/conduktor/kafka-attic](https://github.com/conduktor/kafka-attic))
+**Reference implementation**: `kafka-attic` v1.0 ([github.com/sderosiaux/kafka-attic](https://github.com/sderosiaux/kafka-attic))
 
 ---
 
@@ -278,5 +278,5 @@ The `kafka-attic` reference implementation is licensed separately under Apache 2
 
 ```
 ATTIC Score Specification, version 1.0.0.
-https://github.com/conduktor/kafka-attic/blob/main/docs/attic-score-spec-v1.0.md
+https://github.com/sderosiaux/kafka-attic/blob/main/docs/attic-score-spec-v1.0.md
 ```

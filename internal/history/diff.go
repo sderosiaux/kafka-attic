@@ -3,7 +3,7 @@ package history
 import (
 	"sort"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // TopicDelta describes the change between two recorded states for a single
@@ -18,7 +18,7 @@ type TopicDelta struct {
 	AfterBytes    *int64        `json:"after_bytes,omitempty"`
 }
 
-// DiffReport summarises the per-topic transitions between two snapshots
+// DiffReport summarizes the per-topic transitions between two snapshots
 // (a is the older scan, b is the newer scan). The four categories are the
 // ones called out in the spec's diff use-case.
 type DiffReport struct {

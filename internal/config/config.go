@@ -32,17 +32,20 @@ func Load(path string) (*Config, error) {
 	v := viper.New()
 	v.SetConfigFile(abs)
 	v.SetConfigType("yaml")
-	if err := v.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("read config %s: %w", abs, err)
+	rerr := v.ReadInConfig()
+	if rerr != nil {
+		return nil, fmt.Errorf("read config %s: %w", abs, rerr)
 	}
 
 	var cfg Config
-	if err := v.Unmarshal(&cfg); err != nil {
-		return nil, fmt.Errorf("unmarshal config: %w", err)
+	uerr := v.Unmarshal(&cfg)
+	if uerr != nil {
+		return nil, fmt.Errorf("unmarshal config: %w", uerr)
 	}
 
-	if err := Validate(&cfg); err != nil {
-		return nil, err
+	verr := Validate(&cfg)
+	if verr != nil {
+		return nil, verr
 	}
 
 	return &cfg, nil
@@ -61,21 +64,20 @@ func Validate(cfg *Config) error {
 	if cfg.Cluster.Name == "" {
 		return errors.New("cluster.name is required")
 	}
-	if err := validateAuth(cfg.Cluster.Auth); err != nil {
-		return fmt.Errorf("cluster.auth: %w", err)
+	aerr := validateAuth(cfg.Cluster.Auth)
+	if aerr != nil {
+		return fmt.Errorf("cluster.auth: %w", aerr)
 	}
 
-	if err := validateWeights(cfg.AtticScore.Weights); err != nil {
-		return err
+	werr := validateWeights(cfg.AtticScore.Weights)
+	if werr != nil {
+		return werr
 	}
-	if err := validateThresholds(cfg.AtticScore.Thresholds); err != nil {
-		return err
+	terr := validateThresholds(cfg.AtticScore.Thresholds)
+	if terr != nil {
+		return terr
 	}
-	if err := validateActivityCurve(cfg.AtticScore.ActivityCurve); err != nil {
-		return err
-	}
-
-	return nil
+	return validateActivityCurve(cfg.AtticScore.ActivityCurve)
 }
 
 func validateAuth(a AuthConfig) error {
@@ -86,55 +88,66 @@ func validateAuth(a AuthConfig) error {
 		// should always specify a real auth type.
 		return nil
 	case AuthSASLPlain:
-		if a.UsernameEnv == "" || a.PasswordEnv == "" {
-			return errors.New("sasl_plain requires username_env and password_env")
-		}
-		if _, ok := os.LookupEnv(a.UsernameEnv); !ok {
-			return fmt.Errorf("env var %q is not set", a.UsernameEnv)
-		}
-		if _, ok := os.LookupEnv(a.PasswordEnv); !ok {
-			return fmt.Errorf("env var %q is not set", a.PasswordEnv)
-		}
+		return validateUserPassEnv(a, "sasl_plain")
 	case AuthSCRAM:
-		mech := strings.ToUpper(strings.TrimSpace(a.Mechanism))
-		if mech != "SCRAM-SHA-256" && mech != "SCRAM-SHA-512" {
-			return fmt.Errorf("scram mechanism must be SCRAM-SHA-256 or SCRAM-SHA-512, got %q", a.Mechanism)
-		}
-		if a.UsernameEnv == "" || a.PasswordEnv == "" {
-			return errors.New("scram requires username_env and password_env")
-		}
-		if _, ok := os.LookupEnv(a.UsernameEnv); !ok {
-			return fmt.Errorf("env var %q is not set", a.UsernameEnv)
-		}
-		if _, ok := os.LookupEnv(a.PasswordEnv); !ok {
-			return fmt.Errorf("env var %q is not set", a.PasswordEnv)
-		}
+		return validateSCRAM(a)
 	case AuthMTLS:
-		if a.TLS == nil {
-			return errors.New("mtls requires tls block with cert_file and key_file")
-		}
-		if a.TLS.CertFile == "" || a.TLS.KeyFile == "" {
-			return errors.New("mtls requires tls.cert_file and tls.key_file")
-		}
+		return validateMTLS(a)
 	case AuthIAM:
 		if strings.TrimSpace(a.Region) == "" {
 			return errors.New("iam requires region")
 		}
+		return nil
 	case AuthOAuth:
-		if a.TokenEndpoint == "" {
-			return errors.New("oauth requires token_endpoint")
-		}
-		if a.ClientIDEnv == "" || a.ClientSecretEnv == "" {
-			return errors.New("oauth requires client_id_env and client_secret_env")
-		}
-		if _, ok := os.LookupEnv(a.ClientIDEnv); !ok {
-			return fmt.Errorf("env var %q is not set", a.ClientIDEnv)
-		}
-		if _, ok := os.LookupEnv(a.ClientSecretEnv); !ok {
-			return fmt.Errorf("env var %q is not set", a.ClientSecretEnv)
-		}
+		return validateOAuth(a)
 	default:
 		return fmt.Errorf("unknown auth.type %q (want one of: sasl_plain, scram, mtls, iam, oauth)", a.Type)
+	}
+}
+
+func validateUserPassEnv(a AuthConfig, label string) error {
+	if a.UsernameEnv == "" || a.PasswordEnv == "" {
+		return fmt.Errorf("%s requires username_env and password_env", label)
+	}
+	if _, ok := os.LookupEnv(a.UsernameEnv); !ok {
+		return fmt.Errorf("env var %q is not set", a.UsernameEnv)
+	}
+	if _, ok := os.LookupEnv(a.PasswordEnv); !ok {
+		return fmt.Errorf("env var %q is not set", a.PasswordEnv)
+	}
+	return nil
+}
+
+func validateSCRAM(a AuthConfig) error {
+	mech := strings.ToUpper(strings.TrimSpace(a.Mechanism))
+	if mech != "SCRAM-SHA-256" && mech != "SCRAM-SHA-512" {
+		return fmt.Errorf("scram mechanism must be SCRAM-SHA-256 or SCRAM-SHA-512, got %q", a.Mechanism)
+	}
+	return validateUserPassEnv(a, "scram")
+}
+
+func validateMTLS(a AuthConfig) error {
+	if a.TLS == nil {
+		return errors.New("mtls requires tls block with cert_file and key_file")
+	}
+	if a.TLS.CertFile == "" || a.TLS.KeyFile == "" {
+		return errors.New("mtls requires tls.cert_file and tls.key_file")
+	}
+	return nil
+}
+
+func validateOAuth(a AuthConfig) error {
+	if a.TokenEndpoint == "" {
+		return errors.New("oauth requires token_endpoint")
+	}
+	if a.ClientIDEnv == "" || a.ClientSecretEnv == "" {
+		return errors.New("oauth requires client_id_env and client_secret_env")
+	}
+	if _, ok := os.LookupEnv(a.ClientIDEnv); !ok {
+		return fmt.Errorf("env var %q is not set", a.ClientIDEnv)
+	}
+	if _, ok := os.LookupEnv(a.ClientSecretEnv); !ok {
+		return fmt.Errorf("env var %q is not set", a.ClientSecretEnv)
 	}
 	return nil
 }

@@ -1,0 +1,81 @@
+name: Bug report
+description: Report a defect in kafka-attic.
+title: "bug: "
+labels:
+  - kind/bug
+  - status/needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please fill in as much detail
+        as you can — it helps us reproduce and fix the issue faster.
+
+  - type: input
+    id: version
+    attributes:
+      label: kafka-attic version
+      description: Output of `kattic --version`.
+      placeholder: "v0.1.0 (commit abc1234, built 2026-01-01)"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      description: OS and arch, e.g. `macOS 14.5 arm64`, `Ubuntu 24.04 amd64`.
+      placeholder: "macOS 14.5 arm64"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: cluster-type
+    attributes:
+      label: Kafka cluster type
+      options:
+        - Apache Kafka (self-hosted)
+        - Confluent Cloud
+        - Confluent Platform
+        - Amazon MSK
+        - Aiven
+        - Redpanda
+        - WarpStream
+        - Other (please describe in repro)
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description of the actual behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands, config snippets (redact secrets), and any
+        relevant cluster shape (topic count, partition count, retention).
+      placeholder: |
+        1. kattic scan --config kafka-attic.yaml
+        2. ...
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or output
+      description: Paste any error output. Use `--log-level=debug` if useful.
+      render: shell

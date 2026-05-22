@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // SRClient is the read-only Confluent Schema Registry client interface.
@@ -36,7 +36,7 @@ type httpSRClient struct {
 // when SR is not configured — call-sites must check for that case.
 func NewSRClient(cfg *config.Config) (SRClient, error) {
 	if cfg == nil || cfg.SchemaRegistry == nil {
-		return nil, nil
+		return nil, nil //nolint:nilnil // documented contract: nil client means SR not configured
 	}
 	if cfg.SchemaRegistry.Provider != "" && cfg.SchemaRegistry.Provider != "confluent" {
 		// v1 supports only Confluent SR. Other providers (Glue, Apicurio) are
@@ -56,7 +56,7 @@ func NewSRClient(cfg *config.Config) (SRClient, error) {
 
 // ListSubjects fetches /subjects from the configured registry.
 func (c *httpSRClient) ListSubjects(ctx context.Context) ([]string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/subjects", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/subjects", http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("build SR request: %w", err)
 	}
@@ -90,8 +90,9 @@ func (c *httpSRClient) ListSubjects(ctx context.Context) ([]string, error) {
 		return nil, fmt.Errorf("SR /subjects status %s: %s", resp.Status, strings.TrimSpace(string(body)))
 	}
 	var subs []string
-	if err := json.NewDecoder(resp.Body).Decode(&subs); err != nil {
-		return nil, fmt.Errorf("decode SR subjects: %w", err)
+	derr := json.NewDecoder(resp.Body).Decode(&subs)
+	if derr != nil {
+		return nil, fmt.Errorf("decode SR subjects: %w", derr)
 	}
 	return subs, nil
 }
@@ -171,7 +172,7 @@ func collectSchemaRegistry(
 	subs, err := cli.ListSubjects(ctx)
 	if err != nil {
 		// on_failure: warn = degrade silently; on_failure: fail = SPEC says
-		// abort. v1 honours `warn` (the default in Appendix B) by treating
+		// abort. v1 honors `warn` (the default in Appendix B) by treating
 		// every topic's Intent as UNKNOWN; the scorer will then skip it.
 		for _, t := range topics {
 			res.PerTopic[t] = &types.SchemaRegistryInfo{

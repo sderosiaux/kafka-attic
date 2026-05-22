@@ -1,0 +1,83 @@
+# Lefthook config — git hooks installed by `make install-hooks`.
+# Run `lefthook run pre-commit` or `lefthook run pre-push` manually to test.
+# Single binary, no Python dependency: https://github.com/evilmartians/lefthook
+#
+# Install hooks: make install-hooks  (or `lefthook install`)
+# Skip a single commit: LEFTHOOK=0 git commit ...
+
+min_version: 1.7.0
+
+pre-commit:
+  parallel: true
+  commands:
+    fmt:
+      glob: "*.go"
+      run: |
+        gofumpt -l -w {staged_files}
+        goimports -local github.com/sderosiaux/kafka-attic -w {staged_files}
+      stage_fixed: true
+    vet:
+      run: go vet ./...
+    lint:
+      glob: "*.go"
+      run: golangci-lint run --new-from-rev=HEAD --timeout=5m
+    mod-tidy-check:
+      run: |
+        go mod tidy
+        git diff --exit-code -- go.mod go.sum >/dev/null 2>&1 || { echo "go mod tidy produced changes; commit them"; exit 1; }
+    secrets:
+      glob: "*"
+      exclude:
+        - "testdata/**"
+        - "examples/**"
+        - "vendor/**"
+        - "*.svg"
+      run: |
+        if grep -RInE '(AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]+PRIVATE KEY-----|ghp_[0-9a-zA-Z]{36}|xox[baprs]-[0-9a-zA-Z]{10,})' {staged_files} 2>/dev/null; then
+          echo "potential secret detected in staged files"
+          exit 1
+        fi
+    dco:
+      run: |
+        msg_file=$(git rev-parse --git-path COMMIT_EDITMSG)
+        if [ -f "$msg_file" ] && ! grep -q "^Signed-off-by:" "$msg_file"; then
+          echo "DCO sign-off missing; commit with 'git commit -s'"
+          exit 1
+        fi
+
+commit-msg:
+  commands:
+    conventional:
+      run: |
+        head -1 "$1" | grep -qE '^(feat|fix|docs|chore|refactor|test|perf|build|ci|revert|style)(\([^)]+\))?!?: .+' || {
+          echo "commit message must follow Conventional Commits (feat:, fix:, docs:, chore:, refactor:, test:, perf:, build:, ci:, revert:, style:)"
+          exit 1
+        }
+
+pre-push:
+  parallel: false
+  commands:
+    build:
+      run: go build ./...
+    test:
+      run: go test ./... -race -count=1 -timeout=5m
+    lint-full:
+      run: golangci-lint run --timeout=10m
+    vulncheck:
+      run: |
+        if ! command -v govulncheck >/dev/null 2>&1; then
+          echo "govulncheck not installed; run: go install golang.org/x/vuln/cmd/govulncheck@latest"
+          exit 1
+        fi
+        govulncheck ./...
+    readonly-assert:
+      run: |
+        if grep -RIn 'kgo.NewProducer\|\.ProduceSync(\|\.Produce(' --include="*.go" . | grep -v _test.go | grep -v 'ErrProduceForbidden\|LastProduceTs\|formatLastProduced\|lastProducedLabel\|MessageTimestampType\|callers must never invoke Produce\|LastProducedLabel\|//.*Produce'; then
+          echo "READ-ONLY INVARIANT VIOLATED: producer call detected in non-test code"
+          exit 1
+        fi
+
+skip_output:
+  - meta
+  - skips
+  - empty_summary

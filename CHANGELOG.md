@@ -39,5 +39,5 @@ All notable changes to this project will be documented in this file. The format 
 - Opt-in SHA-256 redaction of topic names in shared and exported output.
 - Cleanup script inclusion rules explicitly exclude topics marked `COMPACTED`, `REMOTE_STORAGE`, or `MISSING_SIGNAL`.
 
-[Unreleased]: https://github.com/conduktor/kafka-attic/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/conduktor/kafka-attic/releases/tag/v1.0.0
+[Unreleased]: https://github.com/sderosiaux/kafka-attic/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/sderosiaux/kafka-attic/releases/tag/v1.0.0

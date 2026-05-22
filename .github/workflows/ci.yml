@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Test (${{ matrix.os }} / Go ${{ matrix.go }})
@@ -31,10 +35,17 @@ jobs:
         run: go vet ./...
 
       - name: go build
-        run: go build ./...
+        run: go build -trimpath ./...
 
       - name: go test
-        run: go test ./... -race -count=1
+        run: go test ./... -race -count=1 -coverprofile=coverage.out -covermode=atomic
+
+      - name: Upload coverage
+        if: matrix.go == 'stable'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.out
 
   lint:
     name: Lint
@@ -50,9 +61,69 @@ jobs:
           cache: true
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.62
+          version: v2.0
+
+  mod-hygiene:
+    name: Module hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-input: stable
+          cache: true
+
+      - name: go mod tidy is clean
+        run: |
+          go mod tidy
+          if ! git diff --exit-code -- go.mod go.sum; then
+            echo "::error::go mod tidy produced changes; run it locally and commit"
+            exit 1
+          fi
+
+      - name: go mod verify
+        run: go mod verify
+
+  vuln:
+    name: Vulnerability scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-input: stable
+          cache: true
+
+      - name: govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-input: stable
+          repo-checkout: false
+
+  readonly:
+    name: Read-only invariant
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Assert no producer code in non-test paths
+        run: |
+          if grep -RIn 'kgo.NewProducer\|\.ProduceSync(\|\.Produce(' --include="*.go" . | \
+            grep -v _test.go | \
+            grep -v 'ErrProduceForbidden\|LastProduceTs\|formatLastProduced\|lastProducedLabel\|MessageTimestampType\|callers must never invoke Produce\|LastProducedLabel\|//.*Produce'; then
+            echo "::error::READ-ONLY INVARIANT VIOLATED: producer call detected in non-test code"
+            exit 1
+          fi
+          echo "Read-only invariant intact."
 
   integration:
     name: Integration

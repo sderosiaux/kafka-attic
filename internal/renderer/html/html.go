@@ -7,16 +7,19 @@ package html
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
 	"math"
 	"net/url"
+	"slices"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 //go:embed templates/*.html templates/*.css templates/*.js
@@ -38,7 +41,7 @@ const defaultConduktorURL = "https://conduktor.io/console-insights"
 // Appendix A to w.
 func Render(w io.Writer, s *types.Snapshot, cfg Config) error {
 	if s == nil {
-		return fmt.Errorf("html.Render: nil snapshot")
+		return errors.New("html.Render: nil snapshot")
 	}
 	if cfg.Now.IsZero() {
 		cfg.Now = time.Now().UTC()
@@ -154,8 +157,8 @@ func buildView(s *types.Snapshot, cfg Config, base, css, js string) view {
 		GeneratedAt:       s.GeneratedAt.UTC().Format(time.RFC3339),
 		KafkaAtticVersion: s.KafkaAtticVersion,
 		AtticSpecVersion:  s.AtticSpecVersion,
-		CSS:               template.CSS(css), //nolint:gosec // css is a baked-in asset, not user input
-		JS:                template.JS(js),   //nolint:gosec // js is a baked-in asset, not user input
+		CSS:               template.CSS(css),
+		JS:                template.JS(js),
 		CleanupCTAURL:     utmURL(base, "cleanup-script"),
 		FooterCTAURL:      utmURL(base, "footer"),
 	}
@@ -251,7 +254,7 @@ func buildPie(c counts) []pieSlice {
 			// Full circle via two semicircle arcs.
 			d := fmt.Sprintf("M %.4f %.4f A %.4f %.4f 0 1 1 %.4f %.4f A %.4f %.4f 0 1 1 %.4f %.4f Z",
 				0.0, -r, r, r, 0.0, r, r, r, 0.0, -r)
-			out = append(out, pieSlice{Label: e.label, Count: e.count, Color: e.color, Path: template.HTML(d)}) //nolint:gosec // SVG path built from numeric data; not user-controlled
+			out = append(out, pieSlice{Label: e.label, Count: e.count, Color: e.color, Path: template.HTML(d)})
 		}
 		return out
 	}
@@ -270,7 +273,7 @@ func buildPie(c counts) []pieSlice {
 			large = 1
 		}
 		d := fmt.Sprintf("M 0 0 L %.4f %.4f A %.4f %.4f 0 %d 1 %.4f %.4f Z", x1, y1, r, r, large, x2, y2)
-		out = append(out, pieSlice{Label: e.label, Count: e.count, Color: e.color, Path: template.HTML(d)}) //nolint:gosec // SVG path built from numeric data; not user-controlled
+		out = append(out, pieSlice{Label: e.label, Count: e.count, Color: e.color, Path: template.HTML(d)})
 		angle = next
 	}
 	return out
@@ -282,8 +285,8 @@ func buildRows(topics []types.Topic, now time.Time, weights types.AtticWeights) 
 		r := rowView{
 			Name:              t.Name,
 			SlugID:            slugify(t.Name),
-			LastProducedLabel: lastProducedLabel(t.LastProduceTs, now),
-			DaysSince:         daysSinceString(t.LastProduceTs, now),
+			LastProducedLabel: lastProducedLabel(t.LastProduceTS, now),
+			DaysSince:         daysSinceString(t.LastProduceTS, now),
 			StorageLabel:      storageLabel(t),
 			StorageBytes:      storageBytesValue(t),
 			VerdictLabel:      verdictLabel(t),
@@ -295,7 +298,7 @@ func buildRows(topics []types.Topic, now time.Time, weights types.AtticWeights) 
 			r.ScoreLabel = "—"
 		} else {
 			score := int(math.Round(t.Attic.RawScore))
-			r.Score = fmt.Sprintf("%d", score)
+			r.Score = strconv.Itoa(score)
 			r.ScoreLabel = r.Score
 		}
 		if t.Owner != nil {
@@ -339,7 +342,7 @@ func subRowsFor(t types.Topic, w types.AtticWeights) []subRow {
 		if sub.Skipped {
 			row.Score = "skipped"
 		} else {
-			row.Score = fmt.Sprintf("%d", sub.Score)
+			row.Score = strconv.Itoa(sub.Score)
 		}
 		row.Evidence = string(sub.Evidence)
 		row.Weight = fmt.Sprintf("%.2f", weightMap[sig])
@@ -368,10 +371,7 @@ func lastProducedLabel(ts *time.Time, now time.Time) string {
 	if ts == nil {
 		return "never seen"
 	}
-	d := now.Sub(*ts)
-	if d < 0 {
-		d = 0
-	}
+	d := max(now.Sub(*ts), 0)
 	days := int64(d / (24 * time.Hour))
 	if days >= 1 {
 		return fmt.Sprintf("%dd ago", days)
@@ -391,11 +391,8 @@ func daysSinceString(ts *time.Time, now time.Time) string {
 	if ts == nil {
 		return "100000" // never seen sorts to the top of "stale"
 	}
-	d := now.Sub(*ts)
-	if d < 0 {
-		d = 0
-	}
-	return fmt.Sprintf("%d", int64(d/(24*time.Hour)))
+	d := max(now.Sub(*ts), 0)
+	return strconv.FormatInt(int64(d/(24*time.Hour)), 10)
 }
 
 func storageLabel(t types.Topic) string {
@@ -409,7 +406,7 @@ func storageBytesValue(t types.Topic) string {
 	if t.Storage.Bytes == nil {
 		return "-1"
 	}
-	return fmt.Sprintf("%d", *t.Storage.Bytes)
+	return strconv.FormatInt(*t.Storage.Bytes, 10)
 }
 
 func formatBytes(b int64, estimated bool) string {
@@ -498,11 +495,8 @@ func buildFlagGroups(topics []types.Topic) []flagGroup {
 	for _, f := range order {
 		names := []string{}
 		for _, t := range topics {
-			for _, tf := range t.Flags {
-				if tf == f {
-					names = append(names, t.Name)
-					break
-				}
+			if slices.Contains(t.Flags, f) {
+				names = append(names, t.Name)
 			}
 		}
 		if len(names) == 0 {
@@ -525,10 +519,8 @@ func hasMissingSignals(s *types.Snapshot) bool {
 		if len(t.SignalsMissing) > 0 {
 			return true
 		}
-		for _, f := range t.Flags {
-			if f == types.FlagMissingSignal {
-				return true
-			}
+		if slices.Contains(t.Flags, types.FlagMissingSignal) {
+			return true
 		}
 	}
 	return false
@@ -632,10 +624,8 @@ func cleanupDecision(t types.Topic) (string, bool) {
 
 func hasAnyFlag(flags []types.Flag, want ...types.Flag) bool {
 	for _, f := range flags {
-		for _, w := range want {
-			if f == w {
-				return true
-			}
+		if slices.Contains(want, f) {
+			return true
 		}
 	}
 	return false
@@ -648,7 +638,7 @@ func ownerLine(o *types.OwnerInfo) string {
 	if o.EntityRef != nil && *o.EntityRef != "" {
 		return fmt.Sprintf("# owner: %s (%s entity: %s)", o.Value, o.Source, *o.EntityRef)
 	}
-	return fmt.Sprintf("# owner: %s", o.Value)
+	return "# owner: " + o.Value
 }
 
 func utmURL(base, content string) string {

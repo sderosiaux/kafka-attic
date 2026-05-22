@@ -8,7 +8,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kerr"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // offsetsResult bundles per-topic offset metrics. The collector stitches it
@@ -18,11 +18,11 @@ type offsetsResult struct {
 	// and LatestOffset populated. SizeBytes is filled in by logdirs.go later.
 	Partitions map[string]map[int32]types.PartitionMetric
 
-	// LastProduceTs maps topic → maxTs (millis since epoch) returned by
+	// LastProduceTS maps topic → maxTS (millis since epoch) returned by
 	// ListMaxTimestampOffsets / ListOffsetsAfterMilli. -1 means "no timestamp
 	// available for that topic" — either an old broker, an empty topic, or an
 	// auth error on the per-partition timestamp response.
-	LastProduceTs map[string]int64
+	LastProduceTS map[string]int64
 
 	// PartitionAuth indicates whether ListEndOffsets failed with an auth-style
 	// error for at least one partition. Used to populate Consumption evidence.
@@ -42,7 +42,7 @@ type offsetsResult struct {
 func listOffsets(ctx context.Context, adm KafkaAdmin, topics []string) (*offsetsResult, error) {
 	res := &offsetsResult{
 		Partitions:    make(map[string]map[int32]types.PartitionMetric, len(topics)),
-		LastProduceTs: make(map[string]int64, len(topics)),
+		LastProduceTS: make(map[string]int64, len(topics)),
 		PartitionAuth: make(map[string]bool, len(topics)),
 	}
 
@@ -74,74 +74,98 @@ func listOffsets(ctx context.Context, adm KafkaAdmin, topics []string) (*offsets
 	// we accept the conservative path: when ListMaxTimestampOffsets fails or
 	// returns no timestamps, we still produce a value from any partition we
 	// can read.
-	maxTs, terr := adm.ListOffsetsAfterMilli(ctx, -1, topics...)
+	maxTS, terr := adm.ListOffsetsAfterMilli(ctx, -1, topics...)
 	if terr != nil {
-		// Old broker / not supported → leave LastProduceTs at -1 sentinel.
-		maxTs = nil
+		// Old broker / not supported → leave LastProduceTS at -1 sentinel.
+		maxTS = nil
 	}
 
 	for _, t := range topics {
 		parts := make(map[int32]types.PartitionMetric)
-
-		if starts != nil {
-			if ps, ok := starts[t]; ok {
-				for p, lo := range ps {
-					if p < 0 {
-						continue
-					}
-					if lo.Err != nil {
-						if isAuthErrorErr(lo.Err) {
-							res.PartitionAuth[t] = true
-						}
-						continue
-					}
-					pm := parts[p]
-					pm.Partition = p
-					pm.EarliestOffset = lo.Offset
-					pm.Leader = -1
-					parts[p] = pm
-				}
-			}
-		}
-		if ends != nil {
-			if ps, ok := ends[t]; ok {
-				for p, lo := range ps {
-					if p < 0 {
-						continue
-					}
-					if lo.Err != nil {
-						if isAuthErrorErr(lo.Err) {
-							res.PartitionAuth[t] = true
-						}
-						continue
-					}
-					pm, ok := parts[p]
-					if !ok {
-						pm = types.PartitionMetric{Partition: p, Leader: -1}
-					}
-					pm.LatestOffset = lo.Offset
-					parts[p] = pm
-				}
-			}
-		}
-
-		var topMs int64 = -1
-		if maxTs != nil {
-			if ps, ok := maxTs[t]; ok {
-				for p, lo := range ps {
-					if p < 0 || lo.Err != nil {
-						continue
-					}
-					if lo.Timestamp > topMs {
-						topMs = lo.Timestamp
-					}
-				}
-			}
-		}
+		applyStartOffsets(res, parts, starts, t)
+		applyEndOffsets(res, parts, ends, t)
 		res.Partitions[t] = parts
-		res.LastProduceTs[t] = topMs
+		res.LastProduceTS[t] = topicLastProduceTS(maxTS, t)
 	}
 	return res, nil
+}
+
+// applyStartOffsets folds the ListStartOffsets payload for topic t into parts,
+// recording partition-scoped auth failures on res.
+func applyStartOffsets(res *offsetsResult, parts map[int32]types.PartitionMetric, starts kadm.ListedOffsets, t string) {
+	if starts == nil {
+		return
+	}
+	ps, ok := starts[t]
+	if !ok {
+		return
+	}
+	for p, lo := range ps {
+		if p < 0 {
+			continue
+		}
+		if lo.Err != nil {
+			if isAuthErrorErr(lo.Err) {
+				res.PartitionAuth[t] = true
+			}
+			continue
+		}
+		pm := parts[p]
+		pm.Partition = p
+		pm.EarliestOffset = lo.Offset
+		pm.Leader = -1
+		parts[p] = pm
+	}
+}
+
+// applyEndOffsets folds the ListEndOffsets payload for topic t into parts.
+func applyEndOffsets(res *offsetsResult, parts map[int32]types.PartitionMetric, ends kadm.ListedOffsets, t string) {
+	if ends == nil {
+		return
+	}
+	ps, ok := ends[t]
+	if !ok {
+		return
+	}
+	for p, lo := range ps {
+		if p < 0 {
+			continue
+		}
+		if lo.Err != nil {
+			if isAuthErrorErr(lo.Err) {
+				res.PartitionAuth[t] = true
+			}
+			continue
+		}
+		pm, ok := parts[p]
+		if !ok {
+			pm = types.PartitionMetric{Partition: p, Leader: -1}
+		}
+		pm.LatestOffset = lo.Offset
+		parts[p] = pm
+	}
+}
+
+// topicLastProduceTS returns the max per-partition timestamp for topic t, or
+// -1 when no successful partition reply is available.
+func topicLastProduceTS(maxTS kadm.ListedOffsets, t string) int64 {
+	var topMs int64 = -1
+	if maxTS == nil {
+		return topMs
+	}
+	ps, ok := maxTS[t]
+	if !ok {
+		return topMs
+	}
+	for p, lo := range ps {
+		if p < 0 || lo.Err != nil {
+			continue
+		}
+		if lo.Timestamp > topMs {
+			topMs = lo.Timestamp
+		}
+	}
+	return topMs
 }
 
 // attachLeaders fills in PartitionMetric.Leader from the metadata that

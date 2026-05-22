@@ -1,10 +1,11 @@
 package scorer
 
 import (
+	"slices"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // Scorer is the stateful per-snapshot scorer. It caches the
@@ -51,139 +52,11 @@ func (s *Scorer) Score(_ *types.Snapshot, t *types.Topic) {
 		missing[sm] = true
 	}
 
-	// ── Activity ──────────────────────────────────────────────────────────
-	var activitySub types.SubScore
-	if missing[types.SubSignalActivity] {
-		activitySub = types.SubScore{
-			Score:    neutralScore,
-			Evidence: types.EvidenceUnknown,
-			Input:    map[string]any{"missing_signal": true},
-		}
-	} else {
-		ascore, aev, days, ok := scoreActivity(s.now, t.LastProduceTs, t.MessageTimestampType, curveFromConfig(cfg.AtticScore.ActivityCurve))
-		if !ok {
-			activitySub = types.SubScore{
-				Score:    neutralScore,
-				Evidence: types.EvidenceUnknown,
-				Input:    map[string]any{"no_timestamp": true},
-			}
-			s.appendMissing(t, types.SubSignalActivity)
-		} else {
-			activitySub = types.SubScore{
-				Score:    ascore,
-				Evidence: aev,
-				Input:    map[string]any{"days_since_last_produce": roundHalfUp(days)},
-			}
-		}
-	}
-
-	// ── Tenancy ───────────────────────────────────────────────────────────
-	var tenancySub types.SubScore
-	if missing[types.SubSignalTenancy] {
-		tenancySub = types.SubScore{
-			Score:    neutralScore,
-			Evidence: types.EvidenceUnknown,
-			Input:    map[string]any{"missing_signal": true},
-		}
-	} else {
-		tscore, tev, ok := scoreTenancy(t.ConsumerGroups, t.LatestOffsetSum, true, true)
-		if !ok {
-			tenancySub = types.SubScore{
-				Score:    neutralScore,
-				Evidence: types.EvidenceUnknown,
-				Input:    map[string]any{"auth_failed": true},
-			}
-			s.appendMissing(t, types.SubSignalTenancy)
-		} else {
-			tenancySub = types.SubScore{
-				Score:    tscore,
-				Evidence: tev,
-				Input:    tenancyInput(t),
-			}
-		}
-	}
-
-	// ── Tonnage ───────────────────────────────────────────────────────────
-	var tonnageSub types.SubScore
-	{
-		size := int64(0)
-		if t.Storage.Bytes != nil {
-			size = *t.Storage.Bytes
-		}
-		tnScore, tnEv, skipped, ok := scoreTonnage(size, s.clusterSize, t.Storage.Evidence)
-		if skipped || !ok {
-			tonnageSub = types.SubScore{
-				Score:    0,
-				Evidence: tnEv,
-				Skipped:  true,
-				Input:    map[string]any{"skipped_reason": "tonnage_unknown"},
-			}
-		} else {
-			// percentile used (recompute for input field)
-			p := percentileRank(size, s.clusterSize)
-			tonnageSub = types.SubScore{
-				Score:    tnScore,
-				Evidence: tnEv,
-				Input:    map[string]any{"percentile": p},
-			}
-		}
-	}
-
-	// ── Intent ────────────────────────────────────────────────────────────
-	var intentSub types.SubScore
-	{
-		inScore, inEv, skipped, ok := scoreIntent(t.SchemaRegistry, cfg)
-		if skipped || !ok {
-			reason := "no_sr_configured"
-			if cfg != nil && cfg.SchemaRegistry != nil {
-				if cfg.SchemaRegistry.SubjectStrategy == "record_name" {
-					reason = "record_name_strategy"
-				} else if t.SchemaRegistry != nil && t.SchemaRegistry.Evidence == types.EvidenceUnknown {
-					reason = "sr_unreachable"
-				}
-			}
-			intentSub = types.SubScore{
-				Score:    0,
-				Evidence: inEv,
-				Skipped:  true,
-				Input:    map[string]any{"skipped_reason": reason},
-			}
-		} else {
-			intentSub = types.SubScore{
-				Score:    inScore,
-				Evidence: inEv,
-				Input:    map[string]any{"orphan": inScore == 100},
-			}
-		}
-	}
-
-	// ── Consumption ───────────────────────────────────────────────────────
-	var consumptionSub types.SubScore
-	if missing[types.SubSignalConsumption] {
-		consumptionSub = types.SubScore{
-			Score:    neutralScore,
-			Evidence: types.EvidenceUnknown,
-			Input:    map[string]any{"missing_signal": true},
-		}
-	} else {
-		cscore, cev, ok := scoreConsumption(t.PartitionMetrics, false)
-		if !ok {
-			consumptionSub = types.SubScore{
-				Score:    neutralScore,
-				Evidence: types.EvidenceUnknown,
-				Input:    map[string]any{"missing_signal": true},
-			}
-			s.appendMissing(t, types.SubSignalConsumption)
-		} else {
-			consumptionSub = types.SubScore{
-				Score:    cscore,
-				Evidence: cev,
-				Input: map[string]any{
-					"earliest_eq_latest": cscore == 100 || cscore == 90,
-				},
-			}
-		}
-	}
+	activitySub := s.scoreActivitySub(t, cfg, missing)
+	tenancySub := s.scoreTenancySub(t, missing)
+	tonnageSub := s.scoreTonnageSub(t)
+	intentSub := s.scoreIntentSub(t, cfg)
+	consumptionSub := s.scoreConsumptionSub(t, missing)
 
 	subs := map[types.SubSignal]types.SubScore{
 		types.SubSignalActivity:    activitySub,
@@ -266,18 +139,129 @@ func (s *Scorer) Score(_ *types.Snapshot, t *types.Topic) {
 
 // appendMissing adds a SubSignal to t.SignalsMissing if not already present.
 func (s *Scorer) appendMissing(t *types.Topic, sig types.SubSignal) {
-	for _, m := range t.SignalsMissing {
-		if m == sig {
-			return
-		}
+	if slices.Contains(t.SignalsMissing, sig) {
+		return
 	}
 	t.SignalsMissing = append(t.SignalsMissing, sig)
+}
+
+// missingSubScore builds the SubScore returned when a sub-signal is flagged
+// MISSING_SIGNAL by the collector (or by Score itself).
+func missingSubScore(reason string) types.SubScore {
+	return types.SubScore{
+		Score:    neutralScore,
+		Evidence: types.EvidenceUnknown,
+		Input:    map[string]any{reason: true},
+	}
+}
+
+// scoreActivitySub computes the Activity sub-score for t.
+func (s *Scorer) scoreActivitySub(t *types.Topic, cfg *config.Config, missing map[types.SubSignal]bool) types.SubScore {
+	if missing[types.SubSignalActivity] {
+		return missingSubScore("missing_signal")
+	}
+	ascore, aev, days, ok := scoreActivity(s.now, t.LastProduceTS, t.MessageTimestampType, curveFromConfig(cfg.AtticScore.ActivityCurve))
+	if !ok {
+		s.appendMissing(t, types.SubSignalActivity)
+		return missingSubScore("no_timestamp")
+	}
+	return types.SubScore{
+		Score:    ascore,
+		Evidence: aev,
+		Input:    map[string]any{"days_since_last_produce": roundHalfUp(days)},
+	}
+}
+
+// scoreTenancySub computes the Tenancy sub-score for t.
+func (s *Scorer) scoreTenancySub(t *types.Topic, missing map[types.SubSignal]bool) types.SubScore {
+	if missing[types.SubSignalTenancy] {
+		return missingSubScore("missing_signal")
+	}
+	tscore, tev, ok := scoreTenancy(t.ConsumerGroups, t.LatestOffsetSum, true, true)
+	if !ok {
+		s.appendMissing(t, types.SubSignalTenancy)
+		return missingSubScore("auth_failed")
+	}
+	return types.SubScore{
+		Score:    tscore,
+		Evidence: tev,
+		Input:    tenancyInput(t),
+	}
+}
+
+// scoreTonnageSub computes the Tonnage sub-score for t.
+func (s *Scorer) scoreTonnageSub(t *types.Topic) types.SubScore {
+	size := int64(0)
+	if t.Storage.Bytes != nil {
+		size = *t.Storage.Bytes
+	}
+	tnScore, tnEv, skipped, ok := scoreTonnage(size, s.clusterSize, t.Storage.Evidence)
+	if skipped || !ok {
+		return types.SubScore{
+			Score:    0,
+			Evidence: tnEv,
+			Skipped:  true,
+			Input:    map[string]any{"skipped_reason": "tonnage_unknown"},
+		}
+	}
+	p := percentileRank(size, s.clusterSize)
+	return types.SubScore{
+		Score:    tnScore,
+		Evidence: tnEv,
+		Input:    map[string]any{"percentile": p},
+	}
+}
+
+// scoreIntentSub computes the Intent sub-score for t.
+func (s *Scorer) scoreIntentSub(t *types.Topic, cfg *config.Config) types.SubScore {
+	inScore, inEv, skipped, ok := scoreIntent(t.SchemaRegistry, cfg)
+	if skipped || !ok {
+		reason := "no_sr_configured"
+		if cfg != nil && cfg.SchemaRegistry != nil {
+			switch {
+			case cfg.SchemaRegistry.SubjectStrategy == "record_name":
+				reason = "record_name_strategy"
+			case t.SchemaRegistry != nil && t.SchemaRegistry.Evidence == types.EvidenceUnknown:
+				reason = "sr_unreachable"
+			}
+		}
+		return types.SubScore{
+			Score:    0,
+			Evidence: inEv,
+			Skipped:  true,
+			Input:    map[string]any{"skipped_reason": reason},
+		}
+	}
+	return types.SubScore{
+		Score:    inScore,
+		Evidence: inEv,
+		Input:    map[string]any{"orphan": inScore == 100},
+	}
+}
+
+// scoreConsumptionSub computes the Consumption sub-score for t.
+func (s *Scorer) scoreConsumptionSub(t *types.Topic, missing map[types.SubSignal]bool) types.SubScore {
+	if missing[types.SubSignalConsumption] {
+		return missingSubScore("missing_signal")
+	}
+	cscore, cev, ok := scoreConsumption(t.PartitionMetrics, false)
+	if !ok {
+		s.appendMissing(t, types.SubSignalConsumption)
+		return missingSubScore("missing_signal")
+	}
+	return types.SubScore{
+		Score:    cscore,
+		Evidence: cev,
+		Input: map[string]any{
+			"earliest_eq_latest": cscore == 100 || cscore == 90,
+		},
+	}
 }
 
 // roundFloat rounds a float to `digits` decimal places using half-up.
 func roundFloat(v float64, digits int) float64 {
 	mult := 1.0
-	for i := 0; i < digits; i++ {
+	for range digits {
 		mult *= 10
 	}
 	if v >= 0 {
@@ -297,7 +281,7 @@ func curveFromConfig(in []config.ActivityCurvePoint) []types.ActivityCurvePoint 
 	return out
 }
 
-// tenancyInput summarises the per-topic group state into the SubScore.Input
+// tenancyInput summarizes the per-topic group state into the SubScore.Input
 // field per SPEC Appendix C example.
 func tenancyInput(t *types.Topic) map[string]any {
 	if len(t.ConsumerGroups) == 0 {

@@ -9,7 +9,7 @@ import (
 
 	"github.com/twmb/franz-go/pkg/kadm"
 
-	"github.com/conduktor/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/config"
 )
 
 // defaultExcludePatterns mirrors the comment block in SPEC Appendix B
@@ -41,7 +41,7 @@ var topicConfigKeys = []string{
 // compileExcludeFilter resolves the exclude patterns from cfg into a single
 // matcher func. Invalid regexes are logged via the returned warning list and
 // skipped (per SPEC §5.4 spirit: never abort the scan for a config typo).
-func compileExcludeFilter(cfg *config.Config) (func(string) bool, []string, error) {
+func compileExcludeFilter(cfg *config.Config) (func(string) bool, []string) {
 	var pats []string
 	applyDefaults := true
 	if cfg.ExcludePatterns != nil {
@@ -71,7 +71,7 @@ func compileExcludeFilter(cfg *config.Config) (func(string) bool, []string, erro
 		}
 		return false
 	}
-	return matcher, warnings, nil
+	return matcher, warnings
 }
 
 // listTopicsResult bundles the metadata and config outputs of phase 1.
@@ -109,10 +109,7 @@ type listTopicsResult struct {
 // records the fact in the result and lets downstream stages degrade the
 // per-topic evidence accordingly.
 func listTopicsAndConfigs(ctx context.Context, adm KafkaAdmin, cfg *config.Config) (*listTopicsResult, error) {
-	matcher, warnings, err := compileExcludeFilter(cfg)
-	if err != nil {
-		return nil, err
-	}
+	matcher, warnings := compileExcludeFilter(cfg)
 
 	md, err := adm.Metadata(ctx)
 	if err != nil {
@@ -214,7 +211,8 @@ func configInt64(configs map[string]string, key string, fallback int64) int64 {
 		return fallback
 	}
 	var n int64
-	if _, err := fmt.Sscanf(strings.TrimSpace(v), "%d", &n); err != nil {
+	_, serr := fmt.Sscanf(strings.TrimSpace(v), "%d", &n)
+	if serr != nil {
 		return fallback
 	}
 	return n

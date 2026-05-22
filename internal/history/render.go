@@ -20,7 +20,7 @@ func (r *DiffReport) RenderJSON(w io.Writer) error {
 }
 
 // RenderHuman writes a terminal-friendly diff. It is deliberately plain text
-// (no ANSI colour) so it stays readable in CI logs and pipes.
+// (no ANSI color) so it stays readable in CI logs and pipes.
 func (r *DiffReport) RenderHuman(w io.Writer) error {
 	if r == nil {
 		_, err := fmt.Fprintln(w, "(no diff)")

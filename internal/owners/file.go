@@ -7,8 +7,9 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/conduktor/kafka-attic/internal/types"
 	"gopkg.in/yaml.v3"
+
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // fileEntry mirrors one row in owners.yaml.
@@ -33,7 +34,7 @@ type compiledEntry struct {
 }
 
 func newFileSource(path string) (Source, []string, error) {
-	data, err := os.ReadFile(filepath.Clean(path)) //nolint:gosec // path is operator-supplied config value
+	data, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return nil, nil, fmt.Errorf("read %s: %w", path, err)
 	}
@@ -46,11 +47,14 @@ func newFileSource(path string) (Source, []string, error) {
 			Entries []fileEntry `yaml:"entries"`
 		}
 	)
-	if err := yaml.Unmarshal(data, &bare); err != nil || len(bare) == 0 {
-		if werr := yaml.Unmarshal(data, &wrapped); werr == nil && len(wrapped.Entries) > 0 {
+	bareErr := yaml.Unmarshal(data, &bare)
+	if bareErr != nil || len(bare) == 0 {
+		werr := yaml.Unmarshal(data, &wrapped)
+		switch {
+		case werr == nil && len(wrapped.Entries) > 0:
 			bare = wrapped.Entries
-		} else if err != nil && len(wrapped.Entries) == 0 {
-			return nil, nil, fmt.Errorf("parse %s: %w", path, err)
+		case bareErr != nil && len(wrapped.Entries) == 0:
+			return nil, nil, fmt.Errorf("parse %s: %w", path, bareErr)
 		}
 	}
 
@@ -86,7 +90,7 @@ func (s *fileSource) Lookup(_ context.Context, topic string, _ map[string]string
 				// Pattern matched but owner is empty — treat as no mapping
 				// rather than a blank owner, so the precedence walk
 				// continues.
-				return nil, nil
+				return nil, nil //nolint:nilnil // documented contract: nil owner means no mapping
 			}
 			return &types.OwnerInfo{
 				Value:  e.owner,
@@ -94,5 +98,5 @@ func (s *fileSource) Lookup(_ context.Context, topic string, _ map[string]string
 			}, nil
 		}
 	}
-	return nil, nil
+	return nil, nil //nolint:nilnil // documented contract: nil owner means no mapping
 }

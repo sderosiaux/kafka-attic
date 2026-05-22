@@ -20,7 +20,7 @@ func makeListedGroup(name, state string) kadm.ListedGroup {
 // topic list.
 func makeDescribedGroup(name, state string, members int, joinTopics []string) kadm.DescribedGroup {
 	var ms []kadm.DescribedGroupMember
-	for i := 0; i < members; i++ {
+	for range members {
 		mi := &kmsg.ConsumerMemberMetadata{Topics: joinTopics}
 		ai := &kmsg.ConsumerMemberAssignment{}
 		ms = append(ms, kadm.DescribedGroupMember{
@@ -41,7 +41,7 @@ func makeDescribedGroup(name, state string, members int, joinTopics []string) ka
 // wrapJoinMeta / wrapAssignment exist because GroupMemberMetadata /
 // GroupMemberAssignment hide their unexported `i any` field. We construct
 // them via the canonical kadm path: a freshly-described group has these set,
-// so we go through DescribeGroups' encoding path? Simpler: serialise then
+// so we go through DescribeGroups' encoding path? Simpler: serialize then
 // deserialise via the kadm internals exposed in the public Describe path?
 //
 // We can't. So we exploit Go's zero-value: GroupMemberMetadata{} returns nil

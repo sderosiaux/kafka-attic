@@ -1,19 +1,15 @@
 package scorer
 
 import (
+	"slices"
 	"testing"
 
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 func contains(flags []types.Flag, want types.Flag) bool {
-	for _, f := range flags {
-		if f == want {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(flags, want)
 }
 
 func TestFlags_AppearsNeverUsed(t *testing.T) {

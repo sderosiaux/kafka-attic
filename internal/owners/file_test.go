@@ -12,7 +12,8 @@ func writeOwnersFile(t *testing.T, contents string) string {
 	t.Helper()
 	dir := t.TempDir()
 	p := filepath.Join(dir, "owners.yaml")
-	if err := os.WriteFile(p, []byte(contents), 0o644); err != nil {
+	err := os.WriteFile(p, []byte(contents), 0o644)
+	if err != nil {
 		t.Fatalf("write owners.yaml: %v", err)
 	}
 	return p

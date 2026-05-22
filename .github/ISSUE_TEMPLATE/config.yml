@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or discussion
+    url: https://github.com/sderosiaux/kafka-attic/discussions
+    about: For general questions, ideas, and discussions — please use Discussions instead of opening an issue.
+  - name: Security advisory
+    url: https://github.com/sderosiaux/kafka-attic/security/advisories/new
+    about: Report security vulnerabilities privately via GitHub Security Advisories.

@@ -3,7 +3,7 @@ package renderer
 import (
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // fixedNow is the reference clock used by every renderer test to make
@@ -71,7 +71,7 @@ func fixtureSnapshot() *types.Snapshot {
 				CleanupPolicy:        "delete",
 				RetentionMs:          604800000,
 				MessageTimestampType: "LogAppendTime",
-				LastProduceTs:        ptrTime(fixedNow.AddDate(0, 0, -287)),
+				LastProduceTS:        ptrTime(fixedNow.AddDate(0, 0, -287)),
 				Storage: types.StorageInfo{
 					Bytes:    ptrInt64(13207180800), // 13.2 GB → "13.2 GB" (close to spec sample's 12.3)
 					Source:   "log_dir",
@@ -92,7 +92,7 @@ func fixtureSnapshot() *types.Snapshot {
 				ReplicationFactor:    3,
 				CleanupPolicy:        "delete",
 				MessageTimestampType: "LogAppendTime",
-				LastProduceTs:        ptrTime(fixedNow.Add(-3 * 24 * time.Hour)),
+				LastProduceTS:        ptrTime(fixedNow.Add(-3 * 24 * time.Hour)),
 				Storage: types.StorageInfo{
 					Bytes:    ptrInt64(890_000_000),
 					Source:   "log_dir",
@@ -113,7 +113,7 @@ func fixtureSnapshot() *types.Snapshot {
 				ReplicationFactor:    3,
 				CleanupPolicy:        "delete",
 				MessageTimestampType: "LogAppendTime",
-				LastProduceTs:        nil,
+				LastProduceTS:        nil,
 				Storage: types.StorageInfo{
 					Bytes:    ptrInt64(0),
 					Source:   "log_dir",
@@ -134,7 +134,7 @@ func fixtureSnapshot() *types.Snapshot {
 				ReplicationFactor:    3,
 				CleanupPolicy:        "delete",
 				MessageTimestampType: "LogAppendTime",
-				LastProduceTs:        ptrTime(fixedNow.Add(-180 * 24 * time.Hour)),
+				LastProduceTS:        ptrTime(fixedNow.Add(-180 * 24 * time.Hour)),
 				Storage: types.StorageInfo{
 					Bytes:    ptrInt64(0),
 					Source:   "log_dir",
@@ -155,7 +155,7 @@ func fixtureSnapshot() *types.Snapshot {
 				ReplicationFactor:    3,
 				CleanupPolicy:        "delete",
 				MessageTimestampType: "LogAppendTime",
-				LastProduceTs:        ptrTime(fixedNow.Add(-2 * time.Hour)),
+				LastProduceTS:        ptrTime(fixedNow.Add(-2 * time.Hour)),
 				Storage: types.StorageInfo{
 					Bytes:    ptrInt64(412_000_000_000),
 					Source:   "log_dir",
@@ -176,7 +176,7 @@ func fixtureSnapshot() *types.Snapshot {
 				ReplicationFactor:    3,
 				CleanupPolicy:        "compact",
 				MessageTimestampType: "CreateTime",
-				LastProduceTs:        ptrTime(fixedNow.Add(-1 * 24 * time.Hour)),
+				LastProduceTS:        ptrTime(fixedNow.Add(-1 * 24 * time.Hour)),
 				Storage: types.StorageInfo{
 					Bytes:    ptrInt64(5_200_000_000),
 					Source:   "estimate",
@@ -198,7 +198,7 @@ func fixtureSnapshot() *types.Snapshot {
 				CleanupPolicy:        "delete",
 				RemoteStorageEnabled: true,
 				MessageTimestampType: "LogAppendTime",
-				LastProduceTs:        ptrTime(fixedNow.Add(-90 * 24 * time.Hour)),
+				LastProduceTS:        ptrTime(fixedNow.Add(-90 * 24 * time.Hour)),
 				Storage: types.StorageInfo{
 					Bytes:    nil,
 					Source:   "unknown",

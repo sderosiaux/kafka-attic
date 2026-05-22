@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/spf13/cobra"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // newInspectCmd wires `kattic inspect --topic NAME`: emits a rich JSON
@@ -21,7 +22,7 @@ func newInspectCmd() *cobra.Command {
 		Long:  "Print every signal, evidence level, and the score breakdown for a single topic as JSON.",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if topic == "" {
-				return fmt.Errorf("--topic is required")
+				return errors.New("--topic is required")
 			}
 			cfg, err := loadConfig()
 			if err != nil {

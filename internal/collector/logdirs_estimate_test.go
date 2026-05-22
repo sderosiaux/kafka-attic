@@ -5,9 +5,9 @@ import (
 
 	"github.com/twmb/franz-go/pkg/kadm"
 
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/managed"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/managed"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // TestBuildTopic_EstimateTonnage_FromSegmentMetadata locks in the M6 wiring:
@@ -54,7 +54,7 @@ func TestBuildTopic_EstimateTonnage_FromSegmentMetadata(t *testing.T) {
 				1: {Partition: 1, EarliestOffset: 50, LatestOffset: 300},
 			},
 		},
-		LastProduceTs: map[string]int64{topic: 0},
+		LastProduceTS: map[string]int64{topic: 0},
 		PartitionAuth: map[string]bool{},
 	}
 
@@ -122,7 +122,7 @@ func TestBuildTopic_EstimateTonnage_NotAttempted_WhenMetricsNotConfigured(t *tes
 		Partitions: map[string]map[int32]types.PartitionMetric{
 			topic: {0: {Partition: 0, EarliestOffset: 0, LatestOffset: 100}},
 		},
-		LastProduceTs: map[string]int64{topic: 0},
+		LastProduceTS: map[string]int64{topic: 0},
 		PartitionAuth: map[string]bool{},
 	}
 	groupsRes := &groupsResult{PerTopic: map[string][]types.ConsumerGroupInfo{}}
@@ -173,7 +173,7 @@ func TestBuildTopic_LogDirKnown_BeatsEstimate(t *testing.T) {
 		Partitions: map[string]map[int32]types.PartitionMetric{
 			topic: {0: {Partition: 0, EarliestOffset: 0, LatestOffset: 10}},
 		},
-		LastProduceTs: map[string]int64{topic: 0},
+		LastProduceTS: map[string]int64{topic: 0},
 		PartitionAuth: map[string]bool{},
 	}
 	groupsRes := &groupsResult{PerTopic: map[string][]types.ConsumerGroupInfo{}}

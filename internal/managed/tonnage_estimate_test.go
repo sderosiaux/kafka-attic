@@ -23,7 +23,7 @@ func TestEstimateTonnage_HappyPath(t *testing.T) {
 	}
 }
 
-// TestEstimateTonnage_EmptyTopicProducesZero locks in SPEC §5.6 behaviour:
+// TestEstimateTonnage_EmptyTopicProducesZero locks in SPEC §5.6 behavior:
 // when the topic is empty (latest == earliest) we return Bytes=0, OK=true
 // rather than UNKNOWN. The empty/PURGED distinction is the scorer's job,
 // not the estimator's.
@@ -108,7 +108,7 @@ func TestEstimateTonnage_BrokerInconsistencyEarliestAfterLatest(t *testing.T) {
 }
 
 // TestEstimateTonnage_FractionalAverageRoundsDown documents the rounding
-// behaviour. avg = 1024.5 B/rec × 4 records → 4098 bytes (int conversion
+// behavior. avg = 1024.5 B/rec × 4 records → 4098 bytes (int conversion
 // truncates 4098.0). The estimator does not round to nearest; it returns
 // the int64 cast value, which is fine for percentile bucketing.
 func TestEstimateTonnage_FractionalAverageRoundsDown(t *testing.T) {

@@ -4,11 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // defaultCurve is the SPEC §4.2 default activity curve. Re-declared as the
-// types form so the test focuses on interpolation behaviour rather than
+// types form so the test focuses on interpolation behavior rather than
 // config-to-types plumbing.
 var defaultCurve = []types.ActivityCurvePoint{
 	{Days: 0, Score: 0},

@@ -8,8 +8,8 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // stubSource lets us script per-topic responses.
@@ -95,7 +95,7 @@ func TestResolver_ResolveAllConcurrent(t *testing.T) {
 	const n = 50
 	answers := make(map[string]string, n)
 	topics := make([]string, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		topic := fmt.Sprintf("t-%d", i)
 		topics[i] = topic
 		answers[topic] = fmt.Sprintf("owner-%d", i)

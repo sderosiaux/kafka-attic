@@ -1,9 +1,10 @@
 package scorer
 
 import (
+	"slices"
 	"sort"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // scoreTonnage computes per-topic Tonnage score from the cluster-wide size
@@ -34,13 +35,7 @@ func scoreTonnage(
 		return 0, types.EvidenceUnknown, true, false
 	}
 	p := percentileRank(sizeBytes, sortedSizes)
-	score = 100 - p
-	if score < 0 {
-		score = 0
-	}
-	if score > 100 {
-		score = 100
-	}
+	score = min(max(100-p, 0), 100)
 	return score, storageEvidence, false, true
 }
 
@@ -88,6 +83,6 @@ func sortedClusterSizes(snap *types.Snapshot) []int64 {
 		}
 		out = append(out, *t.Storage.Bytes)
 	}
-	sort.Slice(out, func(i, j int) bool { return out[i] < out[j] })
+	slices.Sort(out)
 	return out
 }

@@ -3,8 +3,8 @@ package scorer
 import (
 	"testing"
 
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 func cfgWithStrategy(s string) *config.Config {

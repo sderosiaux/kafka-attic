@@ -7,24 +7,24 @@ const SpecVersion = "1.0.0"
 
 // Weights describes the per-sub-signal weights. Must sum to 1.0.
 type Weights struct {
-	Activity    float64 `json:"activity" yaml:"activity"`
-	Tenancy     float64 `json:"tenancy" yaml:"tenancy"`
-	Tonnage     float64 `json:"tonnage" yaml:"tonnage"`
-	Intent      float64 `json:"intent" yaml:"intent"`
+	Activity    float64 `json:"activity"    yaml:"activity"`
+	Tenancy     float64 `json:"tenancy"     yaml:"tenancy"`
+	Tonnage     float64 `json:"tonnage"     yaml:"tonnage"`
+	Intent      float64 `json:"intent"      yaml:"intent"`
 	Consumption float64 `json:"consumption" yaml:"consumption"`
 }
 
 // Thresholds defines the verdict band lower bounds.
 type Thresholds struct {
 	LikelyUnused int `json:"likely_unused" yaml:"likely_unused"`
-	Candidate    int `json:"candidate" yaml:"candidate"`
-	Inspect      int `json:"inspect" yaml:"inspect"`
+	Candidate    int `json:"candidate"     yaml:"candidate"`
+	Inspect      int `json:"inspect"       yaml:"inspect"`
 }
 
 // ActivityCurvePoint is one (days, score) anchor in the piecewise-linear
 // Activity sub-signal curve.
 type ActivityCurvePoint struct {
-	Days  int `json:"days" yaml:"days"`
+	Days  int `json:"days"  yaml:"days"`
 	Score int `json:"score" yaml:"score"`
 }
 

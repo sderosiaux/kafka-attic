@@ -27,7 +27,7 @@ import (
 	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
 
-	"github.com/conduktor/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/config"
 )
 
 // Clients bundles the two franz-go handles a read-only collector needs. The
@@ -185,38 +185,50 @@ func buildTLS(a config.AuthConfig) (*tls.Config, bool, error) {
 	}
 
 	t := &tls.Config{MinVersion: tls.VersionTLS12}
-	if a.TLS != nil {
-		t.InsecureSkipVerify = a.TLS.InsecureSkipVerify
-		if a.TLS.ServerName != "" {
-			t.ServerName = a.TLS.ServerName
-		}
-		if a.TLS.CAFile != "" {
-			pem, err := os.ReadFile(a.TLS.CAFile)
-			if err != nil {
-				return nil, false, fmt.Errorf("read ca_file %s: %w", a.TLS.CAFile, err)
-			}
-			pool := x509.NewCertPool()
-			if !pool.AppendCertsFromPEM(pem) {
-				return nil, false, fmt.Errorf("ca_file %s contains no usable certificates", a.TLS.CAFile)
-			}
-			t.RootCAs = pool
-		}
-		if a.TLS.CertFile != "" || a.TLS.KeyFile != "" {
-			if a.TLS.CertFile == "" || a.TLS.KeyFile == "" {
-				return nil, false, errors.New("tls.cert_file and tls.key_file must both be set")
-			}
-			cert, err := tls.LoadX509KeyPair(a.TLS.CertFile, a.TLS.KeyFile)
-			if err != nil {
-				return nil, false, fmt.Errorf("load client cert/key: %w", err)
-			}
-			t.Certificates = []tls.Certificate{cert}
-		}
+	if a.TLS == nil {
+		return t, true, nil
+	}
+	err := applyTLSConfig(t, a.TLS)
+	if err != nil {
+		return nil, false, err
 	}
 	return t, true, nil
 }
 
+// applyTLSConfig mutates t with options drawn from cfg (CA bundle, client
+// cert/key, ServerName, InsecureSkipVerify).
+func applyTLSConfig(t *tls.Config, cfg *config.TLSConfig) error {
+	t.InsecureSkipVerify = cfg.InsecureSkipVerify
+	if cfg.ServerName != "" {
+		t.ServerName = cfg.ServerName
+	}
+	if cfg.CAFile != "" {
+		pem, err := os.ReadFile(cfg.CAFile)
+		if err != nil {
+			return fmt.Errorf("read ca_file %s: %w", cfg.CAFile, err)
+		}
+		pool := x509.NewCertPool()
+		if !pool.AppendCertsFromPEM(pem) {
+			return fmt.Errorf("ca_file %s contains no usable certificates", cfg.CAFile)
+		}
+		t.RootCAs = pool
+	}
+	if cfg.CertFile == "" && cfg.KeyFile == "" {
+		return nil
+	}
+	if cfg.CertFile == "" || cfg.KeyFile == "" {
+		return errors.New("tls.cert_file and tls.key_file must both be set")
+	}
+	cert, err := tls.LoadX509KeyPair(cfg.CertFile, cfg.KeyFile)
+	if err != nil {
+		return fmt.Errorf("load client cert/key: %w", err)
+	}
+	t.Certificates = []tls.Certificate{cert}
+	return nil
+}
+
 // buildIAMMechanism wires franz-go's aws.ManagedStreamingIAM to a
-// credentials provider chain that honours, in order:
+// credentials provider chain that honors, in order:
 //   - explicit assume_role_arn (with optional STS web-identity inner chain)
 //   - explicit profile (config.WithSharedConfigProfile)
 //   - default chain (env, ECS, EC2, AWS_PROFILE, IRSA via env)
@@ -351,8 +363,9 @@ func fetchOAuthToken(ctx context.Context, httpClient *http.Client, endpoint, cli
 		ExpiresIn   int    `json:"expires_in"`
 		TokenType   string `json:"token_type"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
-		return "", time.Time{}, fmt.Errorf("oauth token decode: %w", err)
+	derr := json.NewDecoder(resp.Body).Decode(&body)
+	if derr != nil {
+		return "", time.Time{}, fmt.Errorf("oauth token decode: %w", derr)
 	}
 	if body.AccessToken == "" {
 		return "", time.Time{}, errors.New("oauth token endpoint returned empty access_token")

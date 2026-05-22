@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 func TestDiffFourCategories(t *testing.T) {
@@ -15,7 +15,7 @@ func TestDiffFourCategories(t *testing.T) {
 		// Stays the same → ignored.
 		topic("stable-active", types.VerdictActive, 10, mkBytes(50)),
 		// Progresses to LIKELY_UNUSED → newly-likely-unused.
-		topic("ageing", types.VerdictCandidate, 80, mkBytes(2000)),
+		topic("aging", types.VerdictCandidate, 80, mkBytes(2000)),
 		// Regresses (LIKELY_UNUSED → ACTIVE).
 		topic("revived", types.VerdictLikelyUnused, 95, mkBytes(500)),
 		// Deleted in B, known bytes → reclaimed.
@@ -26,7 +26,7 @@ func TestDiffFourCategories(t *testing.T) {
 	b := sampleSnapshot(
 		time.Date(2026, 5, 8, 0, 0, 0, 0, time.UTC),
 		topic("stable-active", types.VerdictActive, 11, mkBytes(60)),
-		topic("ageing", types.VerdictLikelyUnused, 92, mkBytes(2000)),
+		topic("aging", types.VerdictLikelyUnused, 92, mkBytes(2000)),
 		topic("revived", types.VerdictActive, 15, mkBytes(700)),
 		// Brand new topic, already at LIKELY_UNUSED → newly-likely-unused.
 		topic("greenfield-dead", types.VerdictLikelyUnused, 91, mkBytes(0)),
@@ -36,8 +36,8 @@ func TestDiffFourCategories(t *testing.T) {
 
 	r := Diff(a, b)
 
-	// 1. NewlyLikelyUnused: ageing (progressed) + greenfield-dead (new).
-	want := []string{"ageing", "greenfield-dead"}
+	// 1. NewlyLikelyUnused: aging (progressed) + greenfield-dead (new).
+	want := []string{"aging", "greenfield-dead"}
 	if got := names(r.NewlyLikelyUnused); !equalStrings(got, want) {
 		t.Errorf("NewlyLikelyUnused: got %v, want %v", got, want)
 	}
@@ -103,7 +103,8 @@ func TestDiffRenderHumanIncludesKeyFields(t *testing.T) {
 	r := Diff(a, b)
 
 	var buf bytes.Buffer
-	if err := r.RenderHuman(&buf); err != nil {
+	err := r.RenderHuman(&buf)
+	if err != nil {
 		t.Fatalf("RenderHuman: %v", err)
 	}
 	out := buf.String()
@@ -120,7 +121,8 @@ func TestDiffRenderJSONValid(t *testing.T) {
 	r := Diff(a, b)
 
 	var buf bytes.Buffer
-	if err := r.RenderJSON(&buf); err != nil {
+	err := r.RenderJSON(&buf)
+	if err != nil {
 		t.Fatalf("RenderJSON: %v", err)
 	}
 	if !strings.Contains(buf.String(), `"reclaimed_bytes": 1`) {

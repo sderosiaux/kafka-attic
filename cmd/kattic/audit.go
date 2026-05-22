@@ -9,11 +9,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/history"
-	"github.com/conduktor/kafka-attic/internal/renderer/html"
-	"github.com/conduktor/kafka-attic/internal/telemetry"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/history"
+	"github.com/sderosiaux/kafka-attic/internal/renderer/html"
+	"github.com/sderosiaux/kafka-attic/internal/telemetry"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // defaultAuditOutput is the HTML report path used when --output is not set.
@@ -55,14 +55,15 @@ only topics that satisfy every inclusion rule. The default output path is
 				return err
 			}
 			defer closer()
-			if err := renderHTML(out, snap, cfg); err != nil {
-				return err
+			rerr := renderHTML(out, snap, cfg)
+			if rerr != nil {
+				return rerr
 			}
 			fmt.Fprintf(cmd.ErrOrStderr(), "Wrote HTML report: %s\n", outPath)
 
 			if printCleanup {
 				// Print just the cleanup script section to stdout in addition
-				// to the HTML file. The simplest correct behaviour is to
+				// to the HTML file. The simplest correct behavior is to
 				// render the full HTML to a buffer-discard pass and ALSO
 				// produce a terminal-friendly cleanup listing. For v1 we
 				// surface a minimal list.
@@ -70,9 +71,10 @@ only topics that satisfy every inclusion rule. The default output path is
 			}
 
 			if h := cfg.History; h != nil && h.Enabled {
-				if err := insertHistory(snap, h); err != nil {
+				herr := insertHistory(ctx, snap, h)
+				if herr != nil {
 					// Non-fatal: history is optional infrastructure.
-					fmt.Fprintf(cmd.ErrOrStderr(), "warning: history insert failed: %v\n", err)
+					fmt.Fprintf(cmd.ErrOrStderr(), "warning: history insert failed: %v\n", herr)
 				}
 			}
 
@@ -117,6 +119,8 @@ func printCleanupSection(w io.Writer, snap *types.Snapshot) {
 			switch f {
 			case types.FlagMissingSignal, types.FlagCompacted, types.FlagRemoteStorage:
 				blocked = true
+			default:
+				// Other flags do not block cleanup inclusion.
 			}
 		}
 		if blocked {
@@ -132,13 +136,13 @@ func printCleanupSection(w io.Writer, snap *types.Snapshot) {
 
 // insertHistory writes the snapshot into the optional local SQLite history
 // store. Failures here do not abort the audit.
-func insertHistory(snap *types.Snapshot, hc *config.HistoryConfig) error {
-	store, err := history.Open(hc.Path)
+func insertHistory(ctx context.Context, snap *types.Snapshot, hc *config.HistoryConfig) error {
+	store, err := history.Open(ctx, hc.Path)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = store.Close() }()
-	_, err = store.Insert(snap, hc.RetentionDays)
+	_, err = store.Insert(ctx, snap, hc.RetentionDays)
 	return err
 }
 

@@ -3,8 +3,8 @@ package scorer
 import (
 	"strings"
 
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // flagInputs bundles every signal the flag computation needs. Built by

@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"strconv"
 	"strings"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // TerminalOptions controls terminal rendering. Now is injectable to keep
@@ -38,16 +39,17 @@ func RenderTerminal(w io.Writer, s *types.Snapshot, opts TerminalOptions) error 
 		}
 	}
 
-	if _, err := fmt.Fprintf(w, "%s topics · %s likely unused · %s reclaimable\n\n",
-		formatCount(totalTopics), formatCount(likelyUnused), formatStorageBytes(&reclaimable, false)); err != nil {
-		return err
+	_, ferr := fmt.Fprintf(w, "%s topics · %s likely unused · %s reclaimable\n\n",
+		formatCount(totalTopics), formatCount(likelyUnused), formatStorageBytes(&reclaimable, false))
+	if ferr != nil {
+		return ferr
 	}
 
 	rows := make([][6]string, 0, len(s.Topics))
 	for _, t := range s.Topics {
 		rows = append(rows, [6]string{
 			t.Name,
-			formatLastProduced(t.LastProduceTs, opts.Now),
+			formatLastProduced(t.LastProduceTS, opts.Now),
 			formatTopicStorage(t),
 			formatScore(t),
 			formatVerdict(t),
@@ -69,8 +71,9 @@ func RenderTerminal(w io.Writer, s *types.Snapshot, opts TerminalOptions) error 
 	}
 
 	// Header line.
-	if err := writeRow(w, headers, widths); err != nil {
-		return err
+	herr := writeRow(w, headers, widths)
+	if herr != nil {
+		return herr
 	}
 	// Separator with U+2500 box-drawing dashes per SPEC sample.
 	sep := [6]string{
@@ -81,12 +84,14 @@ func RenderTerminal(w io.Writer, s *types.Snapshot, opts TerminalOptions) error 
 		strings.Repeat("─", widths[4]),
 		strings.Repeat("─", widths[5]),
 	}
-	if err := writeRow(w, sep, widths); err != nil {
-		return err
+	serr := writeRow(w, sep, widths)
+	if serr != nil {
+		return serr
 	}
 	for _, r := range rows {
-		if err := writeRow(w, r, widths); err != nil {
-			return err
+		rerr := writeRow(w, r, widths)
+		if rerr != nil {
+			return rerr
 		}
 	}
 	return nil
@@ -122,7 +127,7 @@ func runeLen(s string) int {
 // formatCount formats an integer with thousand separators (comma) to match
 // the SPEC sample: "4,821 topics".
 func formatCount(n int) string {
-	s := fmt.Sprintf("%d", n)
+	s := strconv.Itoa(n)
 	if n < 0 {
 		return "-" + formatCount(-n)
 	}
@@ -151,10 +156,7 @@ func formatLastProduced(ts *time.Time, now time.Time) string {
 	if ts == nil {
 		return "never seen"
 	}
-	d := now.Sub(*ts)
-	if d < 0 {
-		d = 0
-	}
+	d := max(now.Sub(*ts), 0)
 	days := int64(d / (24 * time.Hour))
 	if days >= 1 {
 		return fmt.Sprintf("%dd ago", days)
@@ -225,7 +227,7 @@ func formatStorageBytes(bytes *int64, estimated bool) string {
 	var num string
 	switch {
 	case val >= 100 && val == math.Trunc(val):
-		num = fmt.Sprintf("%d", int64(val))
+		num = strconv.FormatInt(int64(val), 10)
 	case val >= 100:
 		num = fmt.Sprintf("%.0f", val)
 	default:
@@ -250,7 +252,7 @@ func formatScore(t types.Topic) string {
 	if len(t.Attic.SubScores) == 0 {
 		return "—"
 	}
-	return fmt.Sprintf("%d", int64(math.Round(t.Attic.RawScore)))
+	return strconv.FormatInt(int64(math.Round(t.Attic.RawScore)), 10)
 }
 
 func formatVerdict(t types.Topic) string {

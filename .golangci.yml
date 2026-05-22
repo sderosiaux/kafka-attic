@@ -1,7 +1,10 @@
 version: "2"
 
+# Super-strict configuration: enable all linters and selectively disable
+# those that produce noise or conflict with this project's style choices.
+
 run:
-  timeout: 5m
+  timeout: 10m
   tests: true
 
 output:
@@ -11,22 +14,33 @@ output:
       colors: true
 
 linters:
-  default: none
-  enable:
-    - errcheck
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
-    - gocritic
-    - gosec
-    - revive
-    - misspell
-    - unconvert
-    - prealloc
-    - bodyclose
-    - contextcheck
-    - nilerr
+  default: all
+  disable:
+    - exhaustruct
+    - varnamelen
+    - wrapcheck
+    - wsl
+    - wsl_v5
+    - nlreturn
+    - gochecknoglobals
+    - gochecknoinits
+    - nonamedreturns
+    - ireturn
+    - depguard
+    - tagliatelle
+    - godox
+    - lll
+    - paralleltest
+    - musttag
+    - tparallel
+    - mnd
+    - dupl
+    - goconst
+    - testpackage
+    - funcorder
+    - err113
+    - godoclint
+    - noinlineerr      # `if err := ...; err != nil` is the idiomatic Go pattern
 
   settings:
     errcheck:
@@ -35,22 +49,156 @@ linters:
         - fmt.Fprintf
         - fmt.Fprintln
         - fmt.Fprint
+    revive:
+      severity: warning
+      rules:
+        - name: exported
+        - name: package-comments
+        - name: var-naming
+        - name: indent-error-flow
+        - name: empty-block
+        - name: superfluous-else
+        - name: unused-parameter
+        - name: unreachable-code
+        - name: redefines-builtin-id
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: if-return
+        - name: increment-decrement
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: errorf
+    gocyclo:
+      min-complexity: 25
+    gocognit:
+      min-complexity: 35
+    funlen:
+      lines: 150
+      statements: 80
+    cyclop:
+      max-complexity: 25
+    nestif:
+      min-complexity: 7
+    gocritic:
+      enable-all: true
+      disabled-checks:
+        - hugeParam
+        - whyNoLint
+        - paramTypeCombine
+        - unnamedResult
+        - rangeValCopy
+        - sloppyReassign
+        - filepathJoin
+        - tooManyResultsChecker
+    gosec:
+      excludes:
+        - G115
+        - G203
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+    staticcheck:
+      checks: ["all"]
+    nakedret:
+      max-func-lines: 0
+    unparam:
+      check-exported: true
+    misspell:
+      locale: US
+    perfsprint:
+      err-error: true
+      errorf: true
+      sprintf1: true
+      strconcat: true
+    exhaustive:
+      default-signifies-exhaustive: true
+    forbidigo:
+      forbid:
+        - pattern: ^print(ln)?$
+          msg: use fmt.Println, log, or slog
+    nilnil:
+      checked-types: [ptr, chan, func, iface, map]
+    importas:
+      no-unaliased: false
+      alias:
+        - pkg: github.com/twmb/franz-go/pkg/kgo
+          alias: kgo
+        - pkg: github.com/twmb/franz-go/pkg/kadm
+          alias: kadm
+        - pkg: github.com/twmb/franz-go/pkg/kmsg
+          alias: kmsg
+    interfacebloat:
+      max: 12
+    grouper:
+      const-require-grouping: false
+      var-require-grouping: false
+      import-require-single-import: false
 
   exclusions:
     rules:
       - path: _test\.go
         linters:
-          - gosec
-      - path: _test\.go
-        linters:
           - errcheck
           - gocritic
+          - gosec
+          - funlen
+          - gocyclo
+          - gocognit
+          - cyclop
+          - dupl
+          - goconst
+          - revive
+          - perfsprint
+          - forcetypeassert
+          - exhaustive
+          - nestif
+          - maintidx
+          - thelper
+          - testifylint
+          - usetesting
+          - usestdlibvars
+          - nilnil
+          - nilerr
+          - contextcheck
+          - dogsled
+          - noctx
+          - unparam
+          - prealloc
+          - noinlineerr
+      - path: cmd/
+        linters:
+          - forbidigo
+      - path: tools/gen-calibration/
+        linters:
+          - gosec
+          - revive
+          - gocognit
+          - cyclop
+          - funlen
+      - path: pkg/atticspec/
+        linters:
+          - dupl
+    paths:
+      - vendor
+      - third_party
 
 formatters:
   enable:
     - gofumpt
     - gofmt
     - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/sderosiaux/kafka-attic
 
 severity:
-  default: warning
+  default: error

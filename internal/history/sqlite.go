@@ -6,6 +6,7 @@
 package history
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -38,7 +39,7 @@ type Store struct {
 // Open connects to the SQLite database at path, creating the file and
 // parent directory if they do not exist, and ensures the schema is in
 // place. An empty path falls back to DefaultPath().
-func Open(path string) (*Store, error) {
+func Open(ctx context.Context, path string) (*Store, error) {
 	if path == "" {
 		p, err := DefaultPath()
 		if err != nil {
@@ -47,7 +48,8 @@ func Open(path string) (*Store, error) {
 		path = p
 	}
 	if dir := filepath.Dir(path); dir != "" && dir != "." {
-		if err := os.MkdirAll(dir, 0o750); err != nil {
+		err := os.MkdirAll(dir, 0o750)
+		if err != nil {
 			return nil, fmt.Errorf("history: mkdir %s: %w", dir, err)
 		}
 	}
@@ -58,14 +60,16 @@ func Open(path string) (*Store, error) {
 		return nil, fmt.Errorf("history: open %s: %w", path, err)
 	}
 	// Verify the connection eagerly so callers get a clear error.
-	if err := db.Ping(); err != nil {
+	perr := db.PingContext(ctx)
+	if perr != nil {
 		_ = db.Close()
-		return nil, fmt.Errorf("history: ping %s: %w", path, err)
+		return nil, fmt.Errorf("history: ping %s: %w", path, perr)
 	}
 	s := &Store{db: db, path: path}
-	if err := s.migrate(); err != nil {
+	merr := s.migrate(ctx)
+	if merr != nil {
 		_ = db.Close()
-		return nil, err
+		return nil, merr
 	}
 	return s, nil
 }
@@ -88,7 +92,7 @@ func (s *Store) DB() *sql.DB { return s.db }
 // minimal: scans store the canonical JSON blob, topic_snapshots stores the
 // per-topic columns needed by Diff so we never have to re-parse the blob for
 // diff queries.
-func (s *Store) migrate() error {
+func (s *Store) migrate(ctx context.Context) error {
 	stmts := []string{
 		`CREATE TABLE IF NOT EXISTS scans (
 			id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -118,8 +122,9 @@ func (s *Store) migrate() error {
 		`CREATE INDEX IF NOT EXISTS idx_topic_snapshots_verdict ON topic_snapshots(verdict)`,
 	}
 	for _, q := range stmts {
-		if _, err := s.db.Exec(q); err != nil {
-			return fmt.Errorf("history: migrate (%q): %w", q, err)
+		_, eerr := s.db.ExecContext(ctx, q)
+		if eerr != nil {
+			return fmt.Errorf("history: migrate (%q): %w", q, eerr)
 		}
 	}
 	return nil

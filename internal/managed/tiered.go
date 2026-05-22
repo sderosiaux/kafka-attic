@@ -32,7 +32,7 @@ type TieredCheck struct {
 	// nil is treated as "no configs available" and yields TieredNone.
 	Configs map[string]string
 
-	// ClusterType is the detected flavour for the connected cluster. It is
+	// ClusterType is the detected flavor for the connected cluster. It is
 	// required to decide whether `retention.ms=-1` should count as infinite
 	// retention — only Confluent Cloud uses that idiom intentionally.
 	ClusterType ClusterType

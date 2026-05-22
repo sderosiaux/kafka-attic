@@ -3,7 +3,7 @@ package scorer
 import (
 	"testing"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 func grp(state string, members int, committed, latest int64) types.ConsumerGroupInfo {

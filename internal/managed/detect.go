@@ -19,7 +19,7 @@ package managed
 
 import "strings"
 
-// ClusterType is the detected flavour of the connected Kafka cluster. The
+// ClusterType is the detected flavor of the connected Kafka cluster. The
 // enum is intentionally broad: detection in v1 is heuristic, based on the
 // bootstrap address suffix plus permission signals returned by the broker
 // itself (e.g. an unauthorized DescribeLogDirs is the strongest hint MSK

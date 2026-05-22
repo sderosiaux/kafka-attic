@@ -161,7 +161,7 @@ type Topic struct {
 	RetentionMs          int64               `json:"retention_ms"`
 	RemoteStorageEnabled bool                `json:"remote_storage_enabled"`
 	MessageTimestampType string              `json:"message_timestamp_type"`
-	LastProduceTs        *time.Time          `json:"last_produce_ts"`
+	LastProduceTS        *time.Time          `json:"last_produce_ts"`
 	EarliestOffsetSum    int64               `json:"earliest_offset_sum"`
 	LatestOffsetSum      int64               `json:"latest_offset_sum"`
 	Storage              StorageInfo         `json:"storage"`
@@ -246,6 +246,6 @@ type AtticThresholds struct {
 
 // ActivityCurvePoint is one (days, score) anchor in the piecewise-linear curve.
 type ActivityCurvePoint struct {
-	Days  int `json:"days" yaml:"days"`
+	Days  int `json:"days"  yaml:"days"`
 	Score int `json:"score" yaml:"score"`
 }

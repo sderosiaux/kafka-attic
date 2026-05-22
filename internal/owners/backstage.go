@@ -3,6 +3,7 @@ package owners
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // backstageSource queries a Backstage Catalog API for owner information.
@@ -39,11 +40,11 @@ const defaultBackstageTimeout = 10 * time.Second
 
 func newBackstageSource(cfg *config.OwnersBackstageConfig) (Source, error) {
 	if cfg == nil {
-		return nil, fmt.Errorf("backstage config is nil")
+		return nil, errors.New("backstage config is nil")
 	}
 	base := strings.TrimRight(strings.TrimSpace(cfg.URL), "/")
 	if base == "" {
-		return nil, fmt.Errorf("backstage url is empty")
+		return nil, errors.New("backstage url is empty")
 	}
 	pattern := strings.TrimSpace(cfg.EntityPattern)
 	if pattern == "" {
@@ -99,7 +100,7 @@ func (s *backstageSource) Lookup(ctx context.Context, topic string, _ map[string
 		url.PathEscape(name),
 	)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +116,7 @@ func (s *backstageSource) Lookup(ctx context.Context, topic string, _ map[string
 	if resp.StatusCode == http.StatusNotFound {
 		// Topic has no matching catalog entry; not an error, just no mapping.
 		_, _ = io.Copy(io.Discard, resp.Body)
-		return nil, nil
+		return nil, nil //nolint:nilnil // documented contract: nil owner means "not found"
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		_, _ = io.Copy(io.Discard, resp.Body)
@@ -128,8 +129,9 @@ func (s *backstageSource) Lookup(ctx context.Context, topic string, _ map[string
 	}
 
 	var entity backstageEntity
-	if err := json.Unmarshal(body, &entity); err != nil {
-		return nil, fmt.Errorf("backstage decode: %w", err)
+	uerr := json.Unmarshal(body, &entity)
+	if uerr != nil {
+		return nil, fmt.Errorf("backstage decode: %w", uerr)
 	}
 
 	if owner := strings.TrimSpace(entity.Spec.Owner); owner != "" {
@@ -171,7 +173,7 @@ func (s *backstageSource) Lookup(ctx context.Context, topic string, _ map[string
 		}
 	}
 
-	return nil, nil
+	return nil, nil //nolint:nilnil // documented contract: nil owner means no mapping
 }
 
 // applyAuth attaches the auth header configured in cfg.owners.backstage.auth.
@@ -204,9 +206,9 @@ func parseEntityRef(ref string) (kind, namespace, name string, err error) {
 	kind = ref[:colon]
 	rest := ref[colon+1:]
 
-	if slash := strings.Index(rest, "/"); slash >= 0 {
-		namespace = rest[:slash]
-		name = rest[slash+1:]
+	if before, after, ok := strings.Cut(rest, "/"); ok {
+		namespace = before
+		name = after
 	} else {
 		namespace = "default"
 		name = rest

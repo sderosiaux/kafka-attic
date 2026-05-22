@@ -1,11 +1,13 @@
 package history
 
 import (
+	"context"
+	"errors"
 	"path/filepath"
 	"testing"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 func mkBytes(n int64) *int64 { return &n }
@@ -48,7 +50,7 @@ func TestStoreRoundtrip(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "history.db")
 
-	store, err := Open(path)
+	store, err := Open(context.Background(), path)
 	if err != nil {
 		t.Fatalf("Open: %v", err)
 	}
@@ -60,7 +62,8 @@ func TestStoreRoundtrip(t *testing.T) {
 		topic("beta", types.VerdictLikelyUnused, 95.5, mkBytes(2048)),
 	)
 
-	id, err := store.Insert(snap, 0)
+	ctx := context.Background()
+	id, err := store.Insert(ctx, snap, 0)
 	if err != nil {
 		t.Fatalf("Insert: %v", err)
 	}
@@ -68,7 +71,7 @@ func TestStoreRoundtrip(t *testing.T) {
 		t.Fatalf("Insert returned non-positive id: %d", id)
 	}
 
-	got, err := store.LoadScan(id)
+	got, err := store.LoadScan(ctx, id)
 	if err != nil {
 		t.Fatalf("LoadScan: %v", err)
 	}
@@ -87,24 +90,24 @@ func TestStoreRoundtrip(t *testing.T) {
 
 	// Verify per-topic rows landed.
 	var rowCount int
-	if err := store.DB().QueryRow(`SELECT COUNT(*) FROM topic_snapshots WHERE scan_id = ?`, id).Scan(&rowCount); err != nil {
-		t.Fatalf("count topic_snapshots: %v", err)
+	if qerr := store.DB().QueryRow(`SELECT COUNT(*) FROM topic_snapshots WHERE scan_id = ?`, id).Scan(&rowCount); qerr != nil {
+		t.Fatalf("count topic_snapshots: %v", qerr)
 	}
 	if rowCount != 2 {
 		t.Errorf("expected 2 topic_snapshots rows, got %d", rowCount)
 	}
 
 	// Reopen the store and confirm persistence across handles.
-	if err := store.Close(); err != nil {
-		t.Fatalf("Close: %v", err)
+	if cerr := store.Close(); cerr != nil {
+		t.Fatalf("Close: %v", cerr)
 	}
-	store2, err := Open(path)
+	store2, err := Open(context.Background(), path)
 	if err != nil {
 		t.Fatalf("reopen: %v", err)
 	}
 	defer store2.Close()
 
-	n, err := store2.ScanCount()
+	n, err := store2.ScanCount(ctx)
 	if err != nil {
 		t.Fatalf("ScanCount: %v", err)
 	}
@@ -115,7 +118,7 @@ func TestStoreRoundtrip(t *testing.T) {
 
 func TestStoreInsertRetentionPrunesOldScans(t *testing.T) {
 	dir := t.TempDir()
-	store, err := Open(filepath.Join(dir, "history.db"))
+	store, err := Open(context.Background(), filepath.Join(dir, "history.db"))
 	if err != nil {
 		t.Fatalf("Open: %v", err)
 	}
@@ -125,8 +128,9 @@ func TestStoreInsertRetentionPrunesOldScans(t *testing.T) {
 		time.Now().UTC().Add(-30*24*time.Hour),
 		topic("legacy", types.VerdictCandidate, 75, mkBytes(100)),
 	)
-	if _, err := store.Insert(old, 0); err != nil {
-		t.Fatalf("Insert old: %v", err)
+	ctx := context.Background()
+	if _, ierr := store.Insert(ctx, old, 0); ierr != nil {
+		t.Fatalf("Insert old: %v", ierr)
 	}
 
 	// Inserting a new scan with retention=7 days must prune the 30-day-old one.
@@ -134,11 +138,11 @@ func TestStoreInsertRetentionPrunesOldScans(t *testing.T) {
 		time.Now().UTC(),
 		topic("legacy", types.VerdictCandidate, 75, mkBytes(100)),
 	)
-	if _, err := store.Insert(fresh, 7); err != nil {
-		t.Fatalf("Insert fresh: %v", err)
+	if _, ierr := store.Insert(ctx, fresh, 7); ierr != nil {
+		t.Fatalf("Insert fresh: %v", ierr)
 	}
 
-	n, err := store.ScanCount()
+	n, err := store.ScanCount(ctx)
 	if err != nil {
 		t.Fatalf("ScanCount: %v", err)
 	}
@@ -158,14 +162,14 @@ func TestStoreInsertRetentionPrunesOldScans(t *testing.T) {
 
 func TestLoadScanNotFound(t *testing.T) {
 	dir := t.TempDir()
-	store, err := Open(filepath.Join(dir, "history.db"))
+	store, err := Open(context.Background(), filepath.Join(dir, "history.db"))
 	if err != nil {
 		t.Fatalf("Open: %v", err)
 	}
 	defer store.Close()
 
-	_, err = store.LoadScan(9999)
-	if err != ErrScanNotFound {
+	_, err = store.LoadScan(context.Background(), 9999)
+	if !errors.Is(err, ErrScanNotFound) {
 		t.Errorf("expected ErrScanNotFound, got %v", err)
 	}
 }

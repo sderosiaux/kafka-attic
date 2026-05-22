@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 func defaultThresholds() config.Thresholds {
@@ -108,7 +108,7 @@ func TestScore_SpecWorkedExample_LegacyEvents(t *testing.T) {
 	// Cluster size distribution placing legacy-events at p4. Use 25 sizes,
 	// our topic strictly between sizes[0] and sizes[1] → percentile 4.
 	clusterTopics := make([]types.Topic, 0, 26)
-	for i := 0; i < 25; i++ {
+	for i := range 25 {
 		b := int64(i+1) * 10_000_000_000 // 10 GB increments
 		clusterTopics = append(clusterTopics, types.Topic{
 			Name:    "filler",
@@ -122,7 +122,7 @@ func TestScore_SpecWorkedExample_LegacyEvents(t *testing.T) {
 		ReplicationFactor:    3,
 		CleanupPolicy:        "delete",
 		MessageTimestampType: "LogAppendTime",
-		LastProduceTs:        &produced,
+		LastProduceTS:        &produced,
 		EarliestOffsetSum:    145203,
 		LatestOffsetSum:      12847291,
 		Storage:              types.StorageInfo{Bytes: &legacyBytes, Source: "log_dir", Evidence: types.EvidenceKnown},

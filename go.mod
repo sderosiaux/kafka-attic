@@ -1,4 +1,4 @@
-module github.com/conduktor/kafka-attic
+module github.com/sderosiaux/kafka-attic
 
 go 1.25.0
 

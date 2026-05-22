@@ -3,7 +3,7 @@ package renderer
 import (
 	"testing"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 func TestSHA256HexStable(t *testing.T) {

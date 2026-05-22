@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // When two sub-signals (Tonnage + Intent) are skipped, the remaining three

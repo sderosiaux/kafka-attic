@@ -95,7 +95,7 @@ func (f *fakeAdmin) DescribeAllLogDirs(ctx context.Context, s kadm.TopicsSet) (k
 }
 
 // authError builds a *kadm.AuthError wrapping the given underlying error.
-// Useful when the test wants to assert the collector's degraded behaviour.
+// Useful when the test wants to assert the collector's degraded behavior.
 func authError(inner error) error {
 	return &kadm.AuthError{Err: inner}
 }

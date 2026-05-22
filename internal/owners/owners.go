@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // Known source names (used in precedence arrays and OwnerInfo.Source).

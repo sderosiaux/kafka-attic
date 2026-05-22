@@ -6,11 +6,12 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 func i64(v int64) *int64 { return &v }
@@ -158,13 +159,7 @@ func TestSharer_Send_PayloadSchemaAndResponse(t *testing.T) {
 		t.Fatalf("unmarshal wire: %v", err)
 	}
 	for k := range wire {
-		found := false
-		for _, allowed := range AllowedShareKeys {
-			if k == allowed {
-				found = true
-				break
-			}
-		}
+		found := slices.Contains(AllowedShareKeys, k)
 		if !found {
 			t.Fatalf("share wire carries disallowed key %q", k)
 		}

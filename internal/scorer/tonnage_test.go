@@ -3,7 +3,7 @@ package scorer
 import (
 	"testing"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 func TestPercentileRank(t *testing.T) {
@@ -62,7 +62,7 @@ func TestScoreTonnage_UnknownSkipped(t *testing.T) {
 }
 
 func TestScoreTonnage_RedistributesWeight(t *testing.T) {
-	// Synthesise a SubScores map with Tonnage skipped and verify the rest of
+	// Synthesize a SubScores map with Tonnage skipped and verify the rest of
 	// the weight redistributes proportionally.
 	weights := types.AtticWeights{
 		Activity: 0.30, Tenancy: 0.20, Tonnage: 0.10, Intent: 0.15, Consumption: 0.25,

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // ShareTimeout is the deadline on a --share upload. Larger than PingTimeout
@@ -145,11 +145,8 @@ func BucketBytesPow10(n int64) string {
 	if n <= 0 {
 		return "0"
 	}
-	// floor(log10(n))
-	exp := int(math.Floor(math.Log10(float64(n))))
-	if exp < 0 {
-		exp = 0
-	}
+	// Compute floor(log10(n)) clamped at zero.
+	exp := max(int(math.Floor(math.Log10(float64(n)))), 0)
 	if exp >= 19 {
 		return "1e19+"
 	}
@@ -166,8 +163,9 @@ func (s *Sharer) Send(ctx context.Context, payload SharePayload) (ShareResponse,
 	if s == nil {
 		return ShareResponse{}, errors.New("nil sharer")
 	}
-	if err := AssertNoPIIShare(payload); err != nil {
-		return ShareResponse{}, err
+	perr := AssertNoPIIShare(payload)
+	if perr != nil {
+		return ShareResponse{}, perr
 	}
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -192,8 +190,9 @@ func (s *Sharer) Send(ctx context.Context, payload SharePayload) (ShareResponse,
 		return ShareResponse{}, fmt.Errorf("share rejected: status %d", resp.StatusCode)
 	}
 	var out ShareResponse
-	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
-		return ShareResponse{}, fmt.Errorf("decode share response: %w", err)
+	derr := json.NewDecoder(resp.Body).Decode(&out)
+	if derr != nil {
+		return ShareResponse{}, fmt.Errorf("decode share response: %w", derr)
 	}
 	if strings.TrimSpace(out.URL) == "" {
 		return ShareResponse{}, errors.New("share response missing url")
@@ -209,8 +208,9 @@ func AssertNoPIIShare(payload SharePayload) error {
 		return fmt.Errorf("marshal for pii check: %w", err)
 	}
 	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return fmt.Errorf("unmarshal for pii check: %w", err)
+	uerr := json.Unmarshal(b, &raw)
+	if uerr != nil {
+		return fmt.Errorf("unmarshal for pii check: %w", uerr)
 	}
 	allowed := make(map[string]struct{}, len(AllowedShareKeys))
 	for _, k := range AllowedShareKeys {

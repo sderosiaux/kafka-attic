@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/conduktor/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/config"
 )
 
 func TestJSONSource_DefaultExtractOwner(t *testing.T) {

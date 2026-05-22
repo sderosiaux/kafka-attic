@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -70,7 +71,7 @@ func TestBucketFor(t *testing.T) {
 func TestNewRunUUID_FormatAndUniqueness(t *testing.T) {
 	re := regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`)
 	seen := make(map[string]struct{}, 100)
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		u, err := newRunUUID()
 		if err != nil {
 			t.Fatalf("uuid: %v", err)
@@ -127,7 +128,8 @@ func TestAssertNoPII_RejectsPathChars(t *testing.T) {
 		{Version: "1.0", OS: `c:\users`, Arch: "amd64", RunUUID: "id"},
 	}
 	for i, c := range cases {
-		if err := AssertNoPII(c); err == nil {
+		err := AssertNoPII(c)
+		if err == nil {
 			t.Errorf("case %d: expected rejection, got nil", i)
 		}
 	}
@@ -176,13 +178,7 @@ func TestPinger_Send_PostsExpectedShape(t *testing.T) {
 		t.Fatalf("unmarshal wire: %v (body=%s)", err, capturedBody)
 	}
 	for k := range wire {
-		found := false
-		for _, allowed := range AllowedPayloadKeys {
-			if k == allowed {
-				found = true
-				break
-			}
-		}
+		found := slices.Contains(AllowedPayloadKeys, k)
 		if !found {
 			t.Fatalf("wire payload carries disallowed key %q", k)
 		}

@@ -6,7 +6,7 @@ import (
 
 	"github.com/twmb/franz-go/pkg/kadm"
 
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // groupsResult bundles the per-topic view of consumer groups for the
@@ -61,22 +61,10 @@ func listAndDescribeGroups(
 	}
 
 	fetched := adm.FetchManyOffsets(ctx, groupNames...)
-	// Sniff for auth on the offset side. AllFailed plus all errs being auth =
-	// definite no-access; otherwise we treat partial failures as best-effort.
-	if fetched.AllFailed() {
-		anyAuth := false
-		for _, r := range fetched {
-			if isAuthError(r.Err) {
-				anyAuth = true
-				break
-			}
-		}
-		if anyAuth {
-			res.FetchAuth = true
-			// Even with FetchAuth, expose the group states so Tenancy can
-			// still distinguish "all dead" from "stable, no offsets visible".
-			// Fall through and continue without offsets.
-		}
+	if hasAuthFailure(fetched) {
+		res.FetchAuth = true
+		// Even with FetchAuth, expose the group states so Tenancy can
+		// still distinguish "all dead" from "stable, no offsets visible".
 	}
 
 	for _, gname := range groupNames {
@@ -84,42 +72,8 @@ func listAndDescribeGroups(
 		if !ok || dg.Err != nil {
 			continue
 		}
-		// Committed offsets (per topic) for this group.
-		fr, hasFetch := fetched[gname]
-		var commitsByTopic map[string]int64
-		if hasFetch && fr.Err == nil {
-			commitsByTopic = make(map[string]int64)
-			for topic, parts := range fr.Fetched {
-				if _, want := inScopeTopics[topic]; !want {
-					continue
-				}
-				var sum int64
-				for _, p := range parts {
-					if p.Err != nil {
-						continue
-					}
-					if p.At < 0 {
-						continue
-					}
-					sum += p.At
-				}
-				commitsByTopic[topic] = sum
-			}
-		}
-
-		// Always include topics named via JoinTopics — that's how Tenancy
-		// sees a Stable group with no commits yet (rule #1 in §4.2). For
-		// Empty/Dead groups (no members) we fall back to commitsByTopic.
-		topicsForGroup := make(map[string]struct{})
-		for _, t := range dg.JoinTopics() {
-			if _, want := inScopeTopics[t]; want {
-				topicsForGroup[t] = struct{}{}
-			}
-		}
-		for t := range commitsByTopic {
-			topicsForGroup[t] = struct{}{}
-		}
-
+		commitsByTopic := commitsByTopicFor(fetched, gname, inScopeTopics)
+		topicsForGroup := groupTopics(dg, inScopeTopics, commitsByTopic)
 		memberCount := len(dg.Members)
 		for topic := range topicsForGroup {
 			committed := commitsByTopic[topic]
@@ -139,6 +93,69 @@ func listAndDescribeGroups(
 		res.PerTopic[t] = gs
 	}
 	return res, nil
+}
+
+// hasAuthFailure returns true when every FetchManyOffsets reply failed and at
+// least one of those failures is an auth error.
+func hasAuthFailure(fetched kadm.FetchOffsetsResponses) bool {
+	if !fetched.AllFailed() {
+		return false
+	}
+	for _, r := range fetched {
+		if isAuthError(r.Err) {
+			return true
+		}
+	}
+	return false
+}
+
+// commitsByTopicFor extracts the per-topic committed-offset sum for group
+// gname, restricted to the in-scope topic set. Returns nil when the group's
+// fetch failed or is missing — callers treat that as "no commits visible".
+func commitsByTopicFor(
+	fetched kadm.FetchOffsetsResponses,
+	gname string,
+	inScopeTopics map[string]struct{},
+) map[string]int64 {
+	fr, ok := fetched[gname]
+	if !ok || fr.Err != nil {
+		return nil
+	}
+	out := make(map[string]int64)
+	for topic, parts := range fr.Fetched {
+		if _, want := inScopeTopics[topic]; !want {
+			continue
+		}
+		var sum int64
+		for _, p := range parts {
+			if p.Err != nil || p.At < 0 {
+				continue
+			}
+			sum += p.At
+		}
+		out[topic] = sum
+	}
+	return out
+}
+
+// groupTopics returns the union of dg.JoinTopics ∩ in-scope plus any topic
+// that appeared in commitsByTopic — matching the SPEC §4.2 Tenancy rules
+// where a Stable group with no commits still names its topic via JoinTopics.
+func groupTopics(
+	dg kadm.DescribedGroup,
+	inScopeTopics map[string]struct{},
+	commitsByTopic map[string]int64,
+) map[string]struct{} {
+	out := make(map[string]struct{})
+	for _, t := range dg.JoinTopics() {
+		if _, want := inScopeTopics[t]; want {
+			out[t] = struct{}{}
+		}
+	}
+	for t := range commitsByTopic {
+		out[t] = struct{}{}
+	}
+	return out
 }
 
 // computeLag returns max(0, sum(latest) - committed). When latest is unknown
@@ -182,7 +199,7 @@ func latestPerPartitionFromMetrics(metrics *offsetsResult) map[string]map[int32]
 	return out
 }
 
-// stableGroupStates lists the Kafka group states the collector recognises.
+// stableGroupStates lists the Kafka group states the collector recognizes.
 // Kept as a comment + exported constants so callers (M2 scorer) reference the
 // same string identifiers and the test suite can drive every variant.
 const (

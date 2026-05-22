@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/types"
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // JSONOptions controls JSON rendering.
@@ -83,7 +83,8 @@ func cloneSnapshot(s *types.Snapshot) types.Snapshot {
 // avoids pulling in a third-party dependency.
 func newUUID() string {
 	var b [16]byte
-	if _, err := rand.Read(b[:]); err != nil {
+	_, rerr := rand.Read(b[:])
+	if rerr != nil {
 		// Extremely rare on supported platforms. Surface a deterministic
 		// fallback so JSON output remains valid.
 		return "00000000-0000-4000-8000-000000000000"

@@ -5,7 +5,7 @@ import (
 
 	"github.com/twmb/franz-go/pkg/kadm"
 
-	"github.com/conduktor/kafka-attic/internal/cluster"
+	"github.com/sderosiaux/kafka-attic/internal/cluster"
 )
 
 // KafkaAdmin is the narrow read-only slice of *kadm.Client that the collector

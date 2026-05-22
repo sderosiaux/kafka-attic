@@ -3,17 +3,21 @@ package owners
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
-	"github.com/conduktor/kafka-attic/internal/config"
-	"github.com/conduktor/kafka-attic/internal/types"
 	"github.com/itchyny/gojq"
+
+	"github.com/sderosiaux/kafka-attic/internal/config"
+	"github.com/sderosiaux/kafka-attic/internal/types"
 )
 
 // defaultJSONTimeout caps each owner-JSON request. Like Backstage, owner
@@ -35,10 +39,10 @@ type jsonSource struct {
 
 func newJSONSource(cfg *config.OwnersJSONConfig) (Source, error) {
 	if cfg == nil {
-		return nil, fmt.Errorf("json config is nil")
+		return nil, errors.New("json config is nil")
 	}
 	if strings.TrimSpace(cfg.URL) == "" {
-		return nil, fmt.Errorf("json url is empty")
+		return nil, errors.New("json url is empty")
 	}
 
 	extractExpr := strings.TrimSpace(cfg.Extract)
@@ -58,9 +62,7 @@ func newJSONSource(cfg *config.OwnersJSONConfig) (Source, error) {
 	// resolution happens at request time, consistent with ResolveEnv usage
 	// in the cluster package.
 	headers := make(map[string]string, len(cfg.Headers))
-	for k, v := range cfg.Headers {
-		headers[k] = v
-	}
+	maps.Copy(headers, cfg.Headers)
 
 	return &jsonSource{
 		urlTemplate: cfg.URL,
@@ -76,7 +78,7 @@ func (s *jsonSource) Name() string { return SourceJSON }
 func (s *jsonSource) Lookup(ctx context.Context, topic string, _ map[string]string) (*types.OwnerInfo, error) {
 	endpoint := strings.ReplaceAll(s.urlTemplate, "{topic}", topic)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +95,7 @@ func (s *jsonSource) Lookup(ctx context.Context, topic string, _ map[string]stri
 
 	if resp.StatusCode == http.StatusNotFound {
 		_, _ = io.Copy(io.Discard, resp.Body)
-		return nil, nil
+		return nil, nil //nolint:nilnil // documented contract: nil owner means "not found"
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		_, _ = io.Copy(io.Discard, resp.Body)
@@ -106,8 +108,9 @@ func (s *jsonSource) Lookup(ctx context.Context, topic string, _ map[string]stri
 	}
 
 	var doc any
-	if err := json.Unmarshal(body, &doc); err != nil {
-		return nil, fmt.Errorf("decode owner json: %w", err)
+	uerr := json.Unmarshal(body, &doc)
+	if uerr != nil {
+		return nil, fmt.Errorf("decode owner json: %w", uerr)
 	}
 
 	owner, err := runExtract(s.extract, doc)
@@ -115,7 +118,7 @@ func (s *jsonSource) Lookup(ctx context.Context, topic string, _ map[string]stri
 		return nil, err
 	}
 	if owner == "" {
-		return nil, nil
+		return nil, nil //nolint:nilnil // documented contract: nil owner means no mapping
 	}
 	return &types.OwnerInfo{
 		Value:  owner,
@@ -145,7 +148,7 @@ func runExtract(q *gojq.Query, doc any) (string, error) {
 		case float64:
 			return strings.TrimSpace(fmt.Sprintf("%v", t)), nil
 		case bool:
-			return fmt.Sprintf("%v", t), nil
+			return strconv.FormatBool(t), nil
 		default:
 			// Object/array: serialize to JSON so the caller still has a
 			// usable string. This is a best-effort fallback; typical usage
