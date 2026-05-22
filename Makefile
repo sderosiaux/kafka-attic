@@ -1,4 +1,4 @@
-.PHONY: build test integration lint lint-full fmt vet tidy vulncheck readonly-check verify clean dist install install-tools install-hooks uninstall-hooks help
+.PHONY: build test integration e2e e2e-redpanda e2e-kafka e2e-confluent e2e-all lint lint-full fmt vet tidy vulncheck readonly-check verify clean dist install install-tools install-hooks uninstall-hooks help
 .DEFAULT_GOAL := build
 
 build: ## Build the kattic binary into ./bin
@@ -9,6 +9,20 @@ test: ## Run unit tests with the race detector
 
 integration: ## Run integration tests (requires Docker)
 	go test ./... -tags=integration -count=1 -timeout=15m
+
+e2e: e2e-redpanda ## End-to-end smoke against Redpanda (default backend)
+
+e2e-redpanda: ## End-to-end smoke against Redpanda (docker)
+	bash scripts/e2e/run.sh redpanda
+
+e2e-kafka: ## End-to-end smoke against Apache Kafka KRaft (docker)
+	bash scripts/e2e/run.sh kafka
+
+e2e-confluent: ## End-to-end smoke against Confluent Community Edition (docker)
+	bash scripts/e2e/run.sh confluent
+
+e2e-all: ## End-to-end smoke against all three backends sequentially
+	bash scripts/e2e/run.sh all
 
 lint: ## Run golangci-lint on the diff (fast)
 	golangci-lint run --new-from-rev=origin/main --timeout=5m

@@ -1,0 +1,34 @@
+cluster:
+  name: e2e-apache-kafka
+  bootstrap: localhost:29094
+  auth:
+    type: none
+
+# Apache Kafka has no built-in Schema Registry; omit the SR block.
+# The Intent sub-signal is skipped and its weight redistributed.
+
+attic_score:
+  spec_version: 1.0.0
+  weights:
+    activity: 0.30
+    tenancy: 0.20
+    tonnage: 0.10
+    intent: 0.15
+    consumption: 0.25
+  thresholds:
+    likely_unused: 90
+    candidate: 70
+    inspect: 40
+  activity_curve:
+    - { days: 0,   score: 0 }
+    - { days: 30,  score: 25 }
+    - { days: 90,  score: 60 }
+    - { days: 180, score: 80 }
+    - { days: 365, score: 100 }
+
+report:
+  format: table
+  include_cleanup_script: false
+
+telemetry:
+  enabled: false

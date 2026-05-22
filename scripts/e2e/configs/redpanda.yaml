@@ -1,0 +1,39 @@
+cluster:
+  name: e2e-redpanda
+  bootstrap: localhost:19092
+  auth:
+    type: none
+
+schema_registry:
+  provider: confluent
+  url: http://localhost:18081
+  auth:
+    type: none
+  subject_strategy: topic_name
+  on_failure: warn
+
+attic_score:
+  spec_version: 1.0.0
+  weights:
+    activity: 0.30
+    tenancy: 0.20
+    tonnage: 0.10
+    intent: 0.15
+    consumption: 0.25
+  thresholds:
+    likely_unused: 90
+    candidate: 70
+    inspect: 40
+  activity_curve:
+    - { days: 0,   score: 0 }
+    - { days: 30,  score: 25 }
+    - { days: 90,  score: 60 }
+    - { days: 180, score: 80 }
+    - { days: 365, score: 100 }
+
+report:
+  format: table
+  include_cleanup_script: false
+
+telemetry:
+  enabled: false
