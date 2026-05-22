@@ -127,6 +127,88 @@ func TestListOffsets_NoTimestamp(t *testing.T) {
 	}
 }
 
+// TestListOffsets_MaxTimestampSemantics asserts that listOffsets calls
+// ListOffsetsAfterMilli with -3 (MAX_TIMESTAMP, KIP-734) and not -1
+// (LATEST_TIMESTAMP, which returns the high watermark with no usable
+// timestamp). Regression for the bug observed on Confluent Cloud + every
+// local backend where Activity stayed UNKNOWN despite produced records.
+func TestListOffsets_MaxTimestampSemantics(t *testing.T) {
+	var seenMillis []int64
+	adm := &fakeAdmin{
+		listStartOffsetsFn: func(_ context.Context, _ ...string) (kadm.ListedOffsets, error) {
+			return kadm.ListedOffsets{"t": {0: {Topic: "t", Partition: 0, Offset: 0}}}, nil
+		},
+		listEndOffsetsFn: func(_ context.Context, _ ...string) (kadm.ListedOffsets, error) {
+			return kadm.ListedOffsets{"t": {0: {Topic: "t", Partition: 0, Offset: 100}}}, nil
+		},
+		listOffsetsAfterMilliFn: func(_ context.Context, ms int64, _ ...string) (kadm.ListedOffsets, error) {
+			seenMillis = append(seenMillis, ms)
+			return kadm.ListedOffsets{
+				"t": {0: {Topic: "t", Partition: 0, Offset: 99, Timestamp: 1_730_000_000_000}},
+			}, nil
+		},
+	}
+
+	res, err := listOffsets(context.Background(), adm, []string{"t"})
+	if err != nil {
+		t.Fatalf("listOffsets err: %v", err)
+	}
+	if len(seenMillis) == 0 || seenMillis[0] != -3 {
+		t.Fatalf("first ListOffsetsAfterMilli call must use timestamp = -3 (MAX_TIMESTAMP), got %v", seenMillis)
+	}
+	if len(seenMillis) > 1 {
+		t.Fatalf("fallback was called even though -3 succeeded with usable timestamps: %v", seenMillis)
+	}
+	if res.LastProduceTS["t"] != 1_730_000_000_000 {
+		t.Fatalf("expected timestamp 1_730_000_000_000, got %d", res.LastProduceTS["t"])
+	}
+}
+
+// TestListOffsets_FallbackToEarliest covers the case where the primary
+// -3 (MAX_TIMESTAMP) call returns no usable timestamps (broker doesn't
+// implement KIP-734 or returned UNSUPPORTED_FOR_VERSION). The collector
+// must transparently fall back to ListOffsetsAfterMilli(0).
+func TestListOffsets_FallbackToEarliest(t *testing.T) {
+	var seenMillis []int64
+	adm := &fakeAdmin{
+		listStartOffsetsFn: func(_ context.Context, _ ...string) (kadm.ListedOffsets, error) {
+			return kadm.ListedOffsets{"t": {0: {Topic: "t", Partition: 0, Offset: 0}}}, nil
+		},
+		listEndOffsetsFn: func(_ context.Context, _ ...string) (kadm.ListedOffsets, error) {
+			return kadm.ListedOffsets{"t": {0: {Topic: "t", Partition: 0, Offset: 100}}}, nil
+		},
+		listOffsetsAfterMilliFn: func(_ context.Context, ms int64, _ ...string) (kadm.ListedOffsets, error) {
+			seenMillis = append(seenMillis, ms)
+			switch ms {
+			case -3:
+				// Broker doesn't implement KIP-734: returns offsets with
+				// Timestamp = -1 (no usable timestamp).
+				return kadm.ListedOffsets{
+					"t": {0: {Topic: "t", Partition: 0, Offset: 99, Timestamp: -1}},
+				}, nil
+			case 0:
+				// Fallback: earliest record's timestamp.
+				return kadm.ListedOffsets{
+					"t": {0: {Topic: "t", Partition: 0, Offset: 0, Timestamp: 1_700_000_000_000}},
+				}, nil
+			}
+			t.Fatalf("unexpected millis: %d", ms)
+			return nil, nil
+		},
+	}
+
+	res, err := listOffsets(context.Background(), adm, []string{"t"})
+	if err != nil {
+		t.Fatalf("listOffsets err: %v", err)
+	}
+	if len(seenMillis) != 2 || seenMillis[0] != -3 || seenMillis[1] != 0 {
+		t.Fatalf("expected calls [-3, 0], got %v", seenMillis)
+	}
+	if res.LastProduceTS["t"] != 1_700_000_000_000 {
+		t.Fatalf("expected fallback timestamp 1_700_000_000_000, got %d", res.LastProduceTS["t"])
+	}
+}
+
 // TestListOffsets_AuthOnStart covers the full-auth-error path: ListStartOffsets
 // fails with an AuthError. The collector swallows it and keeps the topic in
 // the result with empty partition metrics.

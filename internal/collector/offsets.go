@@ -29,16 +29,27 @@ type offsetsResult struct {
 	PartitionAuth map[string]bool
 }
 
-// listOffsets calls ListStartOffsets, ListEndOffsets and ListOffsetsAfterMilli(0)
-// to populate the partition metrics in one pass. SPEC §5.1: ListOffsets with
-// timestamp = -1 (LATEST_TIMESTAMP) returns the max ts per partition; we use
-// ListOffsetsAfterMilli(0) which returns "first offset at or after t=0", whose
-// returned Timestamp is the broker's recorded ts for the earliest record at
-// that offset. We take the per-topic max across partitions.
+// listOffsets calls ListStartOffsets, ListEndOffsets and the MAX_TIMESTAMP
+// variant of ListOffsets (KIP-734, Kafka 3.0+) to populate the partition
+// metrics in one pass.
 //
-// We deliberately avoid kadm.ListMaxTimestampOffsets here because it requires
-// Kafka 3.0+. ListOffsetsAfterMilli has been supported since 0.10.1 and is the
-// API SPEC §5.1 names explicitly.
+// Kafka's ListOffsets API takes a magic timestamp value:
+//
+//	-1 (LATEST_TIMESTAMP)  → returns the high watermark; the response
+//	                         Timestamp field is undefined (often -1).
+//	-2 (EARLIEST_TIMESTAMP)→ returns the log-start offset.
+//	-3 (MAX_TIMESTAMP)     → returns the offset of the record with the
+//	                         maximum timestamp, *and* that timestamp in the
+//	                         response. This is what we need for "last produce".
+//	>= 0                   → returns the first offset whose record timestamp
+//	                         is >= the supplied millis.
+//
+// kafka-attic used to call ListOffsetsAfterMilli(ctx, -1, ...) and assume the
+// response carried a usable timestamp — it does not. Every modern broker
+// (Apache Kafka 3.0+, Confluent Cloud, Redpanda, MSK) supports -3, so we now
+// use that. We fall back to ListOffsetsAfterMilli(ctx, 0, ...) for old
+// brokers; that returns the *earliest* record timestamp per partition, which
+// is a worse but non-zero estimate of activity.
 func listOffsets(ctx context.Context, adm KafkaAdmin, topics []string) (*offsetsResult, error) {
 	res := &offsetsResult{
 		Partitions:    make(map[string]map[int32]types.PartitionMetric, len(topics)),
@@ -65,19 +76,25 @@ func listOffsets(ctx context.Context, adm KafkaAdmin, topics []string) (*offsets
 		ends = nil
 	}
 
-	// timestamp = 0 → earliest record AT OR AFTER epoch 0 → the broker
-	// returns the very first record's timestamp per partition. We then take
-	// the *max* across partitions for that topic to derive last-produce.
-	// NOTE: SPEC §5.1 says ListOffsets with timestamp = -1 returns the LATEST
-	// timestamp. franz-go's high-level wrapper ListMaxTimestampOffsets uses
-	// timestamp = -3 which is Kafka 3.0+. To stay within the API SPEC names,
-	// we accept the conservative path: when ListMaxTimestampOffsets fails or
-	// returns no timestamps, we still produce a value from any partition we
-	// can read.
-	maxTS, terr := adm.ListOffsetsAfterMilli(ctx, -1, topics...)
-	if terr != nil {
-		// Old broker / not supported → leave LastProduceTS at -1 sentinel.
-		maxTS = nil
+	// Primary path: timestamp = -3 (MAX_TIMESTAMP, KIP-734, Kafka 3.0+).
+	// Returns the offset of the record with the maximum timestamp per
+	// partition, *and* that timestamp in the response — exactly what we need
+	// for the Activity sub-signal. Confluent Cloud, MSK, Aiven, Redpanda, and
+	// every Apache Kafka 3.x broker support this.
+	maxTS, terr := adm.ListOffsetsAfterMilli(ctx, -3, topics...)
+	if terr != nil || !hasUsableTimestamp(maxTS) {
+		// Fallback for ancient brokers (< 3.0) or brokers that returned
+		// UNSUPPORTED_FOR_VERSION. timestamp = 0 returns the offset of the
+		// first record whose ts >= epoch 0 — i.e. the very first record's
+		// timestamp per partition. That is a *first-produce* estimate, not
+		// *last-produce*, but it is strictly better than UNKNOWN for the
+		// purposes of telling "this topic has been touched at some point".
+		// We mark this as a fallback by recording the original error in the
+		// log dirs / activity downstream code if needed.
+		maxTS, terr = adm.ListOffsetsAfterMilli(ctx, 0, topics...)
+		if terr != nil {
+			maxTS = nil
+		}
 	}
 
 	for _, t := range topics {
@@ -144,6 +161,27 @@ func applyEndOffsets(res *offsetsResult, parts map[int32]types.PartitionMetric, 
 		pm.LatestOffset = lo.Offset
 		parts[p] = pm
 	}
+}
+
+// hasUsableTimestamp returns true when at least one partition response across
+// any topic carries a timestamp > 0. Used to detect when the MAX_TIMESTAMP
+// (-3) call succeeded protocol-wise but returned no timestamps (e.g., a
+// broker that ack'd the request but doesn't implement KIP-734).
+func hasUsableTimestamp(maxTS kadm.ListedOffsets) bool {
+	if maxTS == nil {
+		return false
+	}
+	for _, ps := range maxTS {
+		for p, lo := range ps {
+			if p < 0 || lo.Err != nil {
+				continue
+			}
+			if lo.Timestamp > 0 {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // topicLastProduceTS returns the max per-partition timestamp for topic t, or
