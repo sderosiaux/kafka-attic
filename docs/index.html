@@ -1,16 +1,25 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-F508MVXD3Z"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-F508MVXD3Z");
+    </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>kafka-attic — find your Kafka topic graveyard</title>
     <meta
       name="description"
-      content="Read-only Go CLI that scores stale, empty, oversized, abandoned Kafka topics in one scan. ATTIC Score methodology, vendor-neutral, single binary."
+      content="Find your Kafka topic graveyard. Read-only Go CLI that scores stale, empty, oversized, abandoned topics in one scan. ATTIC Score methodology. Single binary."
     />
     <meta
       name="keywords"
-      content="kafka topic cleanup, stale kafka topics, kafka topic graveyard, unused kafka topics, kafka storage reclaim, kafka audit, ATTIC Score, kafka governance, kafka CLI, kafka admin, MSK cleanup, Confluent Cloud cleanup, Aiven Kafka, Redpanda, kafka topic lifecycle, kafka disk cost, kafka topic owner, kafka inventory, kafka health, kafka attic"
+      content="kafka topic cleanup, stale kafka topics, kafka topic graveyard, unused kafka topics, kafka storage reclaim, kafka audit, ATTIC Score, kafka governance, kafka CLI, kafka admin, MSK cleanup, Confluent Cloud cleanup, Aiven Kafka, Redpanda, kafka topic lifecycle, kafka disk cost, kafka topic owner, kafka inventory, kafka health, kafka attic, kattic"
     />
     <meta name="author" content="Conduktor" />
     <meta
@@ -18,15 +27,20 @@
       content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
     />
     <meta name="theme-color" content="#0f172a" />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="light only" />
+    <meta name="format-detection" content="telephone=no" />
     <link rel="canonical" href="https://sderosiaux.github.io/kafka-attic/" />
-    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="./images/favicon.svg" />
+    <link rel="apple-touch-icon" href="./images/apple-touch-icon.png" />
 
     <!-- Open Graph -->
     <meta property="og:title" content="kafka-attic — find your Kafka topic graveyard" />
     <meta
       property="og:description"
-      content="Read-only Go CLI that scores stale, empty, oversized, abandoned Kafka topics in one scan. ATTIC Score methodology, vendor-neutral, single binary."
+      content="Find your Kafka topic graveyard. Read-only Go CLI that scores stale, empty, oversized, abandoned topics in one scan. ATTIC Score methodology. Single binary."
     />
     <meta property="og:url" content="https://sderosiaux.github.io/kafka-attic/" />
     <meta property="og:site_name" content="kafka-attic" />
@@ -38,17 +52,17 @@
     <meta property="og:image:type" content="image/png" />
     <meta
       property="og:image:alt"
-      content="kafka-attic — find your Kafka topic graveyard. Read-only CLI."
+      content="kafka-attic — read-only Go CLI that scores stale, empty, oversized, abandoned Kafka topics and ranks reclaimable storage."
     />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@conduktor" />
-    <meta name="twitter:creator" content="@conduktor" />
+    <meta name="twitter:creator" content="@sderosiaux" />
     <meta name="twitter:title" content="kafka-attic — find your Kafka topic graveyard" />
     <meta
       name="twitter:description"
-      content="Read-only Go CLI that scores stale, empty, oversized, abandoned Kafka topics in one scan. ATTIC Score methodology, vendor-neutral, single binary."
+      content="Find your Kafka topic graveyard. Read-only Go CLI that scores stale, empty, oversized, abandoned topics in one scan. ATTIC Score methodology. Single binary."
     />
     <meta
       name="twitter:image"
@@ -56,12 +70,14 @@
     />
     <meta
       name="twitter:image:alt"
-      content="kafka-attic — find your Kafka topic graveyard."
+      content="kafka-attic — read-only Go CLI that scores stale, empty, oversized, abandoned Kafka topics and ranks reclaimable storage."
     />
 
     <!-- Performance -->
     <link rel="preconnect" href="https://api.github.com" crossorigin />
     <link rel="dns-prefetch" href="https://github.com" />
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
 
     <!-- Structured data: SoftwareApplication -->
     <script type="application/ld+json">
@@ -78,8 +94,10 @@
         "url": "https://sderosiaux.github.io/kafka-attic/",
         "description": "Read-only Go CLI that scores every Kafka topic against a published methodology — Activity, Tenancy, Tonnage, Intent, Consumption. Single static binary, vendor-neutral, no producer client compiled.",
         "image": "https://sderosiaux.github.io/kafka-attic/images/og-card.png",
+        "screenshot": "https://sderosiaux.github.io/kafka-attic/images/screenshot-terminal.png",
         "downloadUrl": "https://github.com/sderosiaux/kafka-attic/releases/latest",
         "softwareHelp": "https://github.com/sderosiaux/kafka-attic",
+        "releaseNotes": "https://github.com/sderosiaux/kafka-attic/releases",
         "license": "https://www.apache.org/licenses/LICENSE-2.0",
         "featureList": [
           "ATTIC Score 0-100 per topic over five sub-signals",
@@ -101,10 +119,16 @@
           "name": "Conduktor",
           "url": "https://www.conduktor.io"
         },
-        "publisher": {
+        "creator": {
           "@type": "Organization",
           "name": "Conduktor",
           "url": "https://www.conduktor.io"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Conduktor",
+          "url": "https://www.conduktor.io",
+          "logo": "https://sderosiaux.github.io/kafka-attic/images/apple-touch-icon.png"
         }
       }
     </script>
@@ -182,11 +206,108 @@
         "@type": "WebSite",
         "name": "kafka-attic",
         "url": "https://sderosiaux.github.io/kafka-attic/",
+        "inLanguage": "en-US",
         "publisher": {
           "@type": "Organization",
           "name": "Conduktor",
           "url": "https://www.conduktor.io"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://github.com/sderosiaux/kafka-attic/search?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
         }
+      }
+    </script>
+
+    <!-- Structured data: Organization -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Conduktor",
+        "url": "https://www.conduktor.io",
+        "logo": "https://sderosiaux.github.io/kafka-attic/images/apple-touch-icon.png",
+        "sameAs": [
+          "https://github.com/conduktor",
+          "https://twitter.com/conduktor",
+          "https://www.linkedin.com/company/conduktor"
+        ]
+      }
+    </script>
+
+    <!-- Structured data: BreadcrumbList -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://sderosiaux.github.io/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "kafka-attic",
+            "item": "https://sderosiaux.github.io/kafka-attic/"
+          }
+        ]
+      }
+    </script>
+
+    <!-- Structured data: HowTo (install kafka-attic) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": "How to install kafka-attic and scan your first Kafka cluster",
+        "description": "Install the kafka-attic CLI on macOS, Linux, or Windows and run a read-only scan against any Kafka-compatible cluster.",
+        "totalTime": "PT5M",
+        "supply": [
+          {
+            "@type": "HowToSupply",
+            "name": "A Kafka-compatible cluster (Apache Kafka, MSK, Confluent Cloud, Aiven, Redpanda)"
+          },
+          {
+            "@type": "HowToSupply",
+            "name": "Read-only Kafka credentials (Describe on Cluster, Topic, Group)"
+          }
+        ],
+        "tool": [
+          {
+            "@type": "HowToTool",
+            "name": "Homebrew, Scoop, Docker, curl, or Go 1.22+"
+          }
+        ],
+        "step": [
+          {
+            "@type": "HowToStep",
+            "position": 1,
+            "name": "Install the binary",
+            "text": "Install via Homebrew (brew install kafka-attic), Scoop (scoop install kafka-attic), Docker (ghcr.io/sderosiaux/kafka-attic:latest), curl one-liner, or go install github.com/sderosiaux/kafka-attic/cmd/kattic@latest.",
+            "url": "https://sderosiaux.github.io/kafka-attic/#install"
+          },
+          {
+            "@type": "HowToStep",
+            "position": 2,
+            "name": "Create kattic.yaml",
+            "text": "Declare bootstrap and auth in kattic.yaml. Secrets come from environment variables, so the file is safe to commit. Supported auth: SASL_PLAIN, SCRAM-SHA-256/512, mTLS, AWS IAM, OAuth.",
+            "url": "https://sderosiaux.github.io/kafka-attic/#install"
+          },
+          {
+            "@type": "HowToStep",
+            "position": 3,
+            "name": "Run the scan",
+            "text": "kattic scan --cluster ./kattic.yaml produces a ranked list of topics with ATTIC Score, evidence levels, and reclaimable storage. Use --output html for a single-file report.",
+            "url": "https://sderosiaux.github.io/kafka-attic/#how"
+          }
+        ]
       }
     </script>
 
@@ -253,13 +374,16 @@
         justify-content: space-between;
         height: 64px;
       }
-      .brand {
+      .brand { display: inline-flex; align-items: center; }
+      .brand-home {
         display: inline-flex;
         align-items: center;
         gap: 10px;
         color: var(--text);
         line-height: 1;
+        text-decoration: none;
       }
+      .brand-home:hover { color: var(--text); }
       .brand-icon {
         width: 34px;
         height: 34px;
@@ -297,8 +421,8 @@
         letter-spacing: 0.01em;
         line-height: 1;
       }
-      .brand-text .by a { color: var(--muted); }
-      .brand-text .by a:hover { color: var(--text); }
+      .brand-text .by .by-link { color: var(--muted); text-decoration: none; }
+      .brand-text .by .by-link:hover { color: var(--text); }
 
       /* Star button */
       .nav-star {
@@ -545,7 +669,21 @@
       .tco {
         background: linear-gradient(180deg, #fff 0%, var(--bg-soft) 100%);
         border-bottom: 1px solid var(--border);
+        position: relative;
+        overflow: hidden;
       }
+      .tco::before {
+        content: "";
+        position: absolute;
+        top: -200px; right: -200px;
+        width: 600px; height: 600px;
+        background:
+          radial-gradient(circle at center, rgba(37, 99, 235, 0.06), transparent 60%),
+          radial-gradient(circle at 30% 70%, rgba(6, 182, 212, 0.05), transparent 60%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      .tco > .wrap { position: relative; z-index: 1; }
       .tco-grid {
         margin-top: 48px;
         display: grid;
@@ -556,61 +694,170 @@
       @media (max-width: 640px) { .tco-grid { grid-template-columns: 1fr; } }
       .tco-card {
         position: relative;
-        padding: 28px;
         border: 1px solid var(--border);
-        border-radius: 16px;
+        border-radius: 18px;
         background: #fff;
         display: flex;
         flex-direction: column;
-        gap: 14px;
-        transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-      }
-      .tco-card::before {
-        content: "";
-        position: absolute;
-        left: 0; top: 12px; bottom: 12px;
-        width: 3px;
-        border-radius: 0 3px 3px 0;
-        background: linear-gradient(180deg, #2563eb 0%, #06b6d4 100%);
+        overflow: hidden;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
       }
       .tco-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.18),
-          0 26px 50px -25px rgba(15, 23, 42, 0.25);
+        transform: translateY(-4px);
+        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.22), 0 28px 60px -25px rgba(15, 23, 42, 0.28);
         border-color: transparent;
       }
-      .tco-card .tco-label {
+      .tco-visual {
+        position: relative;
+        padding: 26px 28px 22px;
+        background:
+          radial-gradient(120% 100% at 100% 0%, rgba(6, 182, 212, 0.10), transparent 60%),
+          radial-gradient(80% 80% at 0% 100%, rgba(37, 99, 235, 0.10), transparent 65%),
+          linear-gradient(180deg, #fafbff 0%, #f4f8ff 100%);
+        border-bottom: 1px solid var(--border);
+        overflow: hidden;
+      }
+      .tco-card[data-domain="partitions"] .tco-visual {
+        background:
+          radial-gradient(120% 100% at 100% 0%, rgba(14, 165, 233, 0.10), transparent 60%),
+          radial-gradient(80% 80% at 0% 100%, rgba(6, 182, 212, 0.10), transparent 65%),
+          linear-gradient(180deg, #f5fbff 0%, #ecf7ff 100%);
+      }
+      .tco-card[data-domain="controller"] .tco-visual {
+        background:
+          radial-gradient(120% 100% at 100% 0%, rgba(99, 102, 241, 0.10), transparent 60%),
+          radial-gradient(80% 80% at 0% 100%, rgba(37, 99, 235, 0.10), transparent 65%),
+          linear-gradient(180deg, #f7f8ff 0%, #eef0ff 100%);
+      }
+      .tco-card[data-domain="schema"] .tco-visual {
+        background:
+          radial-gradient(120% 100% at 100% 0%, rgba(168, 85, 247, 0.08), transparent 60%),
+          radial-gradient(80% 80% at 0% 100%, rgba(99, 102, 241, 0.08), transparent 65%),
+          linear-gradient(180deg, #faf7ff 0%, #f4f0ff 100%);
+      }
+      .tco-card[data-domain="monitoring"] .tco-visual {
+        background:
+          radial-gradient(120% 100% at 100% 0%, rgba(20, 184, 166, 0.10), transparent 60%),
+          radial-gradient(80% 80% at 0% 100%, rgba(6, 182, 212, 0.10), transparent 65%),
+          linear-gradient(180deg, #f0fbfa 0%, #e6f8f6 100%);
+      }
+      .tco-card[data-domain="governance"] .tco-visual {
+        background:
+          radial-gradient(120% 100% at 100% 0%, rgba(100, 116, 139, 0.10), transparent 60%),
+          radial-gradient(80% 80% at 0% 100%, rgba(15, 23, 42, 0.05), transparent 65%),
+          linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+      }
+      .tco-icon {
+        position: absolute;
+        top: 26px;
+        right: 28px;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid var(--border);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent);
+        backdrop-filter: blur(8px);
+      }
+      .tco-icon svg { width: 18px; height: 18px; display: block; }
+      .tco-card[data-domain="partitions"] .tco-icon { color: #0891b2; }
+      .tco-card[data-domain="controller"] .tco-icon { color: #6366f1; }
+      .tco-card[data-domain="schema"] .tco-icon { color: #a855f7; }
+      .tco-card[data-domain="monitoring"] .tco-icon { color: #14b8a6; }
+      .tco-card[data-domain="governance"] .tco-icon { color: #475569; }
+      .tco-stat {
+        font-family: var(--mono);
+        font-size: 44px;
+        font-weight: 700;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        display: inline-block;
+      }
+      .tco-card[data-domain="partitions"] .tco-stat { background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%); -webkit-background-clip: text; background-clip: text; }
+      .tco-card[data-domain="controller"] .tco-stat { background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); -webkit-background-clip: text; background-clip: text; }
+      .tco-card[data-domain="schema"] .tco-stat { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); -webkit-background-clip: text; background-clip: text; }
+      .tco-card[data-domain="monitoring"] .tco-stat { background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); -webkit-background-clip: text; background-clip: text; }
+      .tco-card[data-domain="governance"] .tco-stat { background: linear-gradient(135deg, #334155 0%, #64748b 100%); -webkit-background-clip: text; background-clip: text; }
+      .tco-stat .unit {
+        font-size: 14px;
+        margin-left: 6px;
+        color: var(--muted);
+        font-weight: 500;
+        letter-spacing: 0;
+        background: none;
+        -webkit-background-clip: initial;
+        background-clip: initial;
+        -webkit-text-fill-color: var(--muted);
+      }
+      .tco-sub {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 600;
+        color: var(--muted);
+        margin-top: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .tco-bar {
+        margin-top: 14px;
+        height: 6px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+        position: relative;
+      }
+      .tco-bar::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        width: var(--fill, 75%);
+        background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
+        border-radius: 999px;
+      }
+      .tco-card[data-domain="partitions"] .tco-bar::after { background: linear-gradient(90deg, #0891b2 0%, #06b6d4 100%); }
+      .tco-card[data-domain="controller"] .tco-bar::after { background: linear-gradient(90deg, #4f46e5 0%, #6366f1 100%); }
+      .tco-card[data-domain="schema"] .tco-bar::after { background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%); }
+      .tco-card[data-domain="monitoring"] .tco-bar::after { background: linear-gradient(90deg, #0d9488 0%, #14b8a6 100%); }
+      .tco-card[data-domain="governance"] .tco-bar::after { background: linear-gradient(90deg, #334155 0%, #64748b 100%); }
+      .tco-body {
+        padding: 22px 28px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .tco-body .tco-label {
         font-family: var(--mono);
         font-size: 11px;
         font-weight: 600;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: var(--muted);
+        color: var(--accent);
       }
-      .tco-card .tco-number {
-        font-family: var(--mono);
-        font-size: 32px;
-        font-weight: 700;
-        line-height: 1;
-        color: var(--text);
-        letter-spacing: -0.02em;
-      }
-      .tco-card .tco-number .unit {
-        font-size: 14px;
-        color: var(--muted);
-        font-weight: 500;
-        margin-left: 4px;
-        letter-spacing: 0;
-      }
-      .tco-card h3 {
+      .tco-card[data-domain="partitions"] .tco-label { color: #0891b2; }
+      .tco-card[data-domain="controller"] .tco-label { color: #6366f1; }
+      .tco-card[data-domain="schema"] .tco-label { color: #a855f7; }
+      .tco-card[data-domain="monitoring"] .tco-label { color: #14b8a6; }
+      .tco-card[data-domain="governance"] .tco-label { color: #64748b; }
+      .tco-body h3 {
         margin: 0;
+        font-size: 17px;
+        font-weight: 650;
+        letter-spacing: -0.01em;
       }
-      .tco-card p {
-        font-size: 14px;
+      .tco-body p {
+        margin: 0;
+        font-size: 13.5px;
         color: var(--muted);
-        line-height: 1.55;
+        line-height: 1.6;
       }
-      .tco-card code {
+      .tco-body code {
         font-family: var(--mono);
         font-size: 12px;
         background: var(--bg-soft);
@@ -618,40 +865,113 @@
         border-radius: 4px;
         color: var(--text);
       }
+
+      /* Provider pricing strip */
       .tco-notes {
-        margin-top: 56px;
+        margin-top: 64px;
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 32px;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
       }
-      @media (max-width: 760px) { .tco-notes { grid-template-columns: 1fr; } }
+      @media (max-width: 980px) { .tco-notes { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 540px) { .tco-notes { grid-template-columns: 1fr; } }
       .tco-note {
-        padding: 24px 28px;
+        position: relative;
+        padding: 22px 24px;
         background: #fff;
         border: 1px solid var(--border);
         border-radius: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+      .tco-note:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15), 0 18px 36px -20px rgba(15, 23, 42, 0.18);
+        border-color: transparent;
+      }
+      .tco-note .provider {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--accent);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .tco-note .provider .dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+        flex-shrink: 0;
       }
       .tco-note h4 {
-        margin: 0 0 8px;
-        font-size: 15px;
+        margin: 0;
+        font-size: 14px;
         font-weight: 650;
         letter-spacing: -0.01em;
+        line-height: 1.4;
       }
       .tco-note p {
         margin: 0;
-        font-size: 13.5px;
+        font-size: 12.5px;
         color: var(--muted);
         line-height: 1.55;
       }
-      .tco-note .provider {
-        display: inline-block;
-        margin-bottom: 8px;
+      .tco-note .billing-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 6px;
+        padding: 4px 8px;
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        border-radius: 999px;
         font-family: var(--mono);
-        font-size: 11px;
+        font-size: 10.5px;
+        color: var(--text);
         font-weight: 600;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--accent);
+        align-self: flex-start;
+      }
+      .tco-note .billing-tag.crit { color: #b91c1c; border-color: #fecaca; background: #fef2f2; }
+      .tco-note .billing-tag.warn { color: #b45309; border-color: #fde68a; background: #fffbeb; }
+      .tco-note .billing-tag.ok   { color: #047857; border-color: #a7f3d0; background: #ecfdf5; }
+      .tco-cta {
+        margin-top: 48px;
+        padding: 28px 32px;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: 18px;
+        color: #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+      .tco-cta .tco-cta-icon {
+        width: 42px; height: 42px; border-radius: 12px;
+        background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+        display: inline-flex; align-items: center; justify-content: center;
+        color: #fff; flex-shrink: 0;
+      }
+      .tco-cta .tco-cta-icon svg { width: 22px; height: 22px; }
+      .tco-cta .tco-cta-text {
+        flex: 1;
+        min-width: 260px;
+      }
+      .tco-cta .tco-cta-text strong { display: block; font-size: 16px; font-weight: 650; color: #fff; margin-bottom: 4px; letter-spacing: -0.01em; }
+      .tco-cta .tco-cta-text span { font-size: 13.5px; color: #94a3b8; }
+      .tco-cta code {
+        font-family: var(--mono);
+        font-size: 13px;
+        background: rgba(255, 255, 255, 0.08);
+        padding: 2px 8px;
+        border-radius: 6px;
+        color: #f1f5f9;
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
       section .eyebrow {
         display: inline-block;
@@ -705,10 +1025,13 @@
       .why-mosaic {
         margin-top: 56px;
         display: grid;
-        grid-template-columns: repeat(6, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 20px;
       }
-      @media (max-width: 880px) {
+      @media (max-width: 980px) {
+        .why-mosaic { grid-template-columns: repeat(2, 1fr); }
+      }
+      @media (max-width: 640px) {
         .why-mosaic { grid-template-columns: 1fr; }
       }
 
@@ -723,11 +1046,7 @@
         flex-direction: column;
         transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
       }
-      .anti.span-3 { grid-column: span 3; }
-      .anti.span-2 { grid-column: span 2; }
-      @media (max-width: 880px) {
-        .anti.span-3, .anti.span-2 { grid-column: span 1; }
-      }
+      .anti.span-3, .anti.span-2 { grid-column: auto; }
       .anti:hover {
         transform: translateY(-3px);
         box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.15),
@@ -1425,19 +1744,21 @@
   <body>
     <header class="nav" id="nav">
       <div class="wrap nav-inner">
-        <a class="brand" href="#top">
-          <span class="brand-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 21V8l8-5 8 5v13"/>
-              <path d="M9 21v-7h6v7"/>
-              <path d="M4 8h16"/>
-            </svg>
-          </span>
-          <span class="brand-text">
-            <span class="name">kafka-attic</span>
-            <span class="by">by <a href="https://conduktor.io?utm_source=kafka-attic&amp;utm_medium=oss&amp;utm_campaign=landing&amp;utm_content=brand" rel="noopener">Conduktor</a></span>
-          </span>
-        </a>
+        <div class="brand">
+          <a class="brand-home" href="#top" aria-label="kafka-attic — back to top">
+            <span class="brand-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 21V8l8-5 8 5v13"/>
+                <path d="M9 21v-7h6v7"/>
+                <path d="M4 8h16"/>
+              </svg>
+            </span>
+            <span class="brand-text">
+              <span class="name">kafka-attic</span>
+              <span class="by">by <a class="by-link" href="https://conduktor.io?utm_source=kafka-attic&amp;utm_medium=oss&amp;utm_campaign=landing&amp;utm_content=brand" rel="noopener">Conduktor</a></span>
+            </span>
+          </a>
+        </div>
         <nav class="nav-links">
           <a href="#why">Why</a>
           <a href="#tco">Cost</a>
@@ -1674,90 +1995,194 @@
           </p>
 
           <div class="tco-grid">
-            <div class="tco-card">
-              <span class="tco-label">Storage</span>
-              <span class="tco-number">38.2 <span class="unit">TB reclaimable*</span></span>
-              <h3>Disk is the obvious one</h3>
-              <p>
-                Stale and oversized topics keep retention windows full of records nobody reads. On managed Kafka, that's a direct GB-month bill; on self-managed, it's EBS / SSD provisioning, replication bandwidth across <code>min.insync.replicas</code>, and longer recovery times after broker restarts.
-              </p>
-            </div>
-            <div class="tco-card">
-              <span class="tco-label">Partitions</span>
-              <span class="tco-number">~10 <span class="unit">MB heap / partition</span></span>
-              <h3>Every partition has overhead</h3>
-              <p>
-                Each partition consumes leader-side broker memory (page-cache reservation, index files, follower-fetch state), controller metadata records, replication threads, and file-handle budget. Over-provisioned topics quietly cap the cluster's total partition headroom — often the first scaling wall hit before disk.
-              </p>
-            </div>
-            <div class="tco-card">
-              <span class="tco-label">Controller</span>
-              <span class="tco-number">O(N) <span class="unit">metadata records</span></span>
-              <h3>KRaft / controller load</h3>
-              <p>
-                Every topic, partition, replica assignment, and config override is a record in the metadata log. Dead topics still get described, fetched, and replayed on controller failover. A leaner cluster means faster recovery, faster metadata propagation, and lower KRaft snapshot pressure.
-              </p>
-            </div>
-            <div class="tco-card">
-              <span class="tco-label">Schema Registry</span>
-              <span class="tco-number">1 subject <span class="unit">= 1 line item</span></span>
-              <h3>Orphan subjects rent storage too</h3>
-              <p>
-                Schema Registry providers bill per stored subject (Confluent Cloud) or per managed registry instance with storage caps (AWS Glue, Apicurio). Topics whose producers were decommissioned years ago still have <code>-key</code> and <code>-value</code> subjects taking up the budget.
-              </p>
-            </div>
-            <div class="tco-card">
-              <span class="tco-label">Monitoring</span>
-              <span class="tco-number">N × M <span class="unit">time series</span></span>
-              <h3>Observability scales with topics</h3>
-              <p>
-                Every topic emits per-partition metrics: <code>bytes_in</code>, <code>bytes_out</code>, <code>messages_in</code>, replica lag, ISR shrink/expand, log-end-offset. At <code>N</code> topics × <code>M</code> partitions × <code>K</code> brokers, the cardinality bills your Prometheus, your Datadog, and your Splunk indexing tier — for series nobody plots.
-              </p>
-            </div>
-            <div class="tco-card">
-              <span class="tco-label">Governance</span>
-              <span class="tco-number">Audit cost</span>
-              <h3>The human bill</h3>
-              <p>
-                Every governance review, every ACL audit, every onboarding doc, every <em>"do we still own this?"</em> Slack thread is amortized across the topic count. Halving the surface halves the cognitive overhead for the platform team — that's where the real, hard-to-quantify savings live.
-              </p>
-            </div>
+            <article class="tco-card" data-domain="storage">
+              <div class="tco-visual">
+                <span class="tco-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+                    <path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/>
+                  </svg>
+                </span>
+                <span class="tco-stat">38.2<span class="unit">TB</span></span>
+                <div class="tco-sub">reclaimable*</div>
+                <div class="tco-bar" style="--fill: 25%;"></div>
+              </div>
+              <div class="tco-body">
+                <span class="tco-label">Storage</span>
+                <h3>Disk is the obvious one</h3>
+                <p>
+                  Stale and oversized topics keep retention windows full of records nobody reads. On managed Kafka, that's a direct GB-month bill; on self-managed, it's EBS / SSD provisioning, replication bandwidth across <code>min.insync.replicas</code>, and longer recovery times after broker restarts.
+                </p>
+              </div>
+            </article>
+
+            <article class="tco-card" data-domain="partitions">
+              <div class="tco-visual">
+                <span class="tco-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </span>
+                <span class="tco-stat">~10<span class="unit">MB heap / partition</span></span>
+                <div class="tco-sub">leader-side overhead</div>
+                <div class="tco-bar" style="--fill: 60%;"></div>
+              </div>
+              <div class="tco-body">
+                <span class="tco-label">Partitions</span>
+                <h3>Every partition has overhead</h3>
+                <p>
+                  Each partition consumes leader-side broker memory (page-cache reservation, index files, follower-fetch state), controller metadata records, replication threads, and file-handle budget. Over-provisioned topics quietly cap the cluster's total partition headroom — often the first scaling wall hit before disk.
+                </p>
+              </div>
+            </article>
+
+            <article class="tco-card" data-domain="controller">
+              <div class="tco-visual">
+                <span class="tco-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="5" r="2.5"/>
+                    <circle cx="5" cy="18" r="2.5"/>
+                    <circle cx="19" cy="18" r="2.5"/>
+                    <path d="M12 7.5L5 15.5"/>
+                    <path d="M12 7.5L19 15.5"/>
+                    <path d="M5 18h14"/>
+                  </svg>
+                </span>
+                <span class="tco-stat">O(N)<span class="unit">metadata records</span></span>
+                <div class="tco-sub">replayed on every failover</div>
+                <div class="tco-bar" style="--fill: 70%;"></div>
+              </div>
+              <div class="tco-body">
+                <span class="tco-label">Controller</span>
+                <h3>KRaft / controller load</h3>
+                <p>
+                  Every topic, partition, replica assignment, and config override is a record in the metadata log. Dead topics still get described, fetched, and replayed on controller failover. A leaner cluster means faster recovery, faster metadata propagation, and lower KRaft snapshot pressure.
+                </p>
+              </div>
+            </article>
+
+            <article class="tco-card" data-domain="schema">
+              <div class="tco-visual">
+                <span class="tco-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="8" y1="13" x2="16" y2="13"/>
+                    <line x1="8" y1="17" x2="13" y2="17"/>
+                  </svg>
+                </span>
+                <span class="tco-stat">1 + 1<span class="unit">subjects / topic</span></span>
+                <div class="tco-sub">-key &amp; -value never deleted</div>
+                <div class="tco-bar" style="--fill: 45%;"></div>
+              </div>
+              <div class="tco-body">
+                <span class="tco-label">Schema Registry</span>
+                <h3>Orphan subjects rent storage too</h3>
+                <p>
+                  Schema Registry providers bill per stored subject (Confluent Cloud) or per managed registry instance with storage caps (AWS Glue, Apicurio). Topics whose producers were decommissioned years ago still have <code>-key</code> and <code>-value</code> subjects taking up the budget.
+                </p>
+              </div>
+            </article>
+
+            <article class="tco-card" data-domain="monitoring">
+              <div class="tco-visual">
+                <span class="tco-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 17 8 12 12 14 16 9 21 13"/>
+                    <circle cx="8" cy="12" r="1.2" fill="currentColor"/>
+                    <circle cx="12" cy="14" r="1.2" fill="currentColor"/>
+                    <circle cx="16" cy="9" r="1.2" fill="currentColor"/>
+                    <path d="M3 21h18"/>
+                  </svg>
+                </span>
+                <span class="tco-stat">N × M<span class="unit">time series / broker</span></span>
+                <div class="tco-sub">Prometheus / Datadog cardinality</div>
+                <div class="tco-bar" style="--fill: 80%;"></div>
+              </div>
+              <div class="tco-body">
+                <span class="tco-label">Monitoring</span>
+                <h3>Observability scales with topics</h3>
+                <p>
+                  Every topic emits per-partition metrics: <code>bytes_in</code>, <code>bytes_out</code>, <code>messages_in</code>, replica lag, ISR shrink/expand, log-end-offset. At <code>N</code> topics × <code>M</code> partitions × <code>K</code> brokers, the cardinality bills your Prometheus, your Datadog, and your Splunk indexing tier — for series nobody plots.
+                </p>
+              </div>
+            </article>
+
+            <article class="tco-card" data-domain="governance">
+              <div class="tco-visual">
+                <span class="tco-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </span>
+                <span class="tco-stat">Hours<span class="unit">per audit cycle</span></span>
+                <div class="tco-sub">amortized across topic count</div>
+                <div class="tco-bar" style="--fill: 55%;"></div>
+              </div>
+              <div class="tco-body">
+                <span class="tco-label">Governance</span>
+                <h3>The human bill</h3>
+                <p>
+                  Every governance review, every ACL audit, every onboarding doc, every <em>"do we still own this?"</em> Slack thread is amortized across the topic count. Halving the surface halves the cognitive overhead for the platform team — that's where the real, hard-to-quantify savings live.
+                </p>
+              </div>
+            </article>
           </div>
 
           <div class="tco-notes">
             <div class="tco-note">
-              <span class="provider">Confluent Cloud</span>
-              <h4>Per-partition + per-GB pricing compounds.</h4>
+              <span class="provider"><span class="dot"></span>Confluent Cloud</span>
+              <h4>Per-partition + per-GB pricing compounds</h4>
               <p>
-                Confluent Cloud bills eCKU partition consumption and storage independently of throughput. A topic that hasn't seen a record in six months is still billed for its allocated partitions and any retained data. Cleanup translates directly into invoice deltas.
+                eCKU partition consumption and storage billed independently of throughput. Dead topics get the full invoice line — cleanup translates directly into deltas.
               </p>
+              <span class="billing-tag crit">billed per topic-partition</span>
             </div>
             <div class="tco-note">
-              <span class="provider">AWS MSK</span>
-              <h4>Broker-class scaling, not topic scaling.</h4>
+              <span class="provider"><span class="dot"></span>AWS MSK Serverless</span>
+              <h4>Partition-hour + storage-month</h4>
               <p>
-                MSK Provisioned bills broker-hours and EBS, not per-topic. But every dead partition still costs replication bandwidth, broker memory headroom, and time-to-recover. MSK Serverless charges by partition-hour and storage-month — dead topics there <em>are</em> directly billed.
+                Dead partitions are <em>directly</em> billed. Provisioned MSK is broker-class scaled, but replication bandwidth and recovery time still scale with partition count.
               </p>
+              <span class="billing-tag crit">billed per partition-hour</span>
             </div>
             <div class="tco-note">
-              <span class="provider">Aiven / Redpanda Cloud</span>
-              <h4>Tier-locked partition ceilings.</h4>
+              <span class="provider"><span class="dot"></span>Aiven / Redpanda Cloud</span>
+              <h4>Tier-locked partition ceilings</h4>
               <p>
-                Aiven and Redpanda Cloud plans cap total partitions per tier; dead topics quietly push you toward the next, more expensive tier — even when your throughput could happily sit on the cheaper one.
+                Plans cap total partitions per tier. Dead topics push you toward the next, more expensive tier — even when throughput could happily sit on the cheaper one.
               </p>
+              <span class="billing-tag warn">tier-thresholded</span>
             </div>
             <div class="tco-note">
-              <span class="provider">Self-managed</span>
-              <h4>The hidden costs are time, not invoice.</h4>
+              <span class="provider"><span class="dot"></span>Self-managed Kafka</span>
+              <h4>The bill is time, not invoice</h4>
               <p>
-                On self-managed, the bill arrives as broker count, IOPS, and oncall pages. Controller recovery, partition reassignment, and rolling broker restarts all scale with active metadata. A clean cluster reboots faster, rebalances faster, and pages less often.
+                Broker count, IOPS, and on-call pages. Controller recovery, partition reassignment, and rolling restarts all scale with active metadata.
               </p>
+              <span class="billing-tag warn">indirect cost</span>
             </div>
           </div>
 
-          <p class="lede" style="margin-top: 40px;">
-            <code style="font-family: var(--mono); font-size: 13.5px; background: var(--bg-soft); padding: 2px 8px; border-radius: 4px;">kattic scan</code> prints the reclaimable-TB number in the first line. Translate it to your provider's price sheet and you have the dollar value of one Friday afternoon's cleanup. <span style="color: var(--muted); font-size: 13px;">*number is illustrative, taken from the sample output above.</span>
-          </p>
+          <div class="tco-cta">
+            <span class="tco-cta-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </span>
+            <div class="tco-cta-text">
+              <strong>Translate the reclaim number to dollars.</strong>
+              <span>Run <code>kattic scan</code>. Multiply the first line by your provider's price sheet. That's the value of one Friday afternoon. <em style="color: #64748b;">*illustrative reclaim number, from the sample output above.</em></span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -2379,13 +2804,21 @@
       <div class="wrap">
         <div class="foot-grid">
           <div class="foot-brand">
-            <a class="brand" href="#top">
-              <span class="brand-icon" aria-hidden="true">k</span>
-              <span class="brand-text">
-                <span class="name">kafka-attic</span>
-                <span class="by">by Conduktor</span>
-              </span>
-            </a>
+            <div class="brand">
+              <a class="brand-home" href="#top" aria-label="kafka-attic — back to top">
+                <span class="brand-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 21V8l8-5 8 5v13"/>
+                    <path d="M9 21v-7h6v7"/>
+                    <path d="M4 8h16"/>
+                  </svg>
+                </span>
+                <span class="brand-text">
+                  <span class="name">kafka-attic</span>
+                  <span class="by">by Conduktor</span>
+                </span>
+              </a>
+            </div>
             <p>
               Read-only Kafka topic governance CLI. Score, rank, and reclaim — with a published
               methodology you can defend in a review meeting.

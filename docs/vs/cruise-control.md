@@ -1,4 +1,6 @@
-# kafka-attic vs Cruise Control
+# kafka-attic vs Cruise Control — Kafka topic cleanup vs broker rebalancing
+
+kafka-attic scores stale Kafka topics for cleanup; Cruise Control reassigns partitions for broker balance. Different layers, complementary in operating pipelines.
 
 [Cruise Control](https://github.com/linkedin/cruise-control) is LinkedIn's Kafka cluster-balancing service. It models broker resource usage (CPU, network, disk) and computes partition reassignments to satisfy goal-based optimization. kafka-attic does not balance partitions, does not move replicas, and does not look at brokers as a unit of analysis. The two tools operate at different layers and answer different questions.
 
@@ -28,3 +30,14 @@ There is no overlap in the change surface: kafka-attic never touches partition p
 ## What kafka-attic does not do
 
 kafka-attic does not compute broker balance, does not score replication factor, does not detect rack-affinity violations, and does not propose partition reassignments. The `SKEWED` flag in the report — *"partition load uneven"* — is a topic-level observation (largest partition > N × average partition size) that tells the operator *"this topic is a candidate for repartitioning"*. It is not a substitute for Cruise Control's broker-aware planner; it is a hint that surfaces from the same scan and points at a different tool.
+
+## Related
+
+- [kafka-attic vs AKHQ](/docs/vs/akhq.md) — topic browser vs topic cleanup
+- [kafka-attic vs Confluent Health+](/docs/vs/confluent-health-plus.md) — cluster health vs topic hygiene
+- [README](/README.md) — kafka-attic overview
+- [Landing page](https://sderosiaux.github.io/kafka-attic/) — canonical home
+
+---
+
+Last updated: 2026-05-22

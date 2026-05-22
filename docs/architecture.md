@@ -1,6 +1,8 @@
-# Architecture
+# Architecture of kafka-attic — Kafka topic cleanup pipeline
 
-This page summarises how kafka-attic is built. The authoritative source is [SPEC.md §5](../SPEC.md). Anything in this document that disagrees with the spec is wrong; raise an issue.
+How kafka-attic collects Kafka topic facts, computes the ATTIC Score, and renders an auditable Kafka topic cleanup report — single static Go binary, read-only by construction.
+
+This page summarises how kafka-attic is built. The authoritative source is [SPEC.md §5](/SPEC.md). Anything in this document that disagrees with the spec is wrong; raise an issue.
 
 ## Block diagram
 
@@ -57,7 +59,7 @@ The scorer takes the collected per-topic facts and produces five sub-scores (Act
 2. For Activity / Tenancy / Consumption with `UNKNOWN` evidence, contributes a neutral 50 and adds the `MISSING_SIGNAL` flag.
 3. Computes the weighted raw score.
 4. Maps the raw score to a verdict band (`ACTIVE` / `INSPECT` / `CANDIDATE` / `LIKELY_UNUSED`).
-5. Applies verdict caps for `ESTIMATED` evidence, `MISSING_SIGNAL`, `COMPACTED`, `REMOTE_STORAGE`, and `APPEARS_NEVER_USED` per the [ATTIC Score spec](attic-score-spec-v1.0.md).
+5. Applies verdict caps for `ESTIMATED` evidence, `MISSING_SIGNAL`, `COMPACTED`, `REMOTE_STORAGE`, and `APPEARS_NEVER_USED` per the [ATTIC Score spec](/docs/attic-score-spec-v1.0.md).
 6. Emits any applicable flags from the taxonomy (`PURGED`, `OVERSIZED`, `SKEWED`, `ORPHAN_SCHEMA`, `COMPACTED`, `REMOTE_STORAGE`, `APPEARS_NEVER_USED`, `MISSING_SIGNAL`).
 
 The scorer is pure: same inputs produce the same outputs, no I/O, no clock dependency beyond what's in the inputs themselves. This is what makes the JSON snapshot reproducible across runs and machines.
@@ -82,8 +84,14 @@ When `history.enabled: true`, the JSON snapshot is also persisted to a local SQL
 
 The scorer never reads from history. Scoring is fully determined by the current scan; history is purely an artefact archive. This is a deliberate design choice — it keeps the scoring spec implementable by any tool, with or without local state, and keeps a single-shot CLI run identical to a CI batch run.
 
-## Related reading
+## Related
 
-- [SPEC.md](../SPEC.md) — full product spec
-- [docs/attic-score-spec-v1.0.md](attic-score-spec-v1.0.md) — methodology, formulas, evidence model, flag taxonomy
-- [docs/vs/akhq.md](vs/akhq.md), [docs/vs/cruise-control.md](vs/cruise-control.md), [docs/vs/confluent-health-plus.md](vs/confluent-health-plus.md) — neighbouring tools
+- [SPEC.md](/SPEC.md) — full product spec
+- [ATTIC Score spec v1.0](/docs/attic-score-spec-v1.0.md) — methodology, formulas, evidence model, flag taxonomy
+- [kafka-attic vs AKHQ](/docs/vs/akhq.md), [kafka-attic vs Cruise Control](/docs/vs/cruise-control.md), [kafka-attic vs Confluent Health+](/docs/vs/confluent-health-plus.md) — neighbouring tools
+- [README](/README.md) — project overview and install
+- [Landing page](https://sderosiaux.github.io/kafka-attic/) — canonical home
+
+---
+
+Last updated: 2026-05-22

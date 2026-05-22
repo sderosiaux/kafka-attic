@@ -1,12 +1,26 @@
 {
   "name": "kafka-attic",
   "short_name": "kafka-attic",
-  "description": "Read-only Go CLI that scores stale, empty, oversized, abandoned Kafka topics in one scan.",
+  "description": "Find your Kafka topic graveyard. Read-only Go CLI that scores stale, empty, oversized, abandoned topics in one scan. ATTIC Score methodology. Single binary.",
   "start_url": "/kafka-attic/",
   "scope": "/kafka-attic/",
   "display": "minimal-ui",
   "background_color": "#ffffff",
   "theme_color": "#0f172a",
-  "lang": "en",
-  "icons": []
+  "lang": "en-US",
+  "categories": ["developer", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "./images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }

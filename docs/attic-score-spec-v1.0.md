@@ -1,9 +1,12 @@
-# ATTIC Score Specification — v1.0.0
+# ATTIC Score Specification v1.0 — Kafka topic cleanup scoring methodology
+
+Vendor-neutral Kafka topic scoring methodology for ranking stale Kafka topics by disuse evidence in a single read-only scan. Five sub-signals — Activity, Tenancy, Tonnage, Intent, Consumption — published under CC BY 4.0 so any Kafka tool can implement it.
 
 **Status**: Stable
 **Spec version**: `1.0.0`
 **License**: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (this specification)
 **Reference implementation**: `kafka-attic` v1.0 ([github.com/sderosiaux/kafka-attic](https://github.com/sderosiaux/kafka-attic))
+**Canonical landing page**: [sderosiaux.github.io/kafka-attic](https://sderosiaux.github.io/kafka-attic/)
 
 ---
 
@@ -280,3 +283,14 @@ The `kafka-attic` reference implementation is licensed separately under Apache 2
 ATTIC Score Specification, version 1.0.0.
 https://github.com/sderosiaux/kafka-attic/blob/main/docs/attic-score-spec-v1.0.md
 ```
+
+## Related
+
+- [README](/README.md) — kafka-attic project overview
+- [Architecture](/docs/architecture.md) — how the reference implementation collects the sub-signals
+- [kafka-attic vs AKHQ](/docs/vs/akhq.md) · [kafka-attic vs Cruise Control](/docs/vs/cruise-control.md) · [kafka-attic vs Confluent Health+](/docs/vs/confluent-health-plus.md)
+- [Landing page](https://sderosiaux.github.io/kafka-attic/) — canonical home for the methodology
+
+---
+
+Last updated: 2026-05-22

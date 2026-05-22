@@ -1,4 +1,20 @@
+# robots.txt — kafka-attic
+# https://sderosiaux.github.io/kafka-attic/
+# Read-only Kafka topic governance CLI by Conduktor.
+
 User-agent: *
 Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+Disallow: /404
+Disallow: /500
 
 Sitemap: https://sderosiaux.github.io/kafka-attic/sitemap.xml

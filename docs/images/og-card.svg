@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="brand" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <radialGradient id="blob" cx="0%" cy="0%" r="80%">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.45"/>
+      <stop offset="45%" stop-color="#2563eb" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="termFade" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.85"/>
+    </linearGradient>
+    <style>
+      .sans { font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif; }
+      .mono { font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; }
+    </style>
+  </defs>
+
+  <!-- background -->
+  <rect width="1200" height="630" fill="#ffffff"/>
+
+  <!-- gradient blob upper-left -->
+  <circle cx="120" cy="80" r="520" fill="url(#blob)"/>
+
+  <!-- terminal preview right side (atmospheric) -->
+  <g opacity="0.55">
+    <rect x="700" y="200" width="460" height="240" rx="14" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+    <circle cx="720" cy="220" r="5" fill="#e2e8f0"/>
+    <circle cx="738" cy="220" r="5" fill="#e2e8f0"/>
+    <circle cx="756" cy="220" r="5" fill="#e2e8f0"/>
+    <text x="720" y="260" class="mono" font-size="15" fill="#475569">$ kattic scan --cluster prod.yaml</text>
+    <text x="720" y="290" class="mono" font-size="14" fill="#0f172a" font-weight="600">4,821 topics  1,207 unused  38.2 TB</text>
+    <text x="720" y="318" class="mono" font-size="13" fill="#64748b">TOPIC            LAST PROD  SCORE</text>
+    <text x="720" y="338" class="mono" font-size="13" fill="#334155">legacy-events    287d ago      72</text>
+    <text x="720" y="358" class="mono" font-size="13" fill="#334155">empty-topic      never         88</text>
+    <text x="720" y="378" class="mono" font-size="13" fill="#334155">old-events       180d ago      85</text>
+    <text x="720" y="398" class="mono" font-size="13" fill="#334155">oversized-events 2h ago        55</text>
+    <rect x="700" y="380" width="460" height="60" fill="url(#termFade)"/>
+  </g>
+
+  <!-- attic icon next to wordmark -->
+  <g transform="translate(80, 150)">
+    <rect x="0" y="0" width="84" height="84" rx="18" fill="url(#brand)"/>
+    <g transform="translate(18, 18)" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 42V16l20 -12 20 12v26"/>
+      <path d="M14 42v-14h20v14"/>
+      <path d="M4 16h44"/>
+    </g>
+  </g>
+
+  <!-- wordmark -->
+  <text x="184" y="218" class="sans" font-size="84" font-weight="800" fill="#0f172a" letter-spacing="-2">kafka-attic</text>
+
+  <!-- topic graveyard in gradient -->
+  <text x="80" y="320" class="sans" font-size="64" font-weight="700" fill="url(#brand)" letter-spacing="-1.5">topic graveyard.</text>
+
+  <!-- tagline -->
+  <text x="80" y="386" class="sans" font-size="28" font-weight="400" fill="#475569">Read-only CLI that scores stale, empty,</text>
+  <text x="80" y="424" class="sans" font-size="28" font-weight="400" fill="#475569">and oversized Kafka topics.</text>
+
+  <!-- bottom-left: ATTIC sub-signals pill -->
+  <g transform="translate(80, 506)">
+    <rect x="0" y="0" width="232" height="48" rx="24" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="22" y="31" class="mono" font-size="16" fill="#0f172a" letter-spacing="3" font-weight="600">A &#183; T &#183; T &#183; I &#183; C</text>
+    <text x="160" y="31" class="sans" font-size="14" fill="#64748b">score</text>
+  </g>
+
+  <!-- bottom-right: badge + repo -->
+  <g transform="translate(1120, 540)" text-anchor="end">
+    <text x="0" y="0" class="sans" font-size="16" fill="#64748b">Made by</text>
+    <text x="0" y="22" class="sans" font-size="18" font-weight="700" fill="#0f172a">Conduktor</text>
+    <text x="0" y="52" class="mono" font-size="16" fill="#475569">github.com/sderosiaux/kafka-attic</text>
+  </g>
+</svg>

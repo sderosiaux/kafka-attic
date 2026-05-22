@@ -1,4 +1,6 @@
-# kafka-attic vs AKHQ
+# kafka-attic vs AKHQ — Kafka topic cleanup vs Kafka topic browser
+
+kafka-attic scores stale Kafka topics in a one-shot read-only scan; AKHQ is a long-running web UI for browsing Kafka topics, records, and consumer groups. Different questions, complementary tools.
 
 [AKHQ](https://akhq.io) is a browser-based UI for exploring Apache Kafka topics, consumer groups, schemas, ACLs, and connectors. It is the most common answer when someone asks *"how do I see what is in my Kafka cluster?"*. kafka-attic answers a different question: *"which of these topics have stopped being useful?"*.
 
@@ -29,3 +31,14 @@ The CLI shape also makes it easy to schedule: a nightly CI job runs `kattic audi
 ## Can they coexist?
 
 Yes — they answer different questions on the same cluster. A common pattern is: kafka-attic finds candidates in batch, an engineer opens AKHQ to sanity-check a specific topic's recent records before approving the delete, and the actual deletion runs from the kafka-attic cleanup script under a peer review. The two tools share read-only ACL requirements and run against the same brokers without coordination.
+
+## Related
+
+- [kafka-attic vs Cruise Control](/docs/vs/cruise-control.md) — broker-level rebalancing vs topic-level cleanup
+- [kafka-attic vs Confluent Health+](/docs/vs/confluent-health-plus.md) — cluster health vs topic hygiene
+- [README](/README.md) — kafka-attic overview
+- [Landing page](https://sderosiaux.github.io/kafka-attic/) — canonical home
+
+---
+
+Last updated: 2026-05-22

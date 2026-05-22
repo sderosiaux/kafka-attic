@@ -1,26 +1,45 @@
+<!--
+  kafka-attic — Kafka topic cleanup CLI for stale Kafka topics and the Kafka topic graveyard.
+
+  SEO keyword list (Googlebot reads raw .md even though GitHub strips HTML comments
+  from the rendered view):
+
+    kafka topic cleanup, stale kafka topics, kafka topic graveyard,
+    abandoned kafka topics, unused kafka topics, empty kafka topics,
+    oversized kafka topics, kafka topic governance, kafka storage reclaim,
+    kafka topic audit, kafka topic hygiene, kafka topic lifecycle,
+    kafka topic owner, kafka attic score, kafka topic scoring,
+    kafka topic disuse, msk topic cleanup, confluent cloud topic cleanup,
+    redpanda topic cleanup, kafka platform engineering.
+
+  Canonical home for this content (preferred by indexers when README and landing
+  page surface the same material):
+    <link rel="canonical" href="https://sderosiaux.github.io/kafka-attic/" />
+-->
+
 <p align="center">
-  <h1 align="center">kafka-attic</h1>
-  <p align="center"><em>Find stale, empty, oversized Kafka topics in one read-only scan.</em></p>
+  <h1 align="center">kafka-attic — Kafka topic cleanup for stale, empty, oversized topics</h1>
+  <p align="center"><em>Find the Kafka topic graveyard. Score every stale Kafka topic in one read-only scan, with a published methodology and an auditable report.</em></p>
 </p>
 
 <p align="center">
-  <a href="https://github.com/sderosiaux/kafka-attic/releases"><img src="https://img.shields.io/github/v/release/sderosiaux/kafka-attic?display_name=tag&sort=semver&color=blueviolet" alt="Latest release"></a>
-  <a href="https://github.com/sderosiaux/kafka-attic/actions/workflows/ci.yml"><img src="https://github.com/sderosiaux/kafka-attic/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="https://goreportcard.com/report/github.com/sderosiaux/kafka-attic"><img src="https://goreportcard.com/badge/github.com/sderosiaux/kafka-attic" alt="Go Report Card"></a>
-  <a href="https://pkg.go.dev/github.com/sderosiaux/kafka-attic"><img src="https://pkg.go.dev/badge/github.com/sderosiaux/kafka-attic.svg" alt="Go Reference"></a>
+  <a href="https://github.com/sderosiaux/kafka-attic/releases"><img src="https://img.shields.io/github/v/release/sderosiaux/kafka-attic?display_name=tag&sort=semver&color=blueviolet" alt="kafka-attic latest release"></a>
+  <a href="https://github.com/sderosiaux/kafka-attic/actions/workflows/ci.yml"><img src="https://github.com/sderosiaux/kafka-attic/actions/workflows/ci.yml/badge.svg" alt="kafka-attic CI build status"></a>
+  <a href="/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="kafka-attic license: Apache 2.0"></a>
+  <a href="https://goreportcard.com/report/github.com/sderosiaux/kafka-attic"><img src="https://goreportcard.com/badge/github.com/sderosiaux/kafka-attic" alt="kafka-attic Go Report Card"></a>
+  <a href="https://pkg.go.dev/github.com/sderosiaux/kafka-attic"><img src="https://pkg.go.dev/badge/github.com/sderosiaux/kafka-attic.svg" alt="kafka-attic Go reference documentation"></a>
 </p>
 
 <p align="center">
-  <a href="docs/attic-score-spec-v1.0.md"><img src="https://img.shields.io/badge/methodology-ATTIC%20Score%E2%84%A2%20v1.0-orange" alt="ATTIC Score spec"></a>
-  <a href="https://github.com/sderosiaux/kafka-attic/discussions"><img src="https://img.shields.io/github/discussions/sderosiaux/kafka-attic?color=informational" alt="GitHub Discussions"></a>
-  <a href="https://github.com/sderosiaux/kafka-attic/issues"><img src="https://img.shields.io/github/issues/sderosiaux/kafka-attic?color=critical" alt="Open issues"></a>
-  <a href="https://conduktor.io?utm_source=kafka-attic&utm_medium=oss&utm_campaign=readme&utm_content=badge"><img src="https://img.shields.io/badge/made%20by-Conduktor-1f6feb" alt="Made by Conduktor"></a>
+  <a href="/docs/attic-score-spec-v1.0.md"><img src="https://img.shields.io/badge/methodology-ATTIC%20Score%E2%84%A2%20v1.0-orange" alt="ATTIC Score methodology spec for kafka topic cleanup"></a>
+  <a href="https://github.com/sderosiaux/kafka-attic/discussions"><img src="https://img.shields.io/github/discussions/sderosiaux/kafka-attic?color=informational" alt="kafka-attic GitHub Discussions"></a>
+  <a href="https://github.com/sderosiaux/kafka-attic/issues"><img src="https://img.shields.io/github/issues/sderosiaux/kafka-attic?color=critical" alt="kafka-attic open issues"></a>
+  <a href="https://conduktor.io?utm_source=kafka-attic&utm_medium=oss&utm_campaign=readme&utm_content=badge"><img src="https://img.shields.io/badge/made%20by-Conduktor-1f6feb" alt="kafka-attic made by Conduktor"></a>
 </p>
 
 ---
 
-Every Kafka cluster has a topic graveyard. Nobody dares delete because nobody can prove it's safe. `kafka-attic` scans your cluster, scores every topic against a published methodology, and produces an auditable report you can hand to a topic owner. It is **read-only by construction** — no producer client compiled, no record contents ever fetched, no broker mutation possible.
+**Kafka topic cleanup, made auditable.** Every Kafka cluster has a topic graveyard — stale Kafka topics, empty topics, oversized topics — that nobody dares delete because nobody can prove it is safe. `kafka-attic` scans your cluster, scores every topic against a published methodology, and produces an auditable report you can hand to a topic owner. It is **read-only by construction** — no producer client compiled, no record contents ever fetched, no broker mutation possible.
 
 ```text
 $ kattic scan --cluster prod.yaml
@@ -44,15 +63,15 @@ remote-archive     90d ago        ? GB        —      —            tiered sto
 <!-- TODO: replace with asciinema cast once recorded
 <p align="center">
   <a href="https://asciinema.org/a/REPLACE_ME" target="_blank">
-    <img src="https://asciinema.org/a/REPLACE_ME.svg" alt="kafka-attic demo" width="720"/>
+    <img src="https://asciinema.org/a/REPLACE_ME.svg" alt="kafka-attic CLI demo: scoring stale Kafka topics in one scan" width="720"/>
   </a>
 </p>
 -->
 
-## Try it in 30 seconds
+## Try the Kafka topic cleanup CLI in 30 seconds
 
 ```bash
-# install (macOS / Linux)
+# install kafka-attic (macOS / Linux)
 brew tap sderosiaux/kafka-attic https://github.com/sderosiaux/kafka-attic
 brew install kafka-attic
 
@@ -69,28 +88,28 @@ docker run --rm -v "$PWD:/work" ghcr.io/sderosiaux/kafka-attic:latest \
 
 ## Table of contents
 
-- [Why](#why)
-- [What kafka-attic does](#what-kafka-attic-does)
-- [What kafka-attic does not do](#what-kafka-attic-does-not-do)
-- [Install](#install)
-- [Usage](#usage)
-- [How the score works](#how-the-score-works)
-- [Managed Kafka support](#managed-kafka-support)
-- [Privacy and security](#privacy-and-security)
-- [Configuration](#configuration)
-- [Limitations](#limitations)
-- [Comparison](#comparison)
-- [FAQ](#faq)
-- [From one-shot to continuous](#from-one-shot-to-continuous)
-- [Roadmap](#roadmap)
-- [Companion OSS series](#companion-oss-series)
-- [Contributing](#contributing)
+- [Why Kafka topic graveyards exist](#why-kafka-topic-graveyards-exist)
+- [What kafka-attic does for stale Kafka topics](#what-kafka-attic-does-for-stale-kafka-topics)
+- [What kafka-attic does not do (read-only by design)](#what-kafka-attic-does-not-do-read-only-by-design)
+- [Install the Kafka topic cleanup CLI](#install-the-kafka-topic-cleanup-cli)
+- [Usage: scan, audit, inspect, diff Kafka topics](#usage-scan-audit-inspect-diff-kafka-topics)
+- [How the ATTIC Score works (Kafka topic scoring)](#how-the-attic-score-works-kafka-topic-scoring)
+- [Managed Kafka support (MSK, Confluent Cloud, Aiven, Redpanda)](#managed-kafka-support-msk-confluent-cloud-aiven-redpanda)
+- [Privacy and security for Kafka topic scans](#privacy-and-security-for-kafka-topic-scans)
+- [Configuration for the Kafka topic cleanup scan](#configuration-for-the-kafka-topic-cleanup-scan)
+- [Limitations of one-shot Kafka topic auditing](#limitations-of-one-shot-kafka-topic-auditing)
+- [Comparison: kafka-attic vs other Kafka tools](#comparison-kafka-attic-vs-other-kafka-tools)
+- [FAQ — Kafka topic cleanup questions](#faq--kafka-topic-cleanup-questions)
+- [From one-shot to continuous Kafka topic monitoring](#from-one-shot-to-continuous-kafka-topic-monitoring)
+- [Roadmap for kafka-attic Kafka topic scoring](#roadmap-for-kafka-attic-kafka-topic-scoring)
+- [Companion OSS series for Kafka diagnostics](#companion-oss-series-for-kafka-diagnostics)
+- [Contributing to kafka-attic](#contributing-to-kafka-attic)
 - [Acknowledgments](#acknowledgments)
 - [License](#license)
 
-## Why
+## Why Kafka topic graveyards exist
 
-Every Kafka platform team faces the same problem:
+Stale Kafka topics accumulate on every Kafka platform team. Every Kafka platform team faces the same problem:
 
 - Topics outlive the services that produced them. The producer is gone, but the topic still rents disk.
 - Onboarding a new team means inheriting a cluster nobody fully owns.
@@ -99,11 +118,13 @@ Every Kafka platform team faces the same problem:
 
 Existing tools answer adjacent questions — Cruise Control rebalances brokers, AKHQ browses topics, Confluent Health+ watches cluster health — but none of them score topics for cleanup against a published, vendor-neutral methodology. So every team writes their own bash script, with their own ad-hoc thresholds, and the answers are not portable.
 
-`kafka-attic` exists to make topic-cleanup evidence **portable, auditable, and trustworthy** — the same way DORA metrics made deployment health portable across organizations.
+`kafka-attic` exists to make Kafka topic-cleanup evidence **portable, auditable, and trustworthy** — the same way DORA metrics made deployment health portable across organizations.
 
-## What kafka-attic does
+## What kafka-attic does for stale Kafka topics
 
-- **Scores every topic** on a 0–100 scale (the ATTIC Score™) over five sub-signals: Activity, Tenancy, Tonnage, Intent, Consumption.
+Kafka topic scoring, evidence levels, structural flags — everything you need to triage the topic graveyard:
+
+- **Scores every Kafka topic** on a 0–100 scale (the ATTIC Score™) over five sub-signals: Activity, Tenancy, Tonnage, Intent, Consumption.
 - **Distinguishes evidence levels** — `KNOWN`, `ESTIMATED`, or `UNKNOWN` per sub-signal. Weak evidence caps the verdict so you never delete on hearsay.
 - **Flags structural problems** — `OVERSIZED`, `SKEWED`, `ORPHAN_SCHEMA`, `COMPACTED`, `REMOTE_STORAGE`, `APPEARS_NEVER_USED`, `PURGED`, `MISSING_SIGNAL`.
 - **Generates a cleanup script** with strict inclusion rules — only `LIKELY_UNUSED` topics with full evidence, never compacted or tiered-storage topics.
@@ -112,7 +133,9 @@ Existing tools answer adjacent questions — Cruise Control rebalances brokers, 
 - **Speaks every common auth** — SASL_PLAIN, SCRAM-SHA-256/512, mTLS, AWS IAM (MSK), OAuth bearer.
 - **Connects to every common cluster** — self-managed Apache Kafka, MSK Provisioned, MSK Serverless, Confluent Cloud, Aiven, Redpanda.
 
-## What kafka-attic does not do
+## What kafka-attic does not do (read-only by design)
+
+Kafka topic cleanup without record reads, without broker mutation, without surprise side effects:
 
 - **It does not read record contents.** Last-activity timestamps come from `ListOffsets` with `timestamp = -1`, never from a `Fetch`. Keys, values, and headers are never observed, decoded, or stored.
 - **It does not mutate the cluster.** The binary statically refuses to compile a producer client. A CI test asserts on every release that no producer-capable code path is reachable.
@@ -120,7 +143,9 @@ Existing tools answer adjacent questions — Cruise Control rebalances brokers, 
 - **It does not require an agent.** Single static binary. No JVM, no librdkafka, no broker-side install. Runs from a laptop, a CI job, or a cron container with TCP access to brokers.
 - **It does not phone home by default.** Telemetry is opt-in and off by default. When enabled, the payload contains only the binary version, OS, CLI flag *names* (no values), cluster-size bucket, exit code, and an anonymous run UUID.
 
-## Install
+## Install the Kafka topic cleanup CLI
+
+Install the Kafka topic cleanup binary on macOS, Linux, Windows, or Docker — pick the channel that matches your platform.
 
 ### Homebrew (macOS / Linux)
 
@@ -129,7 +154,7 @@ brew tap sderosiaux/kafka-attic https://github.com/sderosiaux/kafka-attic
 brew install kafka-attic
 ```
 
-The Homebrew formula lives at [`Formula/kafka-attic.rb`](Formula/), refreshed on every tagged release.
+The Homebrew formula lives at [`Formula/kafka-attic.rb`](/Formula/), refreshed on every tagged release.
 
 ### Scoop (Windows)
 
@@ -138,7 +163,7 @@ scoop bucket add kafka-attic https://github.com/sderosiaux/kafka-attic
 scoop install kafka-attic
 ```
 
-The Scoop manifest lives at [`Scoop/kafka-attic.json`](Scoop/), refreshed on every tagged release.
+The Scoop manifest lives at [`Scoop/kafka-attic.json`](/Scoop/), refreshed on every tagged release.
 
 ### Docker
 
@@ -162,7 +187,9 @@ go install github.com/sderosiaux/kafka-attic/cmd/kattic@latest
 
 Requires Go 1.22+.
 
-## Usage
+## Usage: scan, audit, inspect, diff Kafka topics
+
+Four Kafka topic cleanup subcommands cover the lifecycle from quick scan to week-over-week reclaim diff:
 
 ```text
 kattic scan      Quick read-only scan with terminal output
@@ -203,9 +230,9 @@ kattic diff scans/2026-05-14.json scans/2026-05-21.json
 | `VERDICT`       | `Active` / `Inspect` / `Candidate` / `Likely unused`. Reflects the verdict cap.                  |
 | `NOTES`         | Plain-English flags, comma-joined. JSON/CSV keep the machine enums.                              |
 
-## How the score works
+## How the ATTIC Score works (Kafka topic scoring)
 
-Each topic receives an ATTIC Score from 0 to 100. Higher means stronger evidence of disuse. The score is **not a probability** — it is a weighted heuristic over five sub-signals, each independently scored and tagged with an evidence level.
+The ATTIC Score is a Kafka topic scoring heuristic from 0 to 100. Each topic receives an ATTIC Score from 0 to 100. Higher means stronger evidence of disuse. The score is **not a probability** — it is a weighted heuristic over five sub-signals, each independently scored and tagged with an evidence level.
 
 | Sub-signal      | Default weight | What it measures                                                                                |
 |-----------------|----------------|--------------------------------------------------------------------------------------------------|
@@ -226,9 +253,11 @@ Each topic receives an ATTIC Score from 0 to 100. Higher means stronger evidence
 
 **The full methodology** — formulas, evidence-level transitions, weight-redistribution math, flag taxonomy, and a worked example — is published as a versioned spec under CC BY 4.0 so other Kafka tooling can adopt it independently of this implementation.
 
-→ Read [`docs/attic-score-spec-v1.0.md`](docs/attic-score-spec-v1.0.md).
+→ Read [`docs/attic-score-spec-v1.0.md`](/docs/attic-score-spec-v1.0.md).
 
-## Managed Kafka support
+## Managed Kafka support (MSK, Confluent Cloud, Aiven, Redpanda)
+
+Managed Kafka topic cleanup works on every common cluster type — with degraded Tonnage on MSK Serverless and Confluent Cloud where `DescribeLogDirs` is restricted.
 
 | Cluster                | Tonnage evidence        | Notes                                                                                              |
 |------------------------|-------------------------|----------------------------------------------------------------------------------------------------|
@@ -241,7 +270,9 @@ Each topic receives an ATTIC Score from 0 to 100. Higher means stronger evidence
 
 When Tonnage cannot be measured, its weight is redistributed across the other four sub-signals — the score is still computed, just from one fewer signal, and the JSON snapshot records the degraded evidence for downstream tooling.
 
-## Privacy and security
+## Privacy and security for Kafka topic scans
+
+Kafka topic scans never read record contents — last-activity timestamps come from broker offset-by-timestamp APIs. Keys, values, and headers are never read.
 
 > kafka-attic does not fetch record contents. Last-activity timestamps come from broker offset-by-timestamp APIs. Keys, values, and headers are never read.
 
@@ -249,9 +280,11 @@ For environments where topic names themselves are sensitive (multi-tenant SaaS, 
 
 Telemetry is **opt-in** and **off by default**. Prompt on first run. Payload contains binary version, OS, CLI flag names (no values), cluster-size bucket, exit code, and an anonymous run UUID. Topic names, broker addresses, owner data, schema subjects, and source IPs are never sent.
 
-See [`SECURITY.md`](SECURITY.md) for the security disclosure process.
+See [`SECURITY.md`](/SECURITY.md) for the security disclosure process.
 
-## Configuration
+## Configuration for the Kafka topic cleanup scan
+
+Kafka topic cleanup scans are driven by a single `kattic.yaml`. Sensitive material is sourced from environment variables so the file is safe to commit.
 
 A minimal `kattic.yaml`:
 
@@ -266,38 +299,42 @@ cluster:
     password_env: KAFKA_PASS
 ```
 
-Three full reference configs in [`examples/`](examples/):
-- [`self-managed-sasl-scram.yaml`](examples/self-managed-sasl-scram.yaml)
-- [`msk-iam.yaml`](examples/msk-iam.yaml)
-- [`confluent-cloud-oauth.yaml`](examples/confluent-cloud-oauth.yaml)
+Three full reference configs in [`examples/`](/examples/):
+- [`self-managed-sasl-scram.yaml`](/examples/self-managed-sasl-scram.yaml)
+- [`msk-iam.yaml`](/examples/msk-iam.yaml)
+- [`confluent-cloud-oauth.yaml`](/examples/confluent-cloud-oauth.yaml)
 
-The full schema is documented in [`SPEC.md`](SPEC.md) Appendix B. Sensitive material is sourced from environment variables (`*_env` keys) so the config file itself is safe to commit.
+The full schema is documented in [`SPEC.md`](/SPEC.md) Appendix B. Sensitive material is sourced from environment variables (`*_env` keys) so the config file itself is safe to commit.
 
-## Limitations
+## Limitations of one-shot Kafka topic auditing
 
-Honest list of what kafka-attic v1.0 cannot do today:
+Kafka topic auditing in v1.0 is one-shot by design. Honest list of what kafka-attic v1.0 cannot do today:
 
 - **No seasonality detection.** A topic that fires once a month looks stale to a single scan. v1.1 will use the optional history database to detect rolling patterns. Until then, use `exclude_patterns` with `effect: mark_protected` for known monthly/quarterly producers.
-- **No continuous monitoring.** kafka-attic is one-shot by design. For "alert me when a topic becomes stale", see [Console Insights](#from-one-shot-to-continuous).
+- **No continuous monitoring.** kafka-attic is one-shot by design. For "alert me when a topic becomes stale", see [Console Insights](#from-one-shot-to-continuous-kafka-topic-monitoring).
 - **No auto-archive workflow.** The cleanup script is hand-reviewable shell, not an automation. By design.
 - **Schema Registry: Confluent only in v1.0.** AWS Glue and Apicurio land in v1.1.
 - **Tonnage degraded on MSK Serverless and Confluent Cloud.** `DescribeLogDirs` is restricted; the sub-signal is skipped and redistributed across the other four.
 - **No multi-cluster aggregation.** Each scan is single-cluster. Cross-cluster diff lands in v1.1.
 - **No Terraform `import` generation yet.** Planned for v1.1.
 
-## Comparison
+## Comparison: kafka-attic vs other Kafka tools
 
-| Tool                                                       | What it does                                                  | Limit                                                          |
-|------------------------------------------------------------|---------------------------------------------------------------|----------------------------------------------------------------|
-| [AKHQ](docs/vs/akhq.md) / Provectus Kafka UI               | Web UI for manual topic exploration                           | No scoring, no automation, no cleanup workflow                 |
-| [Cruise Control](docs/vs/cruise-control.md)                | Broker-level partition rebalancing                            | Different layer — kafka-attic covers topic governance          |
-| [Confluent Health+](docs/vs/confluent-health-plus.md)      | Cluster health for Confluent Platform/Cloud                   | Vendor lock — not usable on MSK, Aiven, Redpanda, self-managed |
-| Bespoke scripts                                            | Per-company hand-rolled cleanup notebooks                     | No published methodology, no evidence model                    |
-| **kafka-attic**                                            | Per-topic ATTIC Score, versioned methodology, read-only CLI   | One-shot — see Console Insights for continuous monitoring      |
+Kafka topic cleanup sits in a different layer from broker rebalancing, topic browsers, and cluster-health monitoring. The table below shows where kafka-attic fits.
 
-Long-form comparisons under [`docs/vs/`](docs/vs/).
+| Tool                                                        | What it does                                                  | Limit                                                          |
+|-------------------------------------------------------------|---------------------------------------------------------------|----------------------------------------------------------------|
+| [AKHQ](/docs/vs/akhq.md) / Provectus Kafka UI               | Web UI for manual topic exploration                           | No scoring, no automation, no cleanup workflow                 |
+| [Cruise Control](/docs/vs/cruise-control.md)                | Broker-level partition rebalancing                            | Different layer — kafka-attic covers topic governance          |
+| [Confluent Health+](/docs/vs/confluent-health-plus.md)      | Cluster health for Confluent Platform/Cloud                   | Vendor lock — not usable on MSK, Aiven, Redpanda, self-managed |
+| Bespoke scripts                                             | Per-company hand-rolled cleanup notebooks                     | No published methodology, no evidence model                    |
+| **kafka-attic**                                             | Per-topic ATTIC Score, versioned methodology, read-only CLI   | One-shot — see Console Insights for continuous monitoring      |
 
-## FAQ
+Long-form comparisons under [`docs/vs/`](/docs/vs/).
+
+## FAQ — Kafka topic cleanup questions
+
+Kafka topic cleanup raises a few recurring questions — safety, deletion semantics, managed-Kafka behaviour. Each answer below is collapsible on github.com and indexable as a Q&A pair.
 
 <details>
 <summary><strong>Is it safe to run on production?</strong></summary>
@@ -341,15 +378,17 @@ Seasonality detection is out of scope for v1.0. Two mitigations exist: (1) the v
 The code is Apache 2.0; the methodology spec (`docs/attic-score-spec-*.md`) is CC BY 4.0. The spec is a piece of documentation meant to be cited, forked, and re-implemented by other Kafka tooling — CC BY 4.0 is the standard license for that kind of artifact. The dual licensing is intentional and reflects how DORA / SPACE / similar measurement frameworks are published.
 </details>
 
-## From one-shot to continuous
+## From one-shot to continuous Kafka topic monitoring
 
-kafka-attic is one-shot by design. It produces a snapshot you can run from a laptop, a CI job, or a cron container. It does not watch a cluster, it does not page an owner, it does not coordinate cleanups across teams, and it does not keep an audit trail of who deleted what. Those are continuous-monitoring concerns and they require a different runtime — one with a persistent process, RBAC integration, and durable state.
+Kafka topic monitoring becomes continuous when the question moves from *"what does our attic look like?"* to *"alert me the moment a topic goes stale"*. kafka-attic is one-shot by design. It produces a snapshot you can run from a laptop, a CI job, or a cron container. It does not watch a cluster, it does not page an owner, it does not coordinate cleanups across teams, and it does not keep an audit trail of who deleted what. Those are continuous-monitoring concerns and they require a different runtime — one with a persistent process, RBAC integration, and durable state.
 
 When a team's question moves from *"what does our attic look like?"* to *"alert me when a topic becomes stale, ping the owner, and require an approval before deletion"*, that is the work [**Conduktor Console Insights**](https://conduktor.io/products/console?utm_source=kafka-attic&utm_medium=oss&utm_campaign=readme&utm_content=evolution) does. Same evidence model, continuous evaluation, RBAC-aware owner routing, approval workflows, multi-cluster aggregation, cost attribution.
 
 kafka-attic stays OSS and stays one-shot. Console Insights picks up where the one-shot ends.
 
-## Roadmap
+## Roadmap for kafka-attic Kafka topic scoring
+
+Kafka topic scoring will expand from one-shot scans toward seasonality, multi-cluster diff, and richer schema-registry coverage.
 
 **v1.0** (current)
 
@@ -374,9 +413,9 @@ kafka-attic stays OSS and stays one-shot. Console Insights picks up where the on
 
 Open an issue or [Discussion](https://github.com/sderosiaux/kafka-attic/discussions) to influence priorities.
 
-## Companion OSS series
+## Companion OSS series for Kafka diagnostics
 
-kafka-attic is the first of a planned series of OSS Kafka diagnostic CLIs:
+Kafka diagnostic CLIs — `kubectl`-style point queries, not platforms. kafka-attic is the first of a planned series:
 
 | Tool                     | Question it answers                                                |
 |--------------------------|--------------------------------------------------------------------|
@@ -389,15 +428,29 @@ kafka-attic is the first of a planned series of OSS Kafka diagnostic CLIs:
 
 Each tool is scoped to a single, well-defined operational question — diagnostic CLIs in the spirit of `kubectl`-style point queries, not platforms.
 
-## Contributing
+<!--
+## Used by / Featured in
 
-DCO sign-off only — no CLA. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the workflow, build and test commands, the methodology change process, and commit conventions. The project is Apache 2.0 and will remain so — the permanence statement is in `CONTRIBUTING.md`.
+Placeholder structure — populate as adopters and write-ups appear.
+
+### Used by
+
+- [Company name](https://example.com/) — short note on how kafka-attic fits their workflow.
+
+### Featured in
+
+- [Publication or talk title](https://example.com/) — short note on the angle.
+-->
+
+## Contributing to kafka-attic
+
+Contributing to kafka-attic means signing off your commits (DCO) and following Conventional Commits. DCO sign-off only — no CLA. See [`CONTRIBUTING.md`](/CONTRIBUTING.md) for the workflow, build and test commands, the methodology change process, and commit conventions. The project is Apache 2.0 and will remain so — the permanence statement is in `CONTRIBUTING.md`.
 
 - Bug reports → [Issues](https://github.com/sderosiaux/kafka-attic/issues/new?template=bug_report.yml)
 - Feature requests → [Issues](https://github.com/sderosiaux/kafka-attic/issues/new?template=feature_request.yml)
 - Questions / discussion → [Discussions](https://github.com/sderosiaux/kafka-attic/discussions)
-- Security disclosures → see [`SECURITY.md`](SECURITY.md)
-- Code of conduct → [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)
+- Security disclosures → see [`SECURITY.md`](/SECURITY.md)
+- Code of conduct → [`CODE_OF_CONDUCT.md`](/CODE_OF_CONDUCT.md)
 
 ## Acknowledgments
 
@@ -411,14 +464,14 @@ Built on the shoulders of:
 
 ## License
 
-- **Code** — Apache License 2.0 ([`LICENSE`](LICENSE))
+- **Code** — Apache License 2.0 ([`LICENSE`](/LICENSE))
 - **Methodology spec** (`docs/attic-score-spec-*.md`) — [Creative Commons BY 4.0](https://creativecommons.org/licenses/by/4.0/), so the methodology can be cited, forked, and re-implemented independently of this codebase
 
 ---
 
 <p align="center">
   <a href="https://star-history.com/#sderosiaux/kafka-attic&Date">
-    <img src="https://api.star-history.com/svg?repos=sderosiaux/kafka-attic&type=Date" alt="Star History Chart" width="640">
+    <img src="https://api.star-history.com/svg?repos=sderosiaux/kafka-attic&type=Date" alt="kafka-attic GitHub star history chart" width="640">
   </a>
 </p>
 

@@ -1,4 +1,6 @@
-# Releasing kafka-attic
+# Releasing kafka-attic — Kafka topic cleanup CLI release process
+
+Operational guide for cutting a kafka-attic release: tag, GoReleaser pipeline, Homebrew formula refresh, Scoop manifest refresh, container image push to GHCR.
 
 This document is the operational guide for cutting a release. The pipeline is
 driven by [GoReleaser](https://goreleaser.com) via
@@ -113,3 +115,14 @@ goreleaser release --snapshot --clean --skip=publish --skip=docker
 
 Artifacts land in `dist/`. Use this to verify that binaries cross-compile and
 checksums are generated before pushing a tag.
+
+## Related
+
+- [README](/README.md) — install paths produced by this pipeline (Homebrew, Scoop, Docker, binaries)
+- [Architecture](/docs/architecture.md) — what the released binary actually does
+- [CHANGELOG](/CHANGELOG.md) — the version-by-version release history
+- [Landing page](https://sderosiaux.github.io/kafka-attic/) — canonical home
+
+---
+
+Last updated: 2026-05-22

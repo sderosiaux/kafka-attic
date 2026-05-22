@@ -1,4 +1,6 @@
-# kafka-attic vs Confluent Health+
+# kafka-attic vs Confluent Health+ — Kafka topic cleanup vs cluster-health monitoring
+
+kafka-attic scores stale Kafka topics across any cluster (self-managed, MSK, Confluent Cloud, Aiven, Redpanda); Confluent Health+ monitors cluster health, Confluent-only, as a paid SKU. Different coverage, different lock-in.
 
 [Confluent Health+](https://docs.confluent.io/cloud/current/monitoring/health-plus.html) is Confluent's paid monitoring add-on for Confluent Platform and Confluent Cloud. It collects broker telemetry, surfaces cluster-level alerts, and feeds Confluent Support with diagnostics. kafka-attic occupies a different point on the lock-in, coverage, cost, and deployment axes.
 
@@ -6,7 +8,7 @@
 
 Health+ is bound to Confluent's runtime. It does not run against Amazon MSK, Aiven, Redpanda, IBM Event Streams, or self-managed Apache Kafka. The data model assumes Confluent's broker plus the Confluent Telemetry Reporter, and the dashboards live inside Confluent's UI.
 
-kafka-attic is vendor-neutral by design. It speaks the open Kafka admin protocol via [franz-go](https://github.com/twmb/franz-go) and runs against every cluster type listed in the [managed-Kafka matrix](../../README.md#managed-kafka-support): self-managed, MSK Provisioned, MSK Serverless, Confluent Cloud, Aiven, and Redpanda. There is no vendor binding at the protocol level and no proprietary telemetry shipper.
+kafka-attic is vendor-neutral by design. It speaks the open Kafka admin protocol via [franz-go](https://github.com/twmb/franz-go) and runs against every cluster type listed in the [managed-Kafka matrix](/README.md#managed-kafka-support-msk-confluent-cloud-aiven-redpanda): self-managed, MSK Provisioned, MSK Serverless, Confluent Cloud, Aiven, and Redpanda. There is no vendor binding at the protocol level and no proprietary telemetry shipper.
 
 ## Coverage axis
 
@@ -38,3 +40,14 @@ kafka-attic is a single static Go binary distributed via brew, scoop, docker, an
 ## Recommendation
 
 If the cluster is Confluent-only and the question is *"is the cluster healthy?"*, Health+ is the right answer. If the question is *"are my topics still useful?"* — on any cluster type, including Confluent Cloud — kafka-attic is the right answer. The two can run side by side without contention; they share neither data plane nor control plane.
+
+## Related
+
+- [kafka-attic vs AKHQ](/docs/vs/akhq.md) — topic browser vs topic cleanup
+- [kafka-attic vs Cruise Control](/docs/vs/cruise-control.md) — broker rebalancing vs topic cleanup
+- [README](/README.md) — kafka-attic overview
+- [Landing page](https://sderosiaux.github.io/kafka-attic/) — canonical home
+
+---
+
+Last updated: 2026-05-22

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800">
+  <defs>
+    <linearGradient id="brand" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <radialGradient id="blob" cx="0%" cy="0%" r="60%">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      .sans { font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif; }
+      .mono { font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; }
+    </style>
+  </defs>
+
+  <!-- page background -->
+  <rect width="1280" height="800" fill="#ffffff"/>
+  <circle cx="100" cy="60" r="500" fill="url(#blob)"/>
+
+  <!-- header -->
+  <g transform="translate(80, 70)">
+    <rect x="0" y="0" width="56" height="56" rx="12" fill="url(#brand)"/>
+    <g transform="translate(12, 12)" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 28V11l13 -8 13 8v17"/>
+      <path d="M9 28v-9h14v9"/>
+      <path d="M3 11h26"/>
+    </g>
+    <text x="74" y="24" class="sans" font-size="22" font-weight="700" fill="#0f172a">kafka-attic</text>
+    <text x="74" y="48" class="sans" font-size="15" fill="#64748b">kattic scan &#8212; topic graveyard report</text>
+  </g>
+
+  <!-- terminal window -->
+  <g transform="translate(80, 168)">
+    <!-- window shadow -->
+    <rect x="0" y="8" width="1120" height="580" rx="14" fill="#0f172a" opacity="0.04"/>
+    <!-- window -->
+    <rect x="0" y="0" width="1120" height="580" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+    <!-- title bar -->
+    <rect x="0" y="0" width="1120" height="44" rx="14" fill="#f8fafc"/>
+    <rect x="0" y="30" width="1120" height="14" fill="#f8fafc"/>
+    <line x1="0" y1="44" x2="1120" y2="44" stroke="#e2e8f0" stroke-width="1"/>
+    <circle cx="24" cy="22" r="6" fill="#e2e8f0"/>
+    <circle cx="44" cy="22" r="6" fill="#e2e8f0"/>
+    <circle cx="64" cy="22" r="6" fill="#e2e8f0"/>
+    <text x="560" y="27" text-anchor="middle" class="mono" font-size="13" fill="#94a3b8">kattic scan &#8212; prod cluster</text>
+
+    <!-- command -->
+    <text x="28" y="80" class="mono" font-size="15" fill="#64748b">$</text>
+    <text x="48" y="80" class="mono" font-size="15" fill="#0f172a">kattic scan --cluster prod.yaml</text>
+
+    <!-- headline -->
+    <text x="28" y="118" class="mono" font-size="20" font-weight="700" fill="#0f172a">4,821 topics</text>
+    <text x="195" y="118" class="mono" font-size="20" fill="#94a3b8">&#183;</text>
+    <text x="215" y="118" class="mono" font-size="20" font-weight="700" fill="url(#brand)">1,207 likely unused</text>
+    <text x="475" y="118" class="mono" font-size="20" fill="#94a3b8">&#183;</text>
+    <text x="495" y="118" class="mono" font-size="20" font-weight="700" fill="#0f172a">38.2 TB reclaimable</text>
+
+    <!-- column headers -->
+    <text x="28" y="160" class="mono" font-size="13" fill="#64748b" font-weight="600">TOPIC</text>
+    <text x="240" y="160" class="mono" font-size="13" fill="#64748b" font-weight="600">LAST PRODUCED</text>
+    <text x="430" y="160" class="mono" font-size="13" fill="#64748b" font-weight="600">STORAGE</text>
+    <text x="600" y="160" class="mono" font-size="13" fill="#64748b" font-weight="600">SCORE</text>
+    <text x="690" y="160" class="mono" font-size="13" fill="#64748b" font-weight="600">VERDICT</text>
+    <text x="830" y="160" class="mono" font-size="13" fill="#64748b" font-weight="600">NOTES</text>
+    <line x1="28" y1="170" x2="1092" y2="170" stroke="#e2e8f0" stroke-width="1"/>
+
+    <!-- rows -->
+    <g class="mono" font-size="13.5" fill="#0f172a">
+      <text x="28"  y="198">legacy-events</text>
+      <text x="240" y="198" fill="#475569">287d ago</text>
+      <text x="430" y="198" fill="#475569">12.3 GB</text>
+      <text x="600" y="198" font-weight="700" fill="#dc2626">72</text>
+      <text x="690" y="198" font-weight="600" fill="#dc2626">Candidate</text>
+      <text x="830" y="198" fill="#64748b">no schema reference found</text>
+
+      <text x="28"  y="226">orders-v1</text>
+      <text x="240" y="226" fill="#475569">45d ago</text>
+      <text x="430" y="226" fill="#475569">2.1 GB</text>
+      <text x="600" y="226" font-weight="700" fill="#d97706">61</text>
+      <text x="690" y="226" font-weight="600" fill="#d97706">Inspect</text>
+      <text x="830" y="226" fill="#64748b">partition load uneven</text>
+
+      <text x="28"  y="254">audit-trail</text>
+      <text x="240" y="254" fill="#475569">3d ago</text>
+      <text x="430" y="254" fill="#475569">890 MB</text>
+      <text x="600" y="254" font-weight="700" fill="#16a34a">12</text>
+      <text x="690" y="254" font-weight="600" fill="#16a34a">Active</text>
+      <text x="830" y="254" fill="#64748b"></text>
+
+      <text x="28"  y="282">empty-topic</text>
+      <text x="240" y="282" fill="#475569">never seen</text>
+      <text x="430" y="282" fill="#475569">0 B</text>
+      <text x="600" y="282" font-weight="700" fill="#dc2626">88</text>
+      <text x="690" y="282" font-weight="600" fill="#dc2626">Candidate</text>
+      <text x="830" y="282" fill="#64748b">appears never used (low evidence)</text>
+
+      <text x="28"  y="310">old-events</text>
+      <text x="240" y="310" fill="#475569">180d ago</text>
+      <text x="430" y="310" fill="#475569">0 B</text>
+      <text x="600" y="310" font-weight="700" fill="#dc2626">85</text>
+      <text x="690" y="310" font-weight="600" fill="#dc2626">Candidate</text>
+      <text x="830" y="310" fill="#64748b">records purged by retention</text>
+
+      <text x="28"  y="338">oversized-events</text>
+      <text x="240" y="338" fill="#475569">2h ago</text>
+      <text x="430" y="338" fill="#475569">412 GB</text>
+      <text x="600" y="338" font-weight="700" fill="#d97706">55</text>
+      <text x="690" y="338" font-weight="600" fill="#d97706">Inspect</text>
+      <text x="830" y="338" fill="#64748b">over-provisioned partitions</text>
+
+      <text x="28"  y="366">compacted-state</text>
+      <text x="240" y="366" fill="#475569">1d ago</text>
+      <text x="430" y="366" fill="#475569">5.2 GB est</text>
+      <text x="600" y="366" font-weight="700" fill="#d97706">42</text>
+      <text x="690" y="366" font-weight="600" fill="#d97706">Inspect</text>
+      <text x="830" y="366" fill="#64748b">compacted topic; manual review</text>
+
+      <text x="28"  y="394">remote-archive</text>
+      <text x="240" y="394" fill="#475569">90d ago</text>
+      <text x="430" y="394" fill="#475569">? GB</text>
+      <text x="600" y="394" font-weight="700" fill="#94a3b8">&#8212;</text>
+      <text x="690" y="394" font-weight="600" fill="#94a3b8">&#8212;</text>
+      <text x="830" y="394" fill="#64748b">tiered storage; storage unknown</text>
+    </g>
+
+    <!-- footer hint -->
+    <line x1="28" y1="430" x2="1092" y2="430" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="28" y="462" class="mono" font-size="13" fill="#64748b">Sub-signals:</text>
+    <text x="120" y="462" class="mono" font-size="13" fill="#0f172a" letter-spacing="2" font-weight="600">A &#183; T &#183; T &#183; I &#183; C</text>
+    <text x="260" y="462" class="mono" font-size="13" fill="#64748b">Activity &#183; Tenancy &#183; Tonnage &#183; Intent &#183; Consumption</text>
+
+    <text x="28" y="494" class="mono" font-size="13" fill="#64748b">Next:</text>
+    <text x="78" y="494" class="mono" font-size="13" fill="#0f172a">kattic audit --cluster prod.yaml --output report.html</text>
+
+    <text x="28" y="538" class="sans" font-size="13" fill="#94a3b8">Read-only. No deletes, no writes. Score is a heuristic, not a probability.</text>
+  </g>
+
+  <!-- footer -->
+  <text x="80" y="772" class="sans" font-size="14" fill="#94a3b8">github.com/sderosiaux/kafka-attic</text>
+  <text x="1200" y="772" text-anchor="end" class="sans" font-size="14" fill="#94a3b8">Made by Conduktor</text>
+</svg>
